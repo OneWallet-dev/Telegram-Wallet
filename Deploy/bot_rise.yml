@@ -4,24 +4,24 @@ services:
 
   bot:
     build:
-      context: ../BotName
+      context: ../CryptoBot
       dockerfile: ./bot.dockerfile
     env_file: .env
-    container_name: NameBot
+    container_name: CryptoBot
     depends_on:
-      - postgres_name
-      - redis_name
+      - postgres
+      - redis
     volumes:
-      - ../BotName:/NameBot
+      - ../CryptoBot:/NameBot
     networks:
       - name_net
     restart: on-failure:2
 
-  postgres_name:
+  postgres:
     build:
       context: ./postgres
       dockerfile: postgres.dockerfile
-    container_name: NamePG
+    container_name: CryptoPG
     env_file:
       - .env
     ports:
@@ -31,9 +31,9 @@ services:
     networks:
       - name_net
 
-  redis_name:
+  redis:
     image: redis:7.0.4
-    container_name: NameRed
+    container_name: CryptoRed
     env_file:
       - .env
     ports:
