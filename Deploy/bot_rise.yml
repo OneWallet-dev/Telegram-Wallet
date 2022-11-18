@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+
+  bot:
+    build:
+      context: ../BotName
+      dockerfile: ./bot.dockerfile
+    env_file: .env
+    container_name: NameBot
+    depends_on:
+      - postgres_name
+      - redis_name
+    volumes:
+      - ../BotName:/NameBot
+    networks:
+      - name_net
+    restart: on-failure:2
+
+  postgres_name:
+    build:
+      context: ./postgres
+      dockerfile: postgres.dockerfile
+    container_name: NamePG
+    env_file:
+      - .env
+    ports:
+      - "5454:5432"
+    volumes:
+      - ./Data/Postgres/:/var/lib/postgresql/data
+    networks:
+      - name_net
+
+  redis_name:
+    image: redis:7.0.4
+    container_name: NameRed
+    env_file:
+      - .env
+    ports:
+      - "2279:2279"
+    command: redis-server --requirepass ${RED_PASS:?RED_PASS variable is not set} --save 20 1 --loglevel warning --port 2279
+    volumes:
+      - ./Data/Redis/data:/data
+    networks:
+      - name_net
+
+
+networks:
+  name_net:
+    driver: bridge
