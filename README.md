@@ -1,1 +1,1 @@
-# ctyptowalletMVP
+# cryptowalletMVP
