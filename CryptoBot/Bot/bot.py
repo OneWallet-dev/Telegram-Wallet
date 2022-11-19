@@ -5,7 +5,7 @@ from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
-from Bot.handlers import start_hand
+from Bot.handlers import start_hand, wallet_hand
 from Bot.middleware.db import DbSession
 from Databases.DB_Postgres import create_session
 from Databases.DB_Redis import RedRedis
