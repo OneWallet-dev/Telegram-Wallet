@@ -13,13 +13,12 @@ bot = data.main_bot
 
 async def create_session():
     engine = create_async_engine(
-        f'postgresql+asyncpg://{data.postgres_user}:{data.postgres_password}@{data.postgres_host}/postgres',
-        echo=True,
+        f'postgresql+asyncpg://{data.postgres_user}:{data.postgres_password}@{data.postgres_host}/postgres'
     )
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.drop_all)
-        await conn.run_sync(Base.create_all)
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
     async_sessionmaker = sessionmaker(
         engine, expire_on_commit=False, class_=AsyncSession
