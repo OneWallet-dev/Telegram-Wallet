@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy import Column, BigInteger, String, DateTime
 
-from CryptoBot.Databases.DB_Postgres import Base
+from Databases.DB_Postgres import Base
 
 
 class Users(Base):
@@ -12,3 +12,4 @@ class Users(Base):
     username = Column(String)
     first_name = Column(String)
     datetime_come = Column(DateTime, default=datetime.datetime.now())
+    password = Column(String)
