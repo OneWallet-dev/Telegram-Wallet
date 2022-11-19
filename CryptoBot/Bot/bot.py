@@ -18,7 +18,6 @@ dp = Dispatcher(storage=storage)
 async def bot_start():
     bot = Data.main_bot
     bot_info = await bot.get_me()
-    bot["db"] = await create_session()
     print(f"Bot was reborn as\n"
           f"|- {bot_info.full_name} -|- @{bot_info.username} -|\n"
           f"What a time to be alive!\n")

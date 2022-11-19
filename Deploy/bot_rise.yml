@@ -2,21 +2,6 @@ version: "3.8"
 
 services:
 
-  bot:
-    build:
-      context: ../CryptoBot
-      dockerfile: ./bot.dockerfile
-    env_file: .env
-    container_name: CryptoBot
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ../CryptoBot:/CryptoBot
-    networks:
-      - name_net
-    restart: on-failure:2
-
   postgres:
     build:
       context: ./postgres
@@ -44,6 +29,20 @@ services:
     networks:
       - name_net
 
+  bot:
+    build:
+      context: ../CryptoBot
+      dockerfile: ./bot.dockerfile
+    env_file: .env
+    container_name: CryptoBot
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../CryptoBot:/CryptoBot
+    networks:
+      - name_net
+    restart: on-failure:2
 
 networks:
   name_net:
