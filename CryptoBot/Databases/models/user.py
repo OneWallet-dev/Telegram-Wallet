@@ -12,3 +12,4 @@ class Users(Base):
     username = Column(String)
     first_name = Column(String)
     datetime_come = Column(DateTime, default=datetime.datetime.now())
+    password = Column(String)
