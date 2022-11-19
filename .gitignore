@@ -133,4 +133,4 @@ dmypy.json
 /Deploy/Data
 
 # Logs
-AllLogs*
+bot_logs*
