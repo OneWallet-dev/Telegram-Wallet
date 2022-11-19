@@ -27,18 +27,15 @@ async def bot_start():
     dp.message.middleware(DbSession(session))
     dp.callback_query.middleware(DbSession(session))
 
-
-
     dp.include_router(start_hand.router)
-
-
-
-
-
-
+    dp.include_router(wallet_hand.router)
 
     session = aiohttp.ClientSession()
     await session.close()
 
+    await RedRedis.connect_to_storage()
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
