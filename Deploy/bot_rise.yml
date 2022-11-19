@@ -42,7 +42,7 @@ services:
       - ../CryptoBot:/CryptoBot
     networks:
       - name_net
-    restart: on-failure:2
+
 
 networks:
   name_net:
