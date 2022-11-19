@@ -18,7 +18,6 @@ async def create_session():
     )
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.drop_all)
         await conn.run_sync(Base.create_all)
 
     async_sessionmaker = sessionmaker(
