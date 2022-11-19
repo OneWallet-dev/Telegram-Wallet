@@ -1,6 +1,7 @@
 import os
 
-from Bot.heir_bot import heir_Bot
+
+from aiogram import Bot
 
 
 class Data:
@@ -12,4 +13,4 @@ class Data:
     postgres_host = os.getenv('POSTGRES_HOST')
     postgres_password = os.getenv('POSTGRES_PASSWORD')
     postgres_user = os.getenv('POSTGRES_USER')
-    main_bot = heir_Bot(main_bot_token, parse_mode="HTML")
+    main_bot = Bot(main_bot_token, parse_mode="HTML")
