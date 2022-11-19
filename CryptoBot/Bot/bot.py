@@ -24,19 +24,11 @@ async def bot_start():
           f"|- {bot_info.full_name} -|- @{bot_info.username} -|\n"
           f"What a time to be alive!\n")
 
-    session = await create_session()
-    dp.message.middleware(DbSession(session))
-    dp.callback_query.middleware(DbSession(session))
-
-
+    db_session = await create_session()
+    dp.message.middleware(DbSession(db_session))
+    dp.callback_query.middleware(DbSession(db_session))
 
     dp.include_router(start_hand.router)
-
-
-
-
-
-
 
     session = aiohttp.ClientSession()
     await session.close()
