@@ -1,4 +1,4 @@
-from aioredis import from_url
+import redis.asyncio as aioredis
 
 from bata import Data
 
@@ -16,5 +16,5 @@ class RedRedis:
 
     @classmethod
     async def bot_storage_conn(cls, db_number):
-        return from_url(f"redis://:{cls.password}@{cls.host}:{cls.port}/{cls.bot_storage_base}")
+        return aioredis.from_url(f"redis://:{cls.password}@{cls.host}:{cls.port}/{cls.bot_storage_base}")
 

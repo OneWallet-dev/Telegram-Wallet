@@ -12,7 +12,7 @@ services:
       - postgres
       - redis
     volumes:
-      - ../CryptoBot:/NameBot
+      - ../CryptoBot:/CryptoBot
     networks:
       - name_net
     restart: on-failure:2
