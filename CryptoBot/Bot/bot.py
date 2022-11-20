@@ -1,3 +1,4 @@
+import logging
 from aiogram import Dispatcher
 from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
@@ -12,6 +13,7 @@ from bata import Data
 BotLogger()
 storage = RedisStorage.from_url(RedRedis.states_base_url())
 dp = Dispatcher(storage=storage)
+
 
 async def bot_start():
     bot = Data.main_bot
