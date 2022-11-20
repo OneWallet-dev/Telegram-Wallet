@@ -101,8 +101,8 @@ class Mnemonic(object):
             )
         h = hashlib.sha256(data).hexdigest()
         b = (
-            bin(int.from_bytes(data, byteorder="big"))[2:].zfill(len(data) * 8)
-            + bin(int(h, 16))[2:].zfill(256)[: len(data) * 8 // 32]
+                bin(int.from_bytes(data, byteorder="big"))[2:].zfill(len(data) * 8)
+                + bin(int(h, 16))[2:].zfill(256)[: len(data) * 8 // 32]
         )
         result = []
         for i in range(len(b) // 11):
