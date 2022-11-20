@@ -14,7 +14,7 @@ router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 @router.message(F.text == "💹 Кошелек", StateFilter(MainState.welcome_state))
 async def choose_currency(message: Message, state: FSMContext):
-    await state.set_state(WalletStates.choose_currency)
+    await state.set_state(WalletStates.create_wallet)
     await message.answer('Выберите валюту', reply_markup=currency_kb())
 
 
