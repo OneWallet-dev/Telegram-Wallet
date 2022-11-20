@@ -9,7 +9,6 @@ class wallet_bip44(Mnemonic):
         self.mnemonic = self.generate_mnemo(strength=strength)
 
     async def create_TRON(self, amount_wallets: int = 1):
-        print("MNEMONIC", self.mnemonic)
 
         seed_bytes = Bip39SeedGenerator(self.mnemonic).Generate()
 
@@ -25,7 +24,8 @@ class wallet_bip44(Mnemonic):
                 wallets[f"ADDRESS {i}"] = {
                     "PrivateKey": bip44_addr_ctx.PrivateKey().ToExtended(),
                     "PublicKey": bip44_addr_ctx.PublicKey().ToExtended(),
-                    "Address": bip44_addr_ctx.PublicKey().ToAddress()
+                    "Address": bip44_addr_ctx.PublicKey().ToAddress(),
+                    "Mnemonic": self.mnemonic
                 }
             return wallets
         else:
