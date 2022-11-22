@@ -69,7 +69,7 @@ class Wallet(Base):
     __tablename__ = "wallets"
 
     wallet_address = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
-    blockcain = Column(String)
+    blockchain = Column(String)
     network = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
