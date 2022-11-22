@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from Bot.keyboards.main_keys import start_kb
 from Bot.states.main_states import MainState
 from Bot.models.botuser import BotUser
-from Databases.DB_Postgres.models import Users
+from Databases.DB_Postgres.models import UUser
 from bata import Data
 
 router = Router()
@@ -25,10 +25,7 @@ bot = Data.main_bot
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     await state.set_state(MainState.welcome_state)
     # await BotUser(session, message.from_user).create()
-
-    a = await session.execute(select(Users).where(Users.user_id == message.from_user.id))
-    print(a.scalars().all())
-    
-    user = BotUser(session=session, user=message.from_user).get_user()
+    user = await UUser().register(session, message.from_user)
+    print(user.user_id)
     await message.answer('BOT IS ALIVE', reply_markup=start_kb())
 
