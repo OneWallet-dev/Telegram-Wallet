@@ -39,7 +39,7 @@ class Owner(Base):
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
     wallets = relationship(
         "Wallet",
-        collection_class=attribute_mapped_collection("wallet_address"),
+        collection_class=attribute_mapped_collection("blockchain"),
         cascade="all, delete-orphan",
     )
 

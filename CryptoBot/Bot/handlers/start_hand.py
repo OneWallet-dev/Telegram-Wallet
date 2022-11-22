@@ -28,8 +28,9 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     user: Owner = await Owner().register(session, message.from_user)
     print(user.wallets)
     list_wallets: dict[str, Wallet] = user.wallets
+    print(list_wallets)
     for i in list_wallets.values():
-        print(i.blockcain)
+        print(i.blockchain)
 
     await message.answer('BOT IS ALIVE', reply_markup=start_kb())
 

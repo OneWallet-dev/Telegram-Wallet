@@ -3,7 +3,7 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from Bot.filters.wallet_filters import WalletExists
+from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
 from Bot.keyboards.wallet_keys import currency_kb
 from Bot.states.main_states import MainState
