@@ -51,14 +51,18 @@ class Owner(Base):
             do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
-            result = await session.execute(
-                select(Owner).where(
-                    Owner.id == user.id
-                ).options(selectinload(Owner.wallets)))
-            return result.scalars().first()
+            return await Owner.get(session, user)
         except IntegrityError:
             await session.rollback()
             raise
+
+    @staticmethod
+    async def get(session: AsyncSession, user: User):
+        result = await session.execute(
+            select(Owner).where(
+                Owner.id == user.id
+            ).options(selectinload(Owner.wallets)))
+        return result.scalars().first()
 
 
 class Wallet(Base):
