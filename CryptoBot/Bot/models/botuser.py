@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Databases.DB_Postgres.models import UUser
+from Databases.DB_Postgres.models import Owner
 
 
 class BotUser:

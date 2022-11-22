@@ -6,7 +6,7 @@ from sqlalchemy import Column, BigInteger, String, Float, DateTime, ForeignKey, 
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base, relationship, context
+from sqlalchemy.orm import declarative_base, relationship, context, selectinload
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, EncryptedType, StringEncryptedType
 
@@ -30,10 +30,10 @@ class Transactions(Base):
                    ForeignKey('users.user_id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
-class UUser(Base):
-    __tablename__ = "users"
+class Owner(Base):
+    __tablename__ = "owners"
 
-    user_id = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
+    id = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
     username = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     datetime_come = Column(DateTime, default=datetime.datetime.now())
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
@@ -43,27 +43,22 @@ class UUser(Base):
         cascade="all, delete-orphan",
     )
 
-    @classmethod
-    async def register(cls, session: AsyncSession, user: User):
-        """ someone wants to become a user """
+    @staticmethod
+    async def register(session: AsyncSession, user: User):
+        """ For new users """
         try:
-            stmt = insert(UUser).values(user_id=user.id,
-                                        username=user.username)
-            do_nothing = stmt.on_conflict_do_nothing(index_elements=['user_id'])
+            stmt = insert(Owner).values(id=user.id, username=user.username)
+            do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
             result = await session.execute(
-                select(UUser).where(
-                    UUser.user_id == user.id
-                )
-            )
+                select(Owner).where(
+                    Owner.id == user.id
+                ).options(selectinload(Owner.wallets)))
             return result.scalars().first()
         except IntegrityError:
             await session.rollback()
             raise
-
-    def __str__(self) -> str:
-        return f"User(id={self.user_id!r}, name={self.username!r}, fullname={self.datetime_come!r})"
 
 
 class Wallet(Base):
@@ -74,4 +69,4 @@ class Wallet(Base):
     network = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                  ForeignKey('users.user_id', onupdate="CASCADE", ondelete="CASCADE"))
+                  ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
