@@ -97,7 +97,7 @@ class Mnemonic(object):
     def to_mnemonic(self, data: bytes) -> str:
         if len(data) not in [16, 20, 24, 28, 32]:
             raise ValueError(
-                f"Data length should be one of the following: [16, 20, 24, 28, 32], but it is not {len(data)}."
+                f"Data length should be one of the following: [16, 20, 24, 28, 32], but it is not: {len(data)}."
             )
         h = hashlib.sha256(data).hexdigest()
         b = (

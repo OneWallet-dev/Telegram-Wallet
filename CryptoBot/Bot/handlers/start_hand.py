@@ -3,14 +3,15 @@ from contextlib import suppress
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, User
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.keyboards.main_keys import start_kb
 from Bot.states.main_states import MainState
-from Databases.models.user import Users
+from Bot.models.botuser import BotUser
+from Databases.DB_Postgres.models import Users
 from bata import Data
 
 router = Router()
@@ -22,13 +23,12 @@ bot = Data.main_bot
 
 @router.message(Command("start"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    user = Users()
-    user.user_id = message.from_user.id
-    user.username = message.from_user.username
-    user.first_name = message.from_user.first_name
-    session.add(user)
-    with suppress(IntegrityError):
-        await session.commit()
-
     await state.set_state(MainState.welcome_state)
+    # await BotUser(session, message.from_user).create()
+
+    a = await session.execute(select(Users).where(Users.user_id == message.from_user.id))
+    print(a.scalars().all())
+    
+    user = BotUser(session=session, user=message.from_user).get_user()
     await message.answer('BOT IS ALIVE', reply_markup=start_kb())
+
