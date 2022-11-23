@@ -44,11 +44,16 @@ def send_money_confirm_kb(confirm_push: int):
     mark = InlineKeyboardBuilder()
     text = "Подтвердить"
     data = 'more_conf'
-    if confirm_push >= 1:
-        text += " ✅"
-    if confirm_push >= 2:
-        text = "✅ " + text
+    if confirm_push == 1:
         data = 'send_confirmed'
-    print(text)
+        text += " 🟩"
+    elif confirm_push == 2:
+        text = "🟩 " + text + " 🟩"
+    elif confirm_push == 3:
+        text = "✅ ОПЕРАЦИЯ ПОДТВЕРЖДЕНА ✅"
+        data = 'send_sucсess'
+    elif confirm_push == 66:
+        text = "❌ ОШИБКА В ОПЕРАЦИИ ❌"
+        data = 'send_error'
     mark.row((InlineKeyboardButton(text=text, callback_data=data)))
     return mark.as_markup(resize_keyboard=True)
