@@ -118,23 +118,24 @@ class Wallet(Base):
         cascade="all, delete-orphan", lazy="joined"
     )
 
-    async def getBalance(self):
-        APIKEY = os.getenv("API_KEY")  # <-----
-        WALLET_ID = os.getenv("WALLET_ID")
-        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
-        BLOCKCHAIN = self.blockchain
-        NETWORK = "mainnet"
-        with requests.Session() as httpSession:
-            h = {'Content-Type': 'application/json',
-                 'X-API-KEY': APIKEY}
-            r = httpSession.get(
-                f'{BASE}?address={WALLET_ID}',
-                headers=h)
-            r.raise_for_status()
-            r.json()["data"]["items"]
-
-        pass
     # async def createTransaction(self,session: AsyncSession, to_wallet: String):
+
+    def getBalance(self):
+        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
+        with self.Session() as httpSession:
+            r = httpSession.get(
+                f'{BASE}?address={self.wallet_address}')
+            r.raise_for_status()
+            user_tonens = dict()
+            for token in r.json().get("withPriceTokens"):
+                balance = token.get("balance", "NoneBalance")
+                balance = float('{0:,}'.format(int(balance)).replace(',', '.')[:6])
+                user_tonens[token.get("tokenName", "NoneName")] = {
+                    "tokenType": token.get("tokenType", "NoneType"),
+                    "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
+                    "balance": float(f"{balance:.{3}f}"),
+                }
+            return user_tonens
 
     def __str__(self):
         return self.wallet_address
