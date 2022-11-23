@@ -1,11 +1,6 @@
-import logging
-import os
-
-import cryptoapis
 from aiogram import Dispatcher
 from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
-from cryptoapis.api import assets_api
 
 from AllLogs.bot_logger import BotLogger
 from Bot.handlers import start_hand, wallet_hand
@@ -34,7 +29,7 @@ async def bot_start():
     dp.include_router(start_hand.router)
     dp.include_router(wallet_hand.router)
 
-    #wallets
+    # wallets
 
     session = aiohttp.ClientSession()
     await session.close()
