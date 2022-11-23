@@ -3,7 +3,7 @@ import os
 
 import requests
 from aiogram.types import User
-from sqlalchemy import Column, String, DateTime, ForeignKey, select
+from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,17 +16,17 @@ from bata import Data
 Base = declarative_base()
 
 
-# class Transactions(Base):
-#     __tablename__ = "receipts"
-#
-#     ID = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-#     wallet_address = Column(String)
-#     sum = Column(Float)
-#     from_wallet = Column(String)
-#     to_wallet = Column(String)
-#     date_of_creation = Column(DateTime, default=datetime.datetime.now())
-#     owner = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-#                    ForeignKey('users.user_id', onupdate="CASCADE", ondelete="CASCADE"))
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    amount = Column(Float)
+    from_wallet = Column(String)
+    to_wallet = Column(String)
+    date_of_creation = Column(DateTime, default=datetime.datetime.now())
+    wallet_addres = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+                   ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
+
 
 
 class Owner(Base):
@@ -44,7 +44,7 @@ class Owner(Base):
 
     async def createWallet(self, session: AsyncSession, blockchain: str):
         isExist: bool = False
-        wallets : dict = self.wallets
+        wallets: dict = self.wallets
         if blockchain in wallets.keys():
             isExist = True
         if isExist == False:
@@ -52,7 +52,7 @@ class Owner(Base):
             WALLET_ID = os.getenv("WALLET_ID")
             BASE = 'https://rest.cryptoapis.io'
             BLOCKCHAIN = blockchain
-            NETWORK = "nile"
+            NETWORK = "mainnet"
             data = {
                 "context": f"{self.id}",
                 "data": {
@@ -65,7 +65,7 @@ class Owner(Base):
                 h = {'Content-Type': 'application/json',
                      'X-API-KEY': APIKEY}
                 r = httpSession.post(
-                    f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=yourExampleString',
+                    f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=f{self.id}',
                     json=data,
                     headers=h)
                 r.raise_for_status()
@@ -113,6 +113,16 @@ class Wallet(Base):
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                   ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+    transactions = relationship(
+        "Transaction",
+        collection_class=attribute_mapped_collection("id"),
+        cascade="all, delete-orphan", lazy="joined"
+    )
+    balances : dict[String, float] = {"USDT(TRC20)":0.0}
+    async def getBalance(self, ):
+    # async def createTransaction(self,session: AsyncSession, to_wallet: String):
+
+
 
     def __str__(self):
         return self.wallet_address
