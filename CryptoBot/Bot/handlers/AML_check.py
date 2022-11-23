@@ -16,7 +16,7 @@ from Bot.utilts.pretty_texts import pretty_balance
 from Databases.DB_Postgres.models import Owner, Wallet
 
 router = Router()
-router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
+router.message.filter(StateFilter(MainState.welcome_state, MainState.AML_check))
 
 
 @router.message(F.text == "✅ AML Check", StateFilter(MainState.welcome_state))
@@ -27,7 +27,7 @@ async def AML_hello(message: Message, state: FSMContext):
                          reply_markup=AML_menu())
 
 
-@router.message(F.text == "✅ AML Check", StateFilter(MainState.AML_check))
+@router.message(StateFilter(MainState.AML_check))
 async def AML_hello(message: Message, state: FSMContext):
     await message.answer('Ваш адрес:',
                          reply_markup=AML_menu())
