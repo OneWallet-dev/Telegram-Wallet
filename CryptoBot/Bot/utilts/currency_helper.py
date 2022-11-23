@@ -1,3 +1,4 @@
 currencies = {
-    'USDT': 'TRC-20'
+    'USDT(TRC20)': 'tron'
 }
+

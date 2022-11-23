@@ -24,7 +24,26 @@ def create_wallet_kb(blockchain_name: str):
 @back_button
 def use_wallet_kb():
     mark = ReplyKeyboardBuilder()
-    mark.row((KeyboardButton(text=f"🪙 Получить деньги 🪙")))
-    mark.row((KeyboardButton(text=f"🪙 Отправить деньги 🪙")))
+    mark.row((KeyboardButton(text=f"💸 Отправить деньги 💸")))
+    return mark.as_markup(resize_keyboard=True)
 
+
+def send_money_kb(token_list: list[str]):
+    mark = InlineKeyboardBuilder()
+    for token in token_list:
+        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=token)))
+    return mark.as_markup(resize_keyboard=True)
+
+
+def send_money_confirm_kb(confirm_push: int):
+    mark = InlineKeyboardBuilder()
+    text = "Подтвердить"
+    data = 'more_conf'
+    if confirm_push >= 1:
+        text += " ✅"
+    if confirm_push >= 2:
+        text = "✅ " + text
+        data = 'send_confirmed'
+    print(text)
+    mark.row((InlineKeyboardButton(text=text, callback_data=data)))
     return mark.as_markup(resize_keyboard=True)
