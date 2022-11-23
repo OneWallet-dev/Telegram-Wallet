@@ -1,33 +1,33 @@
 import datetime
-from typing import Any
+import json
+import os
 
+import requests
 from aiogram.types import User
-from sqlalchemy import Column, BigInteger, String, Float, DateTime, ForeignKey, Integer, Table, select
+from sqlalchemy import Column, String, DateTime, ForeignKey, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base, relationship, context, selectinload
+from sqlalchemy.orm import declarative_base, relationship, selectinload
 from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, EncryptedType, StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, StringEncryptedType
 
-import Bot
-import Databases
 from bata import Data
 
 Base = declarative_base()
 
 
-class Transactions(Base):
-    __tablename__ = "receipts"
-
-    ID = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-    wallet_address = Column(String)
-    sum = Column(Float)
-    from_wallet = Column(String)
-    to_wallet = Column(String)
-    date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    owner = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                   ForeignKey('users.user_id', onupdate="CASCADE", ondelete="CASCADE"))
+# class Transactions(Base):
+#     __tablename__ = "receipts"
+#
+#     ID = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+#     wallet_address = Column(String)
+#     sum = Column(Float)
+#     from_wallet = Column(String)
+#     to_wallet = Column(String)
+#     date_of_creation = Column(DateTime, default=datetime.datetime.now())
+#     owner = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+#                    ForeignKey('users.user_id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Owner(Base):
@@ -39,9 +39,50 @@ class Owner(Base):
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
     wallets = relationship(
         "Wallet",
-        collection_class=attribute_mapped_collection("blockchain"),
-        cascade="all, delete-orphan",
+        collection_class=attribute_mapped_collection("wallet_address"),
+        cascade="all, delete-orphan", lazy="joined"
     )
+
+    async def createWallet(self, session: AsyncSession, blockchain: str):
+        isExist: bool = False
+        for values in self.wallets:
+            print(self.wallets[values])
+            if self.wallets[values] == blockchain:
+                isExist = True
+        if isExist == False:
+            APIKEY = os.getenv("API_KEY")  # <-----
+            WALLET_ID = os.getenv("WALLET_ID")
+            BASE = 'https://rest.cryptoapis.io'
+            BLOCKCHAIN = blockchain
+            NETWORK = "nile"
+            data = {
+                "context": f"{self.id}",
+                "data": {
+                    "item": {
+                        "label": f"{self.id} - wallet"
+                    }
+                }
+            }
+            with requests.Session() as httpSession:
+                h = {'Content-Type': 'application/json',
+                     'X-API-KEY': APIKEY}
+                r = httpSession.post(
+                    f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=yourExampleString',
+                    json=data,
+                    headers=h)
+                r.raise_for_status()
+                wallet_dict = r.json()["data"]["item"]
+                wallet: Wallet = Wallet(wallet_address=wallet_dict["address"],
+                                        blockchain=BLOCKCHAIN,
+                                        network=NETWORK,
+                                        user=self.id)
+
+                session.add(wallet)
+                await session.commit()
+                await session.close()
+                return wallet
+        else:
+            return "У вас уже есть кошелек в данной сети!"
 
     @staticmethod
     async def register(session: AsyncSession, user: User):
@@ -74,3 +115,6 @@ class Wallet(Base):
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                   ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+
+    def __str__(self):
+        return self.wallet_address

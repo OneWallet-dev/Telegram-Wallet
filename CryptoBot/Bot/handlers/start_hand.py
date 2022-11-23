@@ -25,3 +25,9 @@ async def main_menu(message: Message, state: FSMContext, bot: Bot):
     bot_name = (await bot.get_me()).full_name
     await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
                          'Чем я могу вам помочь?', reply_markup=start_kb())
+
+@router.message(Command("generate"))
+async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
+    owner: Owner = await session.get(Owner, message.from_user.id)
+    wallet = await owner.createWallet(blockchain="tron", session=session)
+    await message.answer(str(wallet), reply_markup=start_kb())
