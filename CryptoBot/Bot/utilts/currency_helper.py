@@ -1,0 +1,3 @@
+currencies = {
+    'USDT': 'TRON'
+}

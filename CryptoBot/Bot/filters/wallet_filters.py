@@ -1,8 +1,11 @@
+from typing import Dict, Any
+
 from aiogram.filters import Filter
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Databases.DB_Postgres.models import Owner
+from Databases.DB_Postgres.session import create_session
 from Databases.DB_Redis import RedRedis
 
 
@@ -10,17 +13,17 @@ class ChainOwned(Filter):
     def __init__(self):
         self.redis = RedRedis()
 
-    async def __call__(self, message: Message, session: AsyncSession) -> bool:
-        currency_name = message.text
-        # chain = chain_finder(currency_name)
-        user_id = message.from_user.id
-        user_have_it = await self.redis.user_currency_cache_check(user_id, currency_name)
+    async def __call__(self, callback: CallbackQuery) -> bool:
+        chain = callback.data
+        user_id = callback.from_user.id
+        user_have_it = await self.redis.user_currency_cache_check(user_id, chain)
         if not user_have_it:
-            owner: Owner = await Owner.get(session, user=message.from_user)
-
-            result = set()
-            await self.redis.user_currency_cache_update(user_id=user_id, currencies=result)
-            if currency_name not in result:
-                return False
+            ses = await create_session()
+            async with ses() as session:
+                owner: Owner = await Owner.get(session, user=callback.from_user)
+                result = set(owner.wallets)
+                await self.redis.user_currency_cache_update(user_id=user_id, currencies=result)
+                if chain not in result:
+                    return False
         else:
             return True
