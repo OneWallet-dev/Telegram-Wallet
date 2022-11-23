@@ -7,4 +7,5 @@ def start_kb():
     mark.row((KeyboardButton(text="💹 Кошельки")))
     mark.row((KeyboardButton(text="✅ AML Check")))
     mark.row((KeyboardButton(text="💬 Поддержка")))
+    mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
