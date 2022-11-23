@@ -1,7 +1,12 @@
 import logging
+import os
+
+import cryptoapis
 from aiogram import Dispatcher
 from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
+from cryptoapis.api import assets_api
+
 from AllLogs.bot_logger import BotLogger
 from Bot.handlers import start_hand, wallet_hand
 from Bot.middleware.db import DbSession

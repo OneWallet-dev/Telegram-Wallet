@@ -34,3 +34,9 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
     await message.answer('BOT IS ALIVE', reply_markup=start_kb())
 
+
+@router.message(Command("generate"))
+async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
+    owner: Owner = await session.get(Owner, message.from_user.id)
+    wallet = await owner.createWallet(blockchain="tron", session=session)
+    await message.answer(str(wallet), reply_markup=start_kb())
