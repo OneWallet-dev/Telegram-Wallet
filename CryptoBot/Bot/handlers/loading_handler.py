@@ -8,7 +8,7 @@ bot = Data.main_bot
 async def loader(chat_id, text: str = '', time: int = 5, reply_markup: bool = None):
     loader_bar = ['🟩', '⬜', '⬜', '⬜', '⬜', '⬜️']
     new_text = text + '\n\n' + ''.join(loader_bar)
-    if time > 2:
+    if time >= 2:
         count = 0
         message = await bot.send_message(chat_id=chat_id, text=new_text, reply_markup=reply_markup)
         message_id = message.message_id
