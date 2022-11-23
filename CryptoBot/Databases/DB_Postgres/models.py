@@ -120,6 +120,7 @@ class Wallet(Base):
     )
     balances : dict[String, float] = {"USDT(TRC20)":0.0}
     async def getBalance(self, ):
+        pass
     # async def createTransaction(self,session: AsyncSession, to_wallet: String):
 
 
