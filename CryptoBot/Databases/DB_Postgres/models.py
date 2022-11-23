@@ -118,8 +118,9 @@ class Wallet(Base):
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
-    balances : dict[String, float] = {"USDT(TRC20)":0.0}
+    balances : dict[str, float] = {"USDT(TRC20)":0.0}
     async def getBalance(self, ):
+        pass
     # async def createTransaction(self,session: AsyncSession, to_wallet: String):
 
 
