@@ -15,6 +15,11 @@ from bata import Data
 
 Base = declarative_base()
 
+Base_api = 'https://rest.cryptoapis.io'
+API_version = "/v2"
+Base_api = Base_api + API_version
+
+
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -41,6 +46,7 @@ class Owner(Base):
         cascade="all, delete-orphan", lazy="joined"
     )
 
+
     async def createWallet(self, session: AsyncSession, blockchain: str):
         isExist: bool = False
         wallets: dict = self.wallets
@@ -49,7 +55,6 @@ class Owner(Base):
         if isExist == False:
             APIKEY = os.getenv("API_KEY")  # <-----
             WALLET_ID = os.getenv("WALLET_ID")
-            BASE = 'https://rest.cryptoapis.io'
             BLOCKCHAIN = blockchain
             NETWORK = "mainnet"
             data = {
@@ -64,7 +69,7 @@ class Owner(Base):
                 h = {'Content-Type': 'application/json',
                      'X-API-KEY': APIKEY}
                 r = httpSession.post(
-                    f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=f{self.id}',
+                    f'{Base_api}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=f{self.id}',
                     json=data,
                     headers=h)
                 r.raise_for_status()
@@ -121,7 +126,6 @@ class Wallet(Base):
     async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
         APIKEY = os.getenv("API_KEY")  # <-----
         WALLET_ID = os.getenv("WALLET_ID")
-        BASE = 'https://rest.cryptoapis.io'
         BLOCKCHAIN = self.blockchain
         NETWORK = "mainnet"
         data = {
@@ -139,7 +143,7 @@ class Wallet(Base):
             h = {'Content-Type': 'application/json',
                  'X-API-KEY': APIKEY}
             r = httpSession.post(
-                f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses/{self.wallet_address}/feeless-token-transaction-requests',
+                f'{Base_api}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses/{self.wallet_address}/feeless-token-transaction-requests',
                 json=data,
                 headers=h)
             r.raise_for_status()
@@ -149,6 +153,7 @@ class Wallet(Base):
     def __str__(self):
         return self.wallet_address
 
+    # get_balance from tronscan
     async def getBalance(self):
         BASE = 'https://apilist.tronscanapi.com/api/accountv2'
         with requests.Session() as httpSession:

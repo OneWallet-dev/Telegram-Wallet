@@ -27,6 +27,11 @@ def use_wallet_kb():
     mark.row((KeyboardButton(text=f"💸 Отправить деньги 💸")))
     return mark.as_markup(resize_keyboard=True)
 
+@back_button
+def AML_menu():
+    mark = ReplyKeyboardBuilder()
+    return mark.as_markup(resize_keyboard=True)
+
 
 def send_money_kb(token_list: list[str]):
     mark = InlineKeyboardBuilder()

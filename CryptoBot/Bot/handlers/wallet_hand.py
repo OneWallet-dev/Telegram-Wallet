@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.wallet_filters import ChainOwned
+from Bot.handlers.loading_handler import loader
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, send_money_confirm_kb
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
@@ -59,6 +60,7 @@ async def choose_currency(message: Message, state: FSMContext, session: AsyncSes
         return
     else:
         await state.set_state(WalletStates.use_wallet)
+        await loader(chat_id=message.from_user.id, text="Пожалуйста подождите, выполняется генерация кошелька")
         msg = await message.answer(f'Создан кошелек:\n\nПубличный адрес:\n <code>{str(wallet.wallet_address)}</code>',
                                    reply_markup=use_wallet_kb())
         await Cleaner.store(state, msg.message_id)
@@ -134,4 +136,5 @@ async def send_money_really_end(callback: CallbackQuery,session: AsyncSession, b
     amount = (await state.get_data()).get('amount')
     wallet = owner.wallets.get(chain)
     text = await wallet.createTransaction(session,target_adress,amount)
+    await loader(chat_id=callback.from_user.id, text="Пожалуйста подождите, выполняется транзакция", time=4)
     await callback.message.answer(text)
