@@ -25,8 +25,7 @@ class Transaction(Base):
     to_wallet = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     wallet_addres = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                   ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
-
+                           ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Owner(Base):
@@ -118,12 +117,24 @@ class Wallet(Base):
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
-    balances : dict[String, float] = {"USDT(TRC20)":0.0}
-    async def getBalance(self, ):
+
+    async def getBalance(self):
+        APIKEY = os.getenv("API_KEY")  # <-----
+        WALLET_ID = os.getenv("WALLET_ID")
+        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
+        BLOCKCHAIN = self.blockchain
+        NETWORK = "mainnet"
+        with requests.Session() as httpSession:
+            h = {'Content-Type': 'application/json',
+                 'X-API-KEY': APIKEY}
+            r = httpSession.get(
+                f'{BASE}?address={WALLET_ID}',
+                headers=h)
+            r.raise_for_status()
+            r.json()["data"]["items"]
+
         pass
     # async def createTransaction(self,session: AsyncSession, to_wallet: String):
-
-
 
     def __str__(self):
         return self.wallet_address
