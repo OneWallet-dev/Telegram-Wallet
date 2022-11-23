@@ -43,14 +43,14 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
         print(owner.wallets[key])
         await message.answer(str(owner.wallets[key]), reply_markup=start_kb())
 
-@router.message(Command("getbalance"))
+@router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     owner: Owner = await session.get(Owner, message.from_user.id)
     print(owner.wallets)
     for key in owner.wallets:
-        try:
-            print(await owner.wallets[key].getBalance())
-        except HTTPError as e:
-            print(e)
+        if owner.wallets[key].blockchain=="tron":
+            my_wallet: Wallet = owner.wallets[key]
+            break
 
-        await message.answer(str(owner.wallets[key]), reply_markup=start_kb())
+    text = await my_wallet.createTransaction(session,"TY1Qry1UD6YG6qWMqPz45jkNWKzzisCkTT",5)
+    await message.answer(text, reply_markup=start_kb())
