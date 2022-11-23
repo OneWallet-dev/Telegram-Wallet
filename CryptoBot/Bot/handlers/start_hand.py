@@ -2,6 +2,7 @@ from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.keyboards.main_keys import start_kb
@@ -40,4 +41,16 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     print(owner.wallets)
     for key in owner.wallets:
         print(owner.wallets[key])
+        await message.answer(str(owner.wallets[key]), reply_markup=start_kb())
+
+@router.message(Command("getbalance"))
+async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
+    owner: Owner = await session.get(Owner, message.from_user.id)
+    print(owner.wallets)
+    for key in owner.wallets:
+        try:
+            print(await owner.wallets[key].getBalance())
+        except HTTPError as e:
+            print(e)
+
         await message.answer(str(owner.wallets[key]), reply_markup=start_kb())
