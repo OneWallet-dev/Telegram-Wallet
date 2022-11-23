@@ -1,14 +1,10 @@
 from aiogram import Dispatcher
-import logging
-import os
-
 from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
 from Bot.handlers import start_hand, wallet_hand, return_hand
 from Bot.middleware.db import DbSession
-from Bot.utilts.cleaner import Cleaner
 from Databases.DB_Postgres.session import create_session
 from Databases.DB_Redis import RedRedis
 from bata import Data
