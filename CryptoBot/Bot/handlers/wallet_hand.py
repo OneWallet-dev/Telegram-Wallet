@@ -108,7 +108,7 @@ async def send_money_confirm(message: Message, bot: Bot, state: FSMContext):
     data = await state.get_data()
     await state.update_data(amount=message.text)
     old_text = data.get('send_text').replace('\nСколько вы хотите отправить?', "")
-    text = old_text + f"Количество: <code>{message.text}</code>\n" + "\nЕсли все верно, подтвердите транзакцию:"
+    text = old_text + f"Количество: <code>{message.text}</code>\n" + "\nЕсли все верно, дважды подтвердите транзакцию:"
     await state.update_data(send_text=text)
     await bot.edit_message_text(text, message.chat.id, data.get("msg_sender"),
                                 reply_markup=send_money_confirm_kb(confirm_push=0))
@@ -124,14 +124,23 @@ async def send_money_confirm_pushs(callback: CallbackQuery, bot: Bot, state: FSM
                                         reply_markup=send_money_confirm_kb(confirm_push=conf_push))
 
 
-
 @router.callback_query(F.data == 'send_confirmed', StateFilter(WalletStates.send_money_confirm))
-async def send_money_really_end(callback: CallbackQuery,session: AsyncSession, bot: Bot, state: FSMContext):
+async def send_money_really_end(callback: CallbackQuery, session: AsyncSession, bot: Bot, state: FSMContext):
     await callback.answer()
-    owner: Owner = await session.get(Owner, callback.from_user.id)
-    chain = (await state.get_data()).get('wallet_chain')
-    target_adress = (await state.get_data()).get('target_adress')
-    amount = (await state.get_data()).get('amount')
-    wallet = owner.wallets.get(chain)
-    text = await wallet.createTransaction(session,target_adress,amount)
+    data = await state.get_data()
+    await bot.edit_message_reply_markup(callback.message.chat.id, data.get("msg_sender"),
+                                        reply_markup=send_money_confirm_kb(confirm_push=2))
+    try:
+        owner: Owner = await session.get(Owner, callback.from_user.id)
+        chain = (await state.get_data()).get('wallet_chain')
+        target_adress = (await state.get_data()).get('target_adress')
+        amount = (await state.get_data()).get('amount')
+        wallet = owner.wallets.get(chain)
+        text = await wallet.createTransaction(session, target_adress, amount)
+        result_for_keyboard = 3
+    except Exception as ex:
+        text = str(ex)
+        result_for_keyboard = 66
+    await bot.edit_message_reply_markup(callback.message.chat.id, data.get("msg_sender"),
+                                        reply_markup=send_money_confirm_kb(confirm_push=result_for_keyboard))
     await callback.message.answer(text)
