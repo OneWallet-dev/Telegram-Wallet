@@ -1,16 +1,20 @@
+from tkinter import Image
+
 from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove, InputFile, BufferedInputFile, InputMedia
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.wallet_filters import ChainOwned
+from Bot.handlers.loading_handler import loader
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, send_money_confirm_kb
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.cleaner import Cleaner
 from Bot.utilts.currency_helper import currencies
 from Bot.utilts.pretty_texts import pretty_balance
+from Bot.utilts.qr_code_generator import qr_code
 from Databases.DB_Postgres.models import Owner, Wallet
 
 router = Router()
@@ -31,9 +35,14 @@ async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncS
 
     wallet: Wallet = owner.wallets.get(callback.data)
     if wallet:
-        msg = await callback.message.answer(f'Вы владеете кошельком в сети <b>{callback.data}</b>.\n\n'
-                                            f'Публичный адрес:\n <code>{wallet.wallet_address}</code>',
-                                            reply_markup=use_wallet_kb())
+        qr = await qr_code(wallet.wallet_address)
+        img = BufferedInputFile(file=qr, filename=str(wallet.wallet_address) + ".PNG")
+
+        await callback.message.answer_photo(
+            photo=img, caption=f'Вы владеете кошельком в сети <b>{callback.data}</b>.\n\n'
+                               f'Публичный адрес:\n <code>{wallet.wallet_address}</code>',
+            reply_markup=use_wallet_kb()
+        )
         await state.update_data(wallet_chain=wallet.blockchain)
         await Cleaner.store(state, msg.message_id)
     else:
@@ -59,9 +68,14 @@ async def choose_currency(message: Message, state: FSMContext, session: AsyncSes
         return
     else:
         await state.set_state(WalletStates.use_wallet)
-        msg = await message.answer(f'Создан кошелек:\n\nПубличный адрес:\n <code>{str(wallet.wallet_address)}</code>',
-                                   reply_markup=use_wallet_kb())
-        await Cleaner.store(state, msg.message_id)
+        qr = await qr_code(wallet.wallet_address)
+        img = BufferedInputFile(file=qr, filename=str(wallet.wallet_address) + ".PNG")
+        await loader(chat_id=message.from_user.id, text="Генерация кошелька", time=3)
+        await message.answer_photo(
+            photo=img,
+            caption=f'<b>Кошелек успешно создан</b>\n\nПубличный адрес:\n<code>{str(wallet.wallet_address)}</code>',
+            reply_markup=use_wallet_kb()
+        )
 
 
 @router.message(F.text == "💸 Отправить деньги 💸", StateFilter(WalletStates.use_wallet))

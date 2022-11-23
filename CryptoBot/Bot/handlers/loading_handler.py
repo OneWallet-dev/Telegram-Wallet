@@ -17,7 +17,7 @@ async def loader(chat_id, text: str = '', time: int = 5, reply_markup: bool = No
             loader_bar[count] = "🟩"
             edit_text = text + '\n\n' + ''.join(loader_bar)
             await bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=edit_text)
-            await asyncio.sleep(len(loader_bar)/time)
+            await asyncio.sleep(time/len(loader_bar))
             if count == len(loader_bar) - 1:
                 await bot.delete_message(chat_id=chat_id, message_id=message_id)
                 return True
