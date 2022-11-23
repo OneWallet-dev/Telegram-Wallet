@@ -118,24 +118,53 @@ class Wallet(Base):
         cascade="all, delete-orphan", lazy="joined"
     )
 
-    # async def createTransaction(self,session: AsyncSession, to_wallet: String):
+    async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
+        APIKEY = os.getenv("API_KEY")  # <-----
+        WALLET_ID = os.getenv("WALLET_ID")
+        BASE = 'https://rest.cryptoapis.io'
+        BLOCKCHAIN = self.blockchain
+        NETWORK = "mainnet"
+        data = {
+            "context": f"{self.wallet_address}",
+            "data": {
+                "item": {
+                    "amount": f"{amount}",
+                    "feeLimit": "1000000000",
+                    "recipientAddress": f"{to_wallet}",
+                    "tokenIdentifier": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+                }
+            }
+        }
+        with requests.Session() as httpSession:
+            h = {'Content-Type': 'application/json',
+                 'X-API-KEY': APIKEY}
+            r = httpSession.post(
+                f'{BASE}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses/{self.wallet_address}/feeless-token-transaction-requests',
+                json=data,
+                headers=h)
+            r.raise_for_status()
+            transactionRequestId = r.json()["data"]["item"]["transactionRequestId"]
+            return f"Ваша транзакция создана. transactionRequestId {transactionRequestId}"
+
+    def __str__(self):
+        return self.wallet_address
 
     async def getBalance(self):
         BASE = 'https://apilist.tronscanapi.com/api/accountv2'
         with requests.Session() as httpSession:
             r = httpSession.get(
-                f'{BASE}?address=TNcsRFHwCE4qtg3QAujihWk7VY2DezVvKq')
+                f'{BASE}?address={self.wallet_address}')
             r.raise_for_status()
             user_tonens = dict()
             for token in r.json().get("withPriceTokens"):
                 balance = token.get("balance", "NoneBalance")
-                balance = float('{0:,}'.format(int(balance)).replace(',', '.')[:6])
+                balance = '{0:,}'.format(int(balance)).replace(',', '.')[:6]
                 user_tonens[token.get("tokenName", "NoneName")] = {
                     "tokenType": token.get("tokenType", "NoneType"),
                     "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
-                    "balance": float(f"{balance:.{3}f}"),
+                    "balance": balance
                 }
-            return user_tonens.items()
+            return user_tonens
 
     def __str__(self):
         return self.wallet_address

@@ -70,12 +70,12 @@ async def send_money_start(message: Message, state: FSMContext, session: AsyncSe
     owner: Owner = await session.get(Owner, message.from_user.id)
     wallet: Wallet = owner.wallets.get(chain)
     await state.set_state(WalletStates.send_money_start)
-    text = pretty_balance(wallet.balances) + "   \n\nЧто именно вы хотите отправить?"
-    msg = await message.answer(text, reply_markup=send_money_kb([token for token in wallet.balances]))
+    text = pretty_balance(await wallet.getBalance()) + "   \n\nЧто именно вы хотите отправить?"
+    msg = await message.answer(text, reply_markup=send_money_kb([token.upper() for token in await wallet.getBalance()]))
     await state.update_data(msg_sender=msg.message_id, send_text=text)
 
 
-@router.callback_query(F.data.in_(set(currencies.keys())), StateFilter(WalletStates.send_money_start))
+@router.callback_query(StateFilter(WalletStates.send_money_start))
 async def send_money_where(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await callback.answer()
     await state.set_state(WalletStates.send_money_where)
@@ -106,7 +106,7 @@ async def send_money_how_many(message: Message, bot: Bot, state: FSMContext):
 async def send_money_confirm(message: Message, bot: Bot, state: FSMContext):
     await state.set_state(WalletStates.send_money_confirm)
     data = await state.get_data()
-    await state.update_data(target_adress=message.text)
+    await state.update_data(amount=message.text)
     old_text = data.get('send_text').replace('\nСколько вы хотите отправить?', "")
     text = old_text + f"Количество: <code>{message.text}</code>\n" + "\nЕсли все верно, подтвердите транзакцию:"
     await state.update_data(send_text=text)
@@ -126,6 +126,12 @@ async def send_money_confirm_pushs(callback: CallbackQuery, bot: Bot, state: FSM
 
 
 @router.callback_query(F.data == 'send_confirmed', StateFilter(WalletStates.send_money_confirm))
-async def send_money_really_end(callback: CallbackQuery, bot: Bot, state: FSMContext):
+async def send_money_really_end(callback: CallbackQuery,session: AsyncSession, bot: Bot, state: FSMContext):
     await callback.answer()
-    await callback.message.answer("Деньги отравлены, удалить все техсообщения.")
+    owner: Owner = await session.get(Owner, callback.from_user.id)
+    chain = (await state.get_data()).get('wallet_chain')
+    target_adress = (await state.get_data()).get('target_adress')
+    amount = (await state.get_data()).get('amount')
+    wallet = owner.wallets.get(chain)
+    text = await wallet.createTransaction(session,target_adress,amount)
+    await callback.message.answer(text)
