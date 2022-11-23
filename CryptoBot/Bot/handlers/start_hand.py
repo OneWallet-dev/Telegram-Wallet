@@ -45,17 +45,12 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("getbalance"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    owner = await session.get(Owner, message.from_user.id)
+    owner: Owner = await session.get(Owner, message.from_user.id)
     print(owner.wallets)
-    text = "Ваш баланс: \n\n"
     for key in owner.wallets:
-        address_info = await owner.wallets[key].getBalance()
-        text = f"Ваш баланс на кошельке: <code>{owner.wallets[key]}</code>\n\n"
         try:
-            for name, info in address_info:
-                text = text + f"<b>Токен:</b> <code>{name}</code>\n\n" \
-                              f"<b>Баланс:</b> <code>{info.get('balance')}</code>\n\n－－－－－－－－－－－－\n"
+            print(await owner.wallets[key].getBalance())
         except HTTPError as e:
             print(e)
 
-    await message.answer(text, reply_markup=start_kb())
+        await message.answer(str(owner.wallets[key]), reply_markup=start_kb())
