@@ -120,11 +120,11 @@ class Wallet(Base):
 
     # async def createTransaction(self,session: AsyncSession, to_wallet: String):
 
-    def getBalance(self):
+    async def getBalance(self):
         BASE = 'https://apilist.tronscanapi.com/api/accountv2'
-        with self.Session() as httpSession:
+        with requests.Session() as httpSession:
             r = httpSession.get(
-                f'{BASE}?address={self.wallet_address}')
+                f'{BASE}?address=TNcsRFHwCE4qtg3QAujihWk7VY2DezVvKq')
             r.raise_for_status()
             user_tonens = dict()
             for token in r.json().get("withPriceTokens"):
@@ -135,7 +135,7 @@ class Wallet(Base):
                     "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
                     "balance": float(f"{balance:.{3}f}"),
                 }
-            return user_tonens
+            return user_tonens.items()
 
     def __str__(self):
         return self.wallet_address
