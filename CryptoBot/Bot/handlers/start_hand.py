@@ -21,10 +21,12 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 
 async def main_menu(message: Message, state: FSMContext, bot: Bot):
+    await state.clear()
     await state.set_state(MainState.welcome_state)
     bot_name = (await bot.get_me()).full_name
     await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
                          'Чем я могу вам помочь?', reply_markup=start_kb())
+
 
 @router.message(Command("generate"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
