@@ -165,6 +165,3 @@ class Wallet(Base):
                     "balance": balance
                 }
             return user_tonens
-
-    def __str__(self):
-        return self.wallet_address
