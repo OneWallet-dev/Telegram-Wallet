@@ -38,6 +38,8 @@ services:
     depends_on:
       - postgres
       - redis
+    ports:
+      - "81:81"
     volumes:
       - ../CryptoBot:/CryptoBot
     networks:

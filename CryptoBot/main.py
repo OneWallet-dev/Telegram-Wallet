@@ -1,5 +1,4 @@
 import asyncio
-
 from Bot.bot import bot_start
 
 if __name__ == '__main__':

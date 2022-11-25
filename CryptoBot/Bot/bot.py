@@ -9,11 +9,12 @@ from Databases.DB_Postgres.session import create_session
 from Databases.DB_Redis import RedRedis
 from bata import Data
 
-BotLogger()
 storage = RedisStorage.from_url(RedRedis.states_base_url())
 dp = Dispatcher(storage=storage)
 
 async def bot_start():
+    BotLogger()
+
     bot = Data.main_bot
     bot_info = await bot.get_me()
 
