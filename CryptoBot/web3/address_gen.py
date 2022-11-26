@@ -6,13 +6,9 @@ from typing import Union
 
 
 class Wallet_web3:
-    def __init__(self, mnemonic: str = None, language: str = "english", strength: int = 256):
+    def __init__(self, language: str = "english", strength: int = 256):
         self.language = language
         self.strength = strength
-        if mnemonic is None:
-            self.__MNEMONIC: str = generate_mnemonic(language="english", strength=256)
-        else:
-            self.__MNEMONIC: str == mnemonic
 
     async def generate_address(
             self,
@@ -20,8 +16,9 @@ class Wallet_web3:
             number_of_addresses: int = 1,
             passphrase: str | None = None
     ) -> dict:
+        mnemonic = generate_mnemonic(language="english", strength=256)
         bip44_hdwallet: BIP44HDWallet = BIP44HDWallet(cryptocurrency=cryptocurrency)
-        bip44_hdwallet.from_mnemonic(mnemonic=self.__MNEMONIC, language=self.language, passphrase=passphrase)
+        bip44_hdwallet.from_mnemonic(mnemonic=mnemonic, language=self.language, passphrase=passphrase)
         bip44_hdwallet.clean_derivation()
 
         wallet = dict()

@@ -5,23 +5,11 @@ from tronpy.providers.async_http import AsyncHTTPProvider
 
 
 class Tron_wallet:
-    def __init__(self, network: str = 'nile', api_key: str | list[str] | None = None,
-                 timeout: float = 10.0):
+    def __init__(self, network: str = 'nile', api_key: str | list[str] | None = None, timeout: float = 10.0):
         self.api_key = api_key
         self.network = network
         self.__fee_limit = 10000000
         self.timeout = timeout
-
-    async def generate_address(self) -> dict:
-        provider = AsyncHTTPProvider(api_key=self.api_key)
-        async with AsyncTron(network=self.network, provider=provider) as client:
-            address = client.generate_address()
-            wallet = dict()
-            wallet['address'] = address.get("base58check_address")
-            wallet['hex_address'] = address.get("hex_address")
-            wallet['private_key'] = address.get("private_key")
-            wallet['public_key'] = address.get("public_key")
-            return wallet
 
     async def TRX_tron_transfer(self, private_key: str, from_address: str, to_address: str, amount: int):
         priv_key = PrivateKey(bytes.fromhex(private_key))
@@ -66,4 +54,4 @@ class Tron_wallet:
         except BadAddress as er:
             return {"Error": "701", "message": er}
         except Exception as er:
-            return {"Error": "701", "message": f"BadAdress('{address}') OR token not found"}
+            return {"Error": "701", "message": f"BadAdress('{address}') OR token not found {er}"}
