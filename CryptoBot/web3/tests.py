@@ -28,7 +28,7 @@ async def main():
     # trc20 transfer
     th_id = await tron_wallet.trc20_transfer(private_key=private_key, contract=USDT_TRC20,
                                      from_address=adress,
-                                     to_address="TTetszCQU2E35nS6u6Qaf8MmB2yZbkTe4x", amount=10000)
+                                     to_address="TNcsRFHwCE4qtg3QAujihWk7VY2DezVvKq", amount=10000)
     print(th_id)
 
 
