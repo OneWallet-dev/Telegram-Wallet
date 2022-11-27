@@ -1,6 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
+
 def back_button(some_kb_func):
     def wrap(*args, **kwargs):
         text = '⬅️ Назад'
@@ -11,4 +12,5 @@ def back_button(some_kb_func):
         elif isinstance(keyboard, ReplyKeyboardMarkup):
             keyboard.keyboard.append([KeyboardButton(text=text)])
         return keyboard
+
     return wrap

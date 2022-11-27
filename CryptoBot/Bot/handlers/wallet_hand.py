@@ -11,7 +11,7 @@ from Bot.handlers.loading_handler import loader
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, send_money_confirm_kb
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates, WalletSendMoney
-from Bot.utilts.cleaner import Cleaner
+from Bot.utilts.mmanager import MManager
 from Bot.utilts.currency_helper import currencies
 from Bot.utilts.pretty_texts import pretty_balance
 from Bot.utilts.qr_code_generator import qr_code
@@ -21,10 +21,9 @@ router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates, WalletSendMoney))
 
 
-@router.message(F.text == "💹 Кошельки", StateFilter(MainState.welcome_state))
-async def choose_currency(message: Message, state: FSMContext):
-    await message.answer('Выберите криптовалюту, с которой вы хотите совершать операции:',
-                         reply_markup=currency_kb())
+@router.callback_query(F.data == "add_token")
+async def add_token(message: Message, state: FSMContext):
+    await message.answer('Выберите токен, который вы хотите добавить', reply_markup=token_kb())
 
 
 @router.callback_query(ChainOwned(), (F.data.in_(set(currencies.values()))))
@@ -54,7 +53,7 @@ async def do_you_want_it(callback: CallbackQuery, state: FSMContext):
     await state.set_state(WalletStates.create_wallet)
     msg = await callback.message.answer(f'У вас нет кошелька в сети <b>{callback.data}</b>. Хотите завести?\n\n',
                                         reply_markup=create_wallet_kb(callback.data))
-    await Cleaner.store(state, msg.message_id)
+    await MManager.garbage_store(state, msg.message_id)
 
 
 @router.message(F.text.startswith("🪙 Открыть кошелек в сети"), StateFilter(WalletStates.create_wallet))
@@ -79,7 +78,7 @@ async def choose_currency(message: Message, state: FSMContext, session: AsyncSes
 
 @router.message(F.text == "💸 Отправить деньги 💸", StateFilter(WalletStates.use_wallet, WalletSendMoney))
 async def send_money_start(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
-    await Cleaner.store(state, message.message_id)
+    await MManager.garbage_store(state, message.message_id)
     data = await state.get_data()
     chain = data.get('wallet_chain')
     owner: Owner = await session.get(Owner, message.from_user.id)
@@ -105,7 +104,7 @@ async def send_money_where(callback: CallbackQuery, bot: Bot, state: FSMContext)
 
 @router.message(StateFilter(WalletSendMoney.send_money_where))
 async def send_money_how_many(message: Message, bot: Bot, state: FSMContext):
-    await Cleaner.store(state, message.message_id)
+    await MManager.garbage_store(state, message.message_id)
     await state.set_state(WalletSendMoney.send_money_how_many)
     data = await state.get_data()
     await state.update_data(target_adress=message.text)
@@ -127,7 +126,7 @@ async def send_money_confirm(message: Message, bot: Bot, state: FSMContext):
         await message.answer('Пожалуйста, введите отправьте корректное число.')
         return
 
-    await Cleaner.store(state, message.message_id)
+    await MManager.garbage_store(state, message.message_id)
     await state.set_state(WalletSendMoney.send_money_confirm)
     data = await state.get_data()
     old_text = data.get('send_text').replace('\nСколько вы хотите отправить?', "")
@@ -168,4 +167,4 @@ async def send_money_really_end(callback: CallbackQuery, session: AsyncSession, 
                                         reply_markup=send_money_confirm_kb(confirm_push=result_for_keyboard))
     await callback.message.answer(text)
     await state.set_state(WalletStates.use_wallet)
-    await Cleaner.clean(state, bot, callback.message.chat.id)
+    await MManager.clean(state, bot, callback.message.chat.id)

@@ -3,6 +3,7 @@ import os
 
 import requests
 from aiogram.types import User
+from cryptography.hazmat.primitives import hashes
 from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
@@ -18,7 +19,6 @@ Base = declarative_base()
 Base_api = 'https://rest.cryptoapis.io'
 API_version = "/v2"
 Base_api = Base_api + API_version
-
 
 
 class Transaction(Base):
@@ -45,7 +45,6 @@ class Owner(Base):
         collection_class=attribute_mapped_collection("blockchain"),
         cascade="all, delete-orphan", lazy="joined"
     )
-
 
     async def createWallet(self, session: AsyncSession, blockchain: str):
         isExist: bool = False
@@ -87,10 +86,11 @@ class Owner(Base):
             return "У вас уже есть кошелек в данной сети!"
 
     @staticmethod
-    async def register(session: AsyncSession, user: User):
+    async def register(session: AsyncSession, user: User, password: str | None = None):
         """ For new users """
+        password = Owner._password_encode(password)
         try:
-            stmt = insert(Owner).values(id=user.id, username=user.username)
+            stmt = insert(Owner).values(id=user.id, username=user.username, password=password)
             do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
@@ -107,16 +107,39 @@ class Owner(Base):
             ).options(selectinload(Owner.wallets)))
         return result.scalars().first()
 
+    @staticmethod
+    async def password_check(session: AsyncSession, user: User, text: str):
+        owner: Owner = await Owner.get(session, user)
+        phash = Owner._password_encode(text)
+        print(owner.password)
+        print(phash)
+        return True if owner.password == phash else False
+
+    @staticmethod
+    def _password_encode(text: str):
+        digest = hashes.Hash(hashes.SHA256())
+        digest.update(bytes(text, "UTF-8"))
+        result = digest.finalize()
+        return str(result)
+
+
 
 class Wallet(Base):
     __tablename__ = "wallets"
 
     wallet_address = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
+    # TODO: Вероятно устарело
     blockchain = Column(String)
     network = Column(String)
+
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                   ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+    currencies = relationship(
+        "Currency",
+        collection_class=attribute_mapped_collection("id"),
+        cascade="all, delete-orphan", lazy="joined"
+    )
     transactions = relationship(
         "Transaction",
         collection_class=attribute_mapped_collection("id"),
@@ -170,3 +193,13 @@ class Wallet(Base):
                     "balance": balance
                 }
             return user_tonens
+
+
+class Currency(Base):
+    __tablename__ = "currencies"
+
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    wallet = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+                    ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
+    token = Column(String)
+    network = Column(String)

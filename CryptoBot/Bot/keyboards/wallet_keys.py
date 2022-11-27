@@ -5,6 +5,24 @@ from Bot.keyboards.base_keys import back_button
 from Bot.utilts.currency_helper import currencies
 
 
+def main_wallet_keys():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"Добавить токен", callback_data="add_token")))
+    mark.row((InlineKeyboardButton(text=f"Удалить токен", callback_data="delete_token")))
+    mark.row((InlineKeyboardButton(text=f"Детальный вид", callback_data="inspect_token")))
+    mark.adjust(2, 1)
+    return mark.as_markup(resize_keyboard=True)
+
+
+def token_kb(custom_token_list: list | None = None):
+    mark = InlineKeyboardBuilder()
+    t_list = custom_token_list if custom_token_list else currencies.keys()
+    for token in t_list:
+        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"new_{token}")))
+    mark.adjust(2)
+    return mark.as_markup(resize_keyboard=True)
+
+
 def currency_kb():
     mark = InlineKeyboardBuilder()
     for currency in currencies:
@@ -26,6 +44,7 @@ def use_wallet_kb():
     mark = ReplyKeyboardBuilder()
     mark.row((KeyboardButton(text=f"💸 Отправить деньги 💸")))
     return mark.as_markup(resize_keyboard=True)
+
 
 @back_button
 def AML_menu():
