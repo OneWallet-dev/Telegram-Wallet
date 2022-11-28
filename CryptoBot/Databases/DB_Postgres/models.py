@@ -22,32 +22,24 @@ API_version = "/v2"
 Base_api = Base_api + API_version
 
 association_table = Table(
-    "wallets_tokens",
+    "address_tokens",
     Base.metadata,
-    Column("wallet_id", ForeignKey("wallets.wallet_address"), primary_key=True),
-    Column("token_id", ForeignKey("tokens.id"), primary_key=True),
+    Column("address", ForeignKey("addresses.address"), primary_key=True),
+    Column("contract_Id", ForeignKey("tokens.contract_Id"), primary_key=True),
 )
 
 
 class Wallet(Base):
     __tablename__ = "wallets"
 
-    wallet_address = Column(String, primary_key=True, unique=True)
-    # TODO: Вероятно устарело
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    mnemonic = Column(String)
     blockchain = Column(String)
-    network = Column(String)
-
-    date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    user = Column(String,
-                  ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+    owner_id = Column(String, ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
     addresses = relationship(
         "Address",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
-    )
-
-    tokens = relationship(
-        "Token", secondary=association_table, back_populates="wallets", lazy="joined"
     )
 
 
@@ -56,11 +48,9 @@ class Transaction(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     amount = Column(Float)
-    from_wallet = Column(String)
+    from_wallet = Column(String, ForeignKey('addresses.address', onupdate="CASCADE", ondelete="CASCADE"))
     to_wallet = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    wallet_address = Column(String,
-                            ForeignKey('addresses.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Owner(Base):
@@ -77,43 +67,7 @@ class Owner(Base):
     )
 
     async def createWallet(self, session: AsyncSession, blockchain: str):
-        isExist: bool = False
-        wallets: dict = self.wallets
-        if blockchain in wallets.keys():
-            isExist = True
-        if isExist == False:
-            APIKEY = os.getenv("API_KEY")  # <-----
-            WALLET_ID = os.getenv("WALLET_ID")
-            BLOCKCHAIN = blockchain
-            NETWORK = "mainnet"
-            data = {
-                "context": f"{self.id}",
-                "data": {
-                    "item": {
-                        "label": f"{self.id} - wallet"
-                    }
-                }
-            }
-            with requests.Session() as httpSession:
-                h = {'Content-Type': 'application/json',
-                     'X-API-KEY': APIKEY}
-                r = httpSession.post(
-                    f'{Base_api}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses?context=f{self.id}',
-                    json=data,
-                    headers=h)
-                r.raise_for_status()
-                wallet_dict = r.json()["data"]["item"]
-                wallet: Wallet = Wallet(wallet_address=wallet_dict["address"],
-                                        blockchain=BLOCKCHAIN,
-                                        network=NETWORK,
-                                        user=self.id)
-
-                session.add(wallet)
-                await session.commit()
-                await session.close()
-                return wallet
-        else:
-            return "У вас уже есть кошелек в данной сети!"
+        pass
 
     @staticmethod
     async def register(session: AsyncSession, user: User, password: str | None = None):
@@ -128,18 +82,6 @@ class Owner(Base):
         except IntegrityError:
             await session.rollback()
             raise
-
-    @staticmethod
-    async def __generate_wallets(session: AsyncSession, user: User):
-        pass
-
-    @staticmethod
-    async def get(session: AsyncSession, user: User):
-        result = await session.execute(
-            select(Owner).where(
-                Owner.id == user.id
-            ).options(selectinload(Owner.wallets)))
-        return result.scalars().first()
 
     @staticmethod
     async def password_check(session: AsyncSession, user: User, text: str):
@@ -161,7 +103,7 @@ class Owner(Base):
         wallets: dict[str, Wallet] = owner.wallets
         print(wallets)
         wall = wallets[network]
-        wall.tokens.append(Token(token_name=token, contractId=base_tokens[token]['contract_address']))
+        wall.tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
         session.add(wall)
         await session.commit()
 
@@ -169,9 +111,7 @@ class Owner(Base):
 class Token(Base):
     __tablename__ = "tokens"
 
-    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-    # TODO: Вероятно устарело
-    contractId = Column(String)
+    contract_Id = Column(String, primary_key=True)
     token_name = Column(String)
     wallets = relationship(
         "Wallet", secondary=association_table, back_populates="tokens", lazy="joined"
@@ -180,34 +120,16 @@ class Token(Base):
     def __str__(self):
         return self.wallet_address
 
-    # get_balance from tronscan
     async def getBalance(self):
-        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
-        with requests.Session() as httpSession:
-            r = httpSession.get(
-                f'{BASE}?address={self.wallet_address}')
-            r.raise_for_status()
-
-            user_tonens = dict()
-            for token in r.json().get("withPriceTokens"):
-                balance = token.get("balance", "NoneBalance")
-                balance = '{0:,}'.format(int(balance)).replace(',', '.')[:6]
-                user_tonens[token.get("tokenName", "NoneName")] = {
-                    "tokenType": token.get("tokenType", "NoneType"),
-                    "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
-                    "balance": balance
-                }
-            return user_tonens
+        pass
 
 
 class Address(Base):
     __tablename__ = "addresses"
 
-    id = Column(String, primary_key=True, unique=True)
-    wallet = Column(String,
-                    ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
-    token = Column(String)
-    network = Column(String)
+    wallet_id = Column(String, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
+    address = Column(String)
+    private_key = Column(String)
 
     transactions = relationship(
         "Transaction",
@@ -215,29 +137,9 @@ class Address(Base):
         cascade="all, delete-orphan", lazy="joined"
     )
 
+    tokens = relationship(
+        "Token", secondary=association_table, back_populates="addresses.address", lazy="joined"
+    )
+
     async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
-        APIKEY = os.getenv("API_KEY")  # <-----
-        WALLET_ID = os.getenv("WALLET_ID")
-        BLOCKCHAIN = self.blockchain
-        NETWORK = "mainnet"
-        data = {
-            "context": f"{self.wallet_address}",
-            "data": {
-                "item": {
-                    "amount": f"{amount}",
-                    "feeLimit": "1000000000",
-                    "recipientAddress": f"{to_wallet}",
-                    "tokenIdentifier": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-                }
-            }
-        }
-        with requests.Session() as httpSession:
-            h = {'Content-Type': 'application/json',
-                 'X-API-KEY': APIKEY}
-            r = httpSession.post(
-                f'{Base_api}/wallet-as-a-service/wallets/{WALLET_ID}/{BLOCKCHAIN}/{NETWORK}/addresses/{self.wallet_address}/feeless-token-transaction-requests',
-                json=data,
-                headers=h)
-            r.raise_for_status()
-            transactionRequestId = r.json()["data"]["item"]["transactionRequestId"]
-            return f"Ваша транзакция создана. transactionRequestId {transactionRequestId}"
+        pass
