@@ -100,6 +100,10 @@ class Owner(Base):
             raise
 
     @staticmethod
+    async def __generate_wallets(session: AsyncSession, user: User):
+
+
+    @staticmethod
     async def get(session: AsyncSession, user: User):
         result = await session.execute(
             select(Owner).where(

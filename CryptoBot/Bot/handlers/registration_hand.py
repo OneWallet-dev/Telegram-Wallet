@@ -26,7 +26,7 @@ router.message.filter(StateFilter(RegistrationState))
 
 
 @MManager.garbage_manage()
-async def hello_world(message: Message, state: FSMContext):
+async def registration_start(message: Message, state: FSMContext):
     await state.set_state(RegistrationState.main)
     msg_garb = await message.answer("Здравствуйте.\nДля использования бота вам нужно установить сильный пароль.\n\n"
                                "Обратите внимание, что все пароли хранятся в зашифрованном виде, и в случае утери "

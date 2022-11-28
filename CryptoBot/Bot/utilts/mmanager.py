@@ -2,6 +2,7 @@ import asyncio
 import functools
 import inspect
 import json
+from contextlib import suppress
 
 from aiogram import Bot
 from aiogram.dispatcher.event.handler import HandlerObject
@@ -19,12 +20,15 @@ class MManager:
 
     @classmethod
     async def sticker_surf(cls, state: FSMContext, bot: Bot, chat_id: str | int, new_text: str | None = None,
-                           keyboard: InlineKeyboardMarkup | None = None, store_sticker: bool = True):
+                           keyboard: InlineKeyboardMarkup | None = None,
+                           store_sticker: bool = True, keep_old: bool = False):
         sticker_data: dict = (await state.get_data()).get(cls._stickerkey)
         msg_id = sticker_data.get("id")
         text = new_text if new_text else sticker_data.get("text")
         n_msg = await bot.send_message(chat_id, text, reply_markup=keyboard)
-        await bot.delete_message(chat_id, msg_id)
+        if not keep_old:
+            with suppress(TelegramBadRequest):
+                await bot.delete_message(chat_id, msg_id)
         if store_sticker:
             await MManager.sticker_store(state, n_msg)
 
@@ -38,6 +42,10 @@ class MManager:
         data = await state.get_data()
         sticky_dict = data.get(cls._stickerkey)
         return sticky_dict.get('text')
+
+    @classmethod
+    async def sticker_free(cls, state: FSMContext):
+        await state.update_data({cls._stickerkey: None})
 
     @classmethod
     def garbage_manage(cls, *, store: bool = True, clean: bool = False):

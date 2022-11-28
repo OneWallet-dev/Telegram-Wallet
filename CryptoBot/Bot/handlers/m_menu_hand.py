@@ -29,8 +29,12 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 
 
 @router.message(F.text == "💹 Мой кошелек")
-async def my_wallet_start(message: Message, state: FSMContext):
-    await state.set_state(WalletStates.choose_currency)
+async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSession):
+    await state.set_state(WalletStates.create_token)
+
+
+
+
     stick_msg = await message.answer('Список всех доступных криптовалют с балансом,'
                                      ' если валют нет, то сообщение о том, что валют нет',
                                      reply_markup=main_wallet_keys())

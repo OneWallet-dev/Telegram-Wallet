@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
-from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, send_money_confirm_kb
+from Bot.handlers.m_menu_hand import my_wallet_start
+from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \
+    send_money_confirm_kb, token_kb, network_kb
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates, WalletSendMoney
 from Bot.utilts.mmanager import MManager
@@ -22,11 +24,48 @@ router.message.filter(StateFilter(MainState.welcome_state, WalletStates, WalletS
 
 
 @router.callback_query(F.data == "add_token", StateFilter(WalletStates.create_token))
-async def add_token(message: Message, state: FSMContext):
-    await message.answer('Выберите токен, который вы хотите добавить', reply_markup=token_kb())
+async def add_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+    await bot.edit_message_text('Выберите токен, который вы хотите добавить:',
+                                chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id,
+                                reply_markup=token_kb())
 
 
-@router.callback_query(ChainOwned(), (F.data.in_(set(currencies.values()))))
+@router.callback_query(F.data.startswith("new_t"), StateFilter(WalletStates.create_token))
+async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+    token = callback.data.replace('new_t_', "")
+    text = f"Токен: <code>{token}</code>\n\n"
+    text += 'Выберите сеть из доступных для выбранного вами токена:'
+    await state.update_data(token=token)
+    await bot.edit_message_text(text=text,
+                                chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id,
+                                reply_markup=network_kb(token=token))
+
+
+@router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.create_token))
+async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    data = await state.get_data()
+    token = data.get('token')
+    network = callback.data.replace("new_n_", "")
+    if network in currencies.get(token).get("networks").get("main"):
+        # Здесь установить соответствие сети и сохранить связь токен-сеть в нужный кошелек.
+        await callback.answer('✅')
+        text = f"Добавлен:\n\n" \
+               f"Токен: <code>{token}</code>\n" \
+               f"В сети:  <code>{network}</code>\n" \
+               f"Баланс: <code>ВЫДАТЬ БАЛАНС</code>"
+    else:
+        await callback.answer('❌')
+        text = "К сожалению, добавить токен в этой сети не удалось. Попробуйте позже."
+    await bot.edit_message_text(text=text,
+                                chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id)
+    await my_wallet_start(callback.message, bot, state)
+
+
 async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
     await callback.answer()
     await state.set_state(WalletStates.use_wallet)
@@ -47,7 +86,7 @@ async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncS
         await do_you_want_it(callback, state)
 
 
-@router.callback_query(~ChainOwned(), (F.data.in_(set(currencies.values()))))
+@router.callback_query(~ChainOwned(), (F.data.in_(set(currencies.keys()))))
 async def do_you_want_it(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(WalletStates.create_wallet)
@@ -119,7 +158,6 @@ async def send_money_how_many(message: Message, bot: Bot, state: FSMContext):
 
 @router.message(StateFilter(WalletSendMoney.send_money_how_many))
 async def send_money_confirm(message: Message, bot: Bot, state: FSMContext):
-
     try:
         amount = float(message.text.replace(",", "."))
     except ValueError:

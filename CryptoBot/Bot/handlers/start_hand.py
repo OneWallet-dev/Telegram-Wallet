@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.m_menu_hand import main_menu
-from Bot.handlers.registration_hand import hello_world
+from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.utilts.mmanager import MManager
 from Databases.DB_Postgres.models import Owner, Wallet
@@ -24,7 +24,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     await MManager.garbage_store(state, message.message_id)
     user_check = await Owner.get(session, message.from_user)
     if not user_check:
-        await hello_world(message, state)
+        await registration_start(message, state)
     elif await NotAuthFilter()(message):
         await you_need_tb_authenticated(message, state)
     else:
