@@ -21,7 +21,7 @@ router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates, WalletSendMoney))
 
 
-@router.callback_query(F.data == "add_token")
+@router.callback_query(F.data == "add_token", StateFilter(WalletStates.create_token))
 async def add_token(message: Message, state: FSMContext):
     await message.answer('Выберите токен, который вы хотите добавить', reply_markup=token_kb())
 

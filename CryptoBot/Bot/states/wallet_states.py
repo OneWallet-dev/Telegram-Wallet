@@ -2,6 +2,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class WalletStates(StatesGroup):
+    create_token = State()
     choose_currency = State()
     create_wallet = State()
     use_wallet = State()

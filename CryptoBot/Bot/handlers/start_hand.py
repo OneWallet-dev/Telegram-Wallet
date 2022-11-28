@@ -5,6 +5,8 @@ from aiogram.types import Message
 from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from Bot.filters.auth_filter import NotAuthFilter
+from Bot.handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.handlers.registration_hand import hello_world
 from Bot.keyboards.main_keys import main_menu_kb
@@ -23,6 +25,8 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     user_check = await Owner.get(session, message.from_user)
     if not user_check:
         await hello_world(message, state)
+    elif await NotAuthFilter()(message):
+        await you_need_tb_authenticated(message, state)
     else:
         await main_menu(message, state, bot)
 
