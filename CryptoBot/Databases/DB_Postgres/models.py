@@ -193,7 +193,7 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(String, primary_key=True, unique=True)
-    wallet = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+    wallet = Column(String,
                     ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
     token = Column(String)
     network = Column(String)
