@@ -76,6 +76,6 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    await Owner.add_currency(session, message.from_user, 'tron', 'aaaaa')
+    await Owner.add_currency(session, message.from_user, 'USDT', 'aaaa')
     """Please use this function if you want to test something new"""
     pass

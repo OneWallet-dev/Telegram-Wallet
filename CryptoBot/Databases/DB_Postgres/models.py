@@ -12,6 +12,7 @@ from sqlalchemy.orm import declarative_base, relationship, selectinload
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, StringEncryptedType
 
+from Bot.utilts.currency_helper import base_tokens
 from bata import Data
 
 Base = declarative_base()
@@ -155,14 +156,14 @@ class Owner(Base):
 
     @staticmethod
     async def add_currency(session: AsyncSession, user: User, token: str, network: str):
-        owner: Owner = await session.get(Owner.id, str(user.id))
+        owner: Owner = await session.get(Owner, str(user.id))
         print(owner)
-        wallets: dict[str, Wallet] = Owner.wallets
-        for wallet in wallets:
-            wall = wallets[wallet]
-            wall.tokens.append(Token(token_name=token, contractId=base_tokens[token]['contract_address']))
-            session.add(p)
-            await session.commit()
+        wallets: dict[str, Wallet] = owner.wallets
+        print(wallets)
+        wall = wallets[network]
+        wall.tokens.append(Token(token_name=token, contractId=base_tokens[token]['contract_address']))
+        session.add(wall)
+        await session.commit()
 
 
 class Token(Base):
