@@ -3,7 +3,8 @@ from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
-from Bot.handlers import start_hand, wallet_hand, return_hand, AML_check, m_menu_hand, registration_hand
+from Bot.handlers import start_hand, wallet_hand, return_hand, AML_check, m_menu_hand, registration_hand, auth_hand
+from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.db import DbSession
 from Databases.DB_Postgres.session import create_session
 from Databases.DB_Redis import RedRedis
@@ -25,9 +26,11 @@ async def bot_start():
     session_db = await create_session()
     dp.message.middleware(DbSession(session_db))
     dp.callback_query.middleware(DbSession(session_db))
+    dp.message.middleware(AliveMiddleware())
 
     dp.include_router(start_hand.router)
     dp.include_router(registration_hand.router)
+    dp.include_router(auth_hand.router)
 
     dp.include_router(m_menu_hand.router)
 

@@ -33,6 +33,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     wallet = await owner.createWallet(blockchain="tron", session=session)
     await message.answer(str(wallet), reply_markup=main_menu_kb())
 
+
 @router.message(Command("getMyWallets"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     owner: Owner = await session.get(Owner, message.from_user.id)
@@ -40,6 +41,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     for key in owner.wallets:
         print(owner.wallets[key])
         await message.answer(str(owner.wallets[key]), reply_markup=main_menu_kb())
+
 
 @router.message(Command("getbalance"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
@@ -53,16 +55,17 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
         await message.answer(str(owner.wallets[key]), reply_markup=main_menu_kb())
 
+
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     owner: Owner = await session.get(Owner, message.from_user.id)
     print(owner.wallets)
     for key in owner.wallets:
-        if owner.wallets[key].blockchain=="tron":
+        if owner.wallets[key].blockchain == "tron":
             my_wallet: Wallet = owner.wallets[key]
             break
 
-    text = await my_wallet.createTransaction(session,"TY1Qry1UD6YG6qWMqPz45jkNWKzzisCkTT",5)
+    text = await my_wallet.createTransaction(session, "TY1Qry1UD6YG6qWMqPz45jkNWKzzisCkTT", 5)
     await message.answer(text, reply_markup=main_menu_kb())
 
 

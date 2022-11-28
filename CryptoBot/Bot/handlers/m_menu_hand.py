@@ -19,12 +19,13 @@ router.message.filter(~StateFilter(TransState))
 
 async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
     message = update if isinstance(update, Message) else update.message
+    await MManager.clean(state, bot, message.chat.id)
     await state.clear()
     await state.set_state(MainState.welcome_state)
     bot_name = (await bot.get_me()).full_name
-    await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
-                         'Чем я могу вам помочь?', reply_markup=main_menu_kb())
-
+    stick_msg = await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
+                                     'Чем я могу вам помочь?', reply_markup=main_menu_kb())
+    await MManager.sticker_store(state, stick_msg)
 
 
 @router.message(F.text == "💹 Мой кошелек")
@@ -46,5 +47,3 @@ async def my_wallet_start(message: Message, bot: Bot, state: FSMContext):
 async def my_wallet_start(message: Message, bot: Bot, state: FSMContext):
     stick_msg = await message.answer('Совершение и контроль транзакций',
                                      reply_markup=main_wallet_keys())
-
-

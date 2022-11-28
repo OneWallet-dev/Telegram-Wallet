@@ -30,3 +30,26 @@ class RedRedis:
         for currency in currencies:
             await self.data_redis.sadd(self.user_currency_cache_key.format(user=user_id), currency)
         await self.data_redis.expire(self.user_currency_cache_key.format(user=user_id), self.cache_time)
+
+
+class DataRedis(RedRedis):
+    auth_key = "authorized"
+
+    @classmethod
+    async def set_data(cls, key: str, value: str | int, ttl: int = None):
+        return await cls.data_redis.set(key, value, ex=ttl)
+
+    @classmethod
+    async def get_data(cls, key: str):
+        return await cls.data_redis.get(key)
+
+    @classmethod
+    async def update_user_life(cls, user_id: int):
+        alive_state = await cls.get_data(f"Users: {user_id}: {cls.auth_key}")
+        new_value = alive_state if alive_state else "False"
+        await cls.set_data(f"Users: {user_id}: {cls.auth_key}", new_value, ttl=600)
+        return alive_state
+
+    @classmethod
+    async def authorize(cls, user_id: int):
+        await cls.set_data(f"Users: {user_id}: {cls.auth_key}", "True", ttl=600)

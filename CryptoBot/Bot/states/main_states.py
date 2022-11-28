@@ -10,3 +10,7 @@ class RegistrationState(StatesGroup):
     main = State()
     check = State()
     approve = State()
+
+
+class AuthState(StatesGroup):
+    need_auth = State()

@@ -87,9 +87,9 @@ class MManager:
     @classmethod
     async def clean(cls, state: FSMContext, bot: Bot, chat_id: str | int):
         msg_list = (await state.get_data()).get(cls._garbagekey, [])
-        for msg_id in msg_list[::-1]:
-            try:
-                await asyncio.create_task(bot.delete_message(chat_id, msg_id))
-            except TelegramBadRequest:
-                pass
+        corutines = [bot.delete_message(chat_id, message_id) for message_id in msg_list[::-1]]
+        try:
+            await asyncio.gather(*corutines, return_exceptions=True)
+        except TelegramBadRequest:
+            pass
         await state.update_data({cls._garbagekey: []})
