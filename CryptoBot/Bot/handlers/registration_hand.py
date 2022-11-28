@@ -59,7 +59,7 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 @MManager.garbage_manage(clean=True)
 async def registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
     password = (await state.get_data()).get("password")
-    await Owner.register(session, user=callback.from_user, password)
+    await Owner.register(session=session, user=callback.from_user, password=password)
     await session.commit()
     await session.close()
     # await Owner.register(session, callback.from_user, password=password)
