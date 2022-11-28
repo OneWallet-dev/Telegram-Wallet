@@ -38,7 +38,7 @@ class Wallet(Base):
     owner_id = Column(String, ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
     addresses = relationship(
         "Address",
-        collection_class=attribute_mapped_collection("id"),
+        collection_class=attribute_mapped_collection("address"),
         cascade="all, delete-orphan", lazy="joined"
     )
 
@@ -78,7 +78,8 @@ class Owner(Base):
             do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
-            return await Owner.get(session, user)
+            owner: Owner = await session.get(Owner, str(user.id))
+            return owner
         except IntegrityError:
             await session.rollback()
             raise
@@ -99,11 +100,11 @@ class Owner(Base):
     @staticmethod
     async def add_currency(session: AsyncSession, user: User, token: str, network: str):
         owner: Owner = await session.get(Owner, str(user.id))
-        print(owner)
         wallets: dict[str, Wallet] = owner.wallets
-        print(wallets)
         wall = wallets[network]
-        wall.tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
+        print(wall.addresses)
+        for address in wall.addresses:
+            wall.addresses[address].tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
         session.add(wall)
         await session.commit()
 
@@ -131,12 +132,6 @@ class Address(Base):
     private_key = Column(String)
 
     wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
-
-    transactions = relationship(
-        "Transaction`",
-        collection_class=attribute_mapped_collection("id"),
-        cascade="all, delete-orphan", lazy="joined"
-    )
 
     tokens = relationship(
         "Token", secondary=association_table, back_populates="addresses", lazy="joined"
