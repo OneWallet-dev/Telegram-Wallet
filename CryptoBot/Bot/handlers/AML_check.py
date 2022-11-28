@@ -11,7 +11,7 @@ from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.currency_helper import currencies
+from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
 from Databases.DB_Postgres.models import Owner, Wallet
 

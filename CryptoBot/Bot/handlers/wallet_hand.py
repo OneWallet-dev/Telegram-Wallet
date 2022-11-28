@@ -14,7 +14,7 @@ from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates, WalletSendMoney
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.currency_helper import currencies
+from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
 from Bot.utilts.qr_code_generator import qr_code
 from Databases.DB_Postgres.models import Owner, Wallet
@@ -46,11 +46,11 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 
 @router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.create_token))
-async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     data = await state.get_data()
     token = data.get('token')
     network = callback.data.replace("new_n_", "")
-    if network in currencies.get(token).get("networks").get("main"):
+    if network in base_tokens.get(token).get("network"):
         # Здесь установить соответствие сети и сохранить связь токен-сеть в нужный кошелек.
         await callback.answer('✅')
         text = f"Добавлен:\n\n" \
@@ -63,7 +63,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await bot.edit_message_text(text=text,
                                 chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id)
-    await my_wallet_start(callback.message, bot, state)
+    await my_wallet_start(callback.message, state, session)
 
 
 async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
@@ -86,7 +86,7 @@ async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncS
         await do_you_want_it(callback, state)
 
 
-@router.callback_query(~ChainOwned(), (F.data.in_(set(currencies.keys()))))
+@router.callback_query(~ChainOwned(), (F.data.in_(set(base_tokens.keys()))))
 async def do_you_want_it(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(WalletStates.create_wallet)

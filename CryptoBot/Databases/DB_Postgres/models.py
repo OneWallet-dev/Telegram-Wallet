@@ -26,6 +26,8 @@ association_table = Table(
     Column("wallet_id", ForeignKey("wallets.wallet_address"), primary_key=True),
     Column("token_id", ForeignKey("tokens.id"), primary_key=True),
 )
+
+
 class Wallet(Base):
     __tablename__ = "wallets"
 
@@ -57,7 +59,7 @@ class Transaction(Base):
     to_wallet = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     wallet_address = Column(String,
-                           ForeignKey('addresses.id', onupdate="CASCADE", ondelete="CASCADE"))
+                            ForeignKey('addresses.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Owner(Base):
@@ -67,12 +69,11 @@ class Owner(Base):
     username = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     datetime_come = Column(DateTime, default=datetime.datetime.now())
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
-    wallets: dict[str : Wallet] = relationship(
+    wallets: dict[str: Wallet] = relationship(
         "Wallet",
         collection_class=attribute_mapped_collection("blockchain"),
         cascade="all, delete-orphan", lazy="joined"
     )
-
 
     async def createWallet(self, session: AsyncSession, blockchain: str):
         isExist: bool = False
@@ -152,6 +153,17 @@ class Owner(Base):
         result = digest.finalize()
         return str(result)
 
+    @staticmethod
+    async def add_currency(session: AsyncSession, user: User, token: str, network: str):
+        owner: Owner = await session.get(Owner.id, str(user.id))
+        print(owner)
+        wallets: dict[str, Wallet] = Owner.wallets
+        for wallet in wallets:
+            wall = wallets[wallet]
+            wall.tokens.append(Token(token_name=token, contractId=base_tokens[token]['contract_address']))
+            session.add(p)
+            await session.commit()
+
 
 class Token(Base):
     __tablename__ = "tokens"
@@ -164,10 +176,6 @@ class Token(Base):
         "Wallet", secondary=association_table, back_populates="tokens", lazy="joined"
     )
 
-
-
-
-
     def __str__(self):
         return self.wallet_address
 
@@ -178,7 +186,6 @@ class Token(Base):
             r = httpSession.get(
                 f'{BASE}?address={self.wallet_address}')
             r.raise_for_status()
-
 
             user_tonens = dict()
             for token in r.json().get("withPriceTokens"):

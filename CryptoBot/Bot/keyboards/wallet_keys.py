@@ -2,7 +2,7 @@ from aiogram.types import KeyboardButton, InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 from Bot.keyboards.base_keys import back_button
-from Bot.utilts.currency_helper import currencies
+from Bot.utilts.currency_helper import base_tokens
 
 
 def main_wallet_keys():
@@ -16,7 +16,7 @@ def main_wallet_keys():
 
 def token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
-    t_list = custom_token_list if custom_token_list else currencies.keys()
+    t_list = custom_token_list if custom_token_list else base_tokens.keys()
     for token in t_list:
         mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"new_t_{token}")))
     mark.adjust(2)
@@ -25,17 +25,17 @@ def token_kb(custom_token_list: list | None = None):
 
 def network_kb(token: str, custom_network_list: list | None = None):
     mark = InlineKeyboardBuilder()
-    n_list = custom_network_list if custom_network_list else currencies.get(token).get("networks").get("main")
+    n_list = custom_network_list if custom_network_list else base_tokens.get(token).get("network")
     for network in n_list:
-        mark.row((InlineKeyboardButton(text=f"{network} ({n_list[network]})", callback_data=f"new_n_{network}")))
+        mark.row((InlineKeyboardButton(text=f"{network}", callback_data=f"new_n_{network}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 
 
 def currency_kb():
     mark = InlineKeyboardBuilder()
-    for currency in currencies:
-        chain = currencies[currency]
+    for currency in base_tokens:
+        chain = base_tokens[currency]
         mark.row((InlineKeyboardButton(text=f"{currency} [{chain}]",
                                        callback_data=chain)))
     return mark.as_markup(resize_keyboard=True)
