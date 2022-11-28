@@ -101,7 +101,7 @@ class Owner(Base):
 
     @staticmethod
     async def __generate_wallets(session: AsyncSession, user: User):
-
+        pass
 
     @staticmethod
     async def get(session: AsyncSession, user: User):
