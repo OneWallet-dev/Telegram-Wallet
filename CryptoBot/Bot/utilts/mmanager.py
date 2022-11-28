@@ -18,16 +18,15 @@ class MManager:
     _stickerkey = 'sticker'
 
     @classmethod
-    async def sticker_surf(cls,
-                           new_text: str,
-                           state: FSMContext,
-                           bot: Bot,
-                           chat_id: str | int,
-                           keyboard: InlineKeyboardMarkup):
-        msg_id = int(((await state.get_data()).get(cls._stickerkey)).get("id"))
-        n_msg = await bot.send_message(chat_id, new_text, reply_markup=keyboard)
+    async def sticker_surf(cls, state: FSMContext, bot: Bot, chat_id: str | int, new_text: str | None = None,
+                           keyboard: InlineKeyboardMarkup | None = None, store_sticker: bool = True):
+        sticker_data: dict = (await state.get_data()).get(cls._stickerkey)
+        msg_id = sticker_data.get("id")
+        text = new_text if new_text else sticker_data.get("text")
+        n_msg = await bot.send_message(chat_id, text, reply_markup=keyboard)
         await bot.delete_message(chat_id, msg_id)
-        await MManager.sticker_store(state, n_msg)
+        if store_sticker:
+            await MManager.sticker_store(state, n_msg)
 
     @classmethod
     async def sticker_store(cls, state: FSMContext, sticker_message: Message):
@@ -35,7 +34,7 @@ class MManager:
                                                    "text": sticker_message.text}})
 
     @classmethod
-    async def sticker_text(cls, state: FSMContext):
+    async def sticker_text(cls, state: FSMContext) -> str:
         data = await state.get_data()
         sticky_dict = data.get(cls._stickerkey)
         return sticky_dict.get('text')
@@ -88,7 +87,7 @@ class MManager:
     @classmethod
     async def clean(cls, state: FSMContext, bot: Bot, chat_id: str | int):
         msg_list = (await state.get_data()).get(cls._garbagekey, [])
-        for msg_id in msg_list:
+        for msg_id in msg_list[::-1]:
             try:
                 await asyncio.create_task(bot.delete_message(chat_id, msg_id))
             except TelegramBadRequest:
