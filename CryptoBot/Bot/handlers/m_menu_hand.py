@@ -1,8 +1,6 @@
 from aiogram import Router, Bot, F
-from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.loading_handler import loader
@@ -12,7 +10,9 @@ from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
-from Databases.DB_Postgres.models import Owner, Wallet, Address, Token
+from Dao.models.Owner import Owner
+from Dao.models.Wallet import Wallet
+from Dao.models.Address import Address
 from crypto.address_gen import Wallet_web3
 
 router = Router()

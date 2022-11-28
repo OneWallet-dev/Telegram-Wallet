@@ -1,12 +1,9 @@
-from typing import Dict, Any
-
 from aiogram.filters import Filter
-from aiogram.types import Message, CallbackQuery
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.types import CallbackQuery
 
-from Databases.DB_Postgres.models import Owner
-from Databases.DB_Postgres.session import create_session
-from Databases.DB_Redis import RedRedis
+from Dao.models.Owner import Owner
+from Dao.DB_Postgres.session import create_session
+from Dao.DB_Redis import RedRedis
 
 
 class ChainOwned(Filter):
