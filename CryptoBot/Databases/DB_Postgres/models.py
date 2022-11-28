@@ -138,7 +138,7 @@ class Token(Base):
     contractId = Column(String)
     token_name = Column(String)
     wallets = relationship(
-        "Wallet", secondary=association_table, back_populates="tokens"
+        "Wallet", secondary=association_table, back_populates="tokens", lazy="joined"
     )
 
 class Wallet(Base):
@@ -159,7 +159,7 @@ class Wallet(Base):
     )
 
     tokens = relationship(
-        "Token", secondary=association_table, back_populates="wallets"
+        "Token", secondary=association_table, back_populates="wallets", lazy="joined"
     )
 
 
