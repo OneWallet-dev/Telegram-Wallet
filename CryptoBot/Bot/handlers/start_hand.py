@@ -11,7 +11,7 @@ from Bot.handlers.m_menu_hand import main_menu
 from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.utilts.mmanager import MManager
-from Databases.DB_Postgres.models import Owner, Wallet
+from Databases.DB_Postgres.models import Owner, Wallet, Token
 
 router = Router()
 
@@ -64,16 +64,14 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    owner: Owner = await session.get(Owner, message.from_user.id)
-    print(owner.wallets)
-    for key in owner.wallets:
-        if owner.wallets[key].blockchain == "tron":
-            my_wallet: Wallet = owner.wallets[key]
-            break
-
-    text = await my_wallet.createTransaction(session, "TY1Qry1UD6YG6qWMqPz45jkNWKzzisCkTT", 5)
-    await message.answer(text, reply_markup=main_menu_kb())
-
+   owner: Owner = Owner(id="123",username="testname", password = "asdasd")
+   token: Token = Token(contractId = "dwdwdqsdweeweqwe", token_name = "TRON")
+   owner.wallets["tron"] = Wallet(wallet_address="testadress")
+   wallet_tron: Wallet = owner.wallets["tron"]
+   wallet_tron.tokens.append(token)
+   session.add(owner)
+   await session.commit()
+   await session.close()
 
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
