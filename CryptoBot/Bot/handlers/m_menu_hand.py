@@ -42,14 +42,14 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     print(bitcoin)
 
     owner.wallets["tron"] = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
-    address: Address = Address(address=tron.get("address_0").get("address"), private_key=tron.get("private_key"))
+    address: Address = Address(address=tron.get("address_0").get("address"), private_key=tron.get("address_0").get("private_key"))
 
 
     owner.wallets["eth"] = Wallet(blockchain="eth", mnemonic=eth.get("mnemonic"))
-    address: Address = Address(address=eth.get("address_0").get("address"), private_key=eth.get("private_key"))
+    address: Address = Address(address=eth.get("address_0").get("address"), private_key=eth.get("address_0").get("private_key"))
 
     owner.wallets["bitcoin"] = Wallet(blockchain="bitcoin", mnemonic=bitcoin.get("mnemonic"))
-    address: Address = Address(address=bitcoin.get("address_0").get("address"), private_key=bitcoin.get("private_key"))
+    address: Address = Address(address=bitcoin.get("address_0").get("address"), private_key=bitcoin.get("address_0").get("private_key"))
 
 
     await session.commit()
