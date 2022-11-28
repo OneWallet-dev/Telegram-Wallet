@@ -20,6 +20,33 @@ Base_api = 'https://rest.cryptoapis.io'
 API_version = "/v2"
 Base_api = Base_api + API_version
 
+association_table = Table(
+    "wallets_tokens",
+    Base.metadata,
+    Column("wallet_id", ForeignKey("wallets.wallet_address"), primary_key=True),
+    Column("token_id", ForeignKey("tokens.id"), primary_key=True),
+)
+class Wallet(Base):
+    __tablename__ = "wallets"
+
+    wallet_address = Column(String, primary_key=True, unique=True)
+    # TODO: Вероятно устарело
+    blockchain = Column(String)
+    network = Column(String)
+
+    date_of_creation = Column(DateTime, default=datetime.datetime.now())
+    user = Column(String,
+                  ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+    addresses = relationship(
+        "Address",
+        collection_class=attribute_mapped_collection("id"),
+        cascade="all, delete-orphan", lazy="joined"
+    )
+
+    tokens = relationship(
+        "Token", secondary=association_table, back_populates="wallets", lazy="joined"
+    )
+
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -40,11 +67,12 @@ class Owner(Base):
     username = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     datetime_come = Column(DateTime, default=datetime.datetime.now())
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
-    wallets = relationship(
+    wallets: dict[str : Wallet] = relationship(
         "Wallet",
         collection_class=attribute_mapped_collection("blockchain"),
         cascade="all, delete-orphan", lazy="joined"
     )
+
 
     async def createWallet(self, session: AsyncSession, blockchain: str):
         isExist: bool = False
@@ -124,12 +152,7 @@ class Owner(Base):
         result = digest.finalize()
         return str(result)
 
-association_table = Table(
-    "wallets_tokens",
-    Base.metadata,
-    Column("wallet_id", ForeignKey("wallets.wallet_address"), primary_key=True),
-    Column("token_id", ForeignKey("tokens.id"), primary_key=True),
-)
+
 class Token(Base):
     __tablename__ = "tokens"
 
@@ -141,26 +164,6 @@ class Token(Base):
         "Wallet", secondary=association_table, back_populates="tokens", lazy="joined"
     )
 
-class Wallet(Base):
-    __tablename__ = "wallets"
-
-    wallet_address = Column(String, primary_key=True, unique=True)
-    # TODO: Вероятно устарело
-    blockchain = Column(String)
-    network = Column(String)
-
-    date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    user = Column(String,
-                  ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
-    addresses = relationship(
-        "Address",
-        collection_class=attribute_mapped_collection("id"),
-        cascade="all, delete-orphan", lazy="joined"
-    )
-
-    tokens = relationship(
-        "Token", secondary=association_table, back_populates="wallets", lazy="joined"
-    )
 
 
 
