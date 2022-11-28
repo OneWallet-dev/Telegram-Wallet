@@ -15,8 +15,8 @@ class Wallet_web3:
     async def generate_all_walllets(self, passphrase: str | None = None):
         wallets = dict()
         tron_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)
-        eth_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)
-        bitcoin_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)
+        eth_wallet = await self._generate_address(EthereumMainnet, passphrase=passphrase)
+        bitcoin_wallet = await self._generate_address(BitcoinMainnet, passphrase=passphrase)
         wallets["tron"] = tron_wallet
         wallets["eth"] = eth_wallet
         wallets["bitcoin"] = bitcoin_wallet
@@ -48,7 +48,3 @@ class Wallet_web3:
 
             bip44_hdwallet.clean_derivation()
         return wallet
-
-
-wallet = Wallet_web3()
-print(asyncio.run(wallet.generate_all_walllets()))

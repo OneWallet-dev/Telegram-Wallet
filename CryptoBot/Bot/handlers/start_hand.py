@@ -65,10 +65,11 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
    owner: Owner = await session.get(Owner, str(message.from_user.id))
-   token: Token = Token(contract_Id = "dwdwdqsdwe3123eweqwe", token_name = "TRON123")
+
    # owner.wallets["tron"] = Wallet(blockchain="tron")
-   address: Address = Address(address="adwdwdwd")
+   address: Address = Address(address="token_address")
    owner.wallets["tron123"] = Wallet(blockchain="tron")
+   token: Token = Token(contract_Id = "token_contract", token_name = "token_name")
    address.tokens.append(token)
    wallet_tron: Wallet = owner.wallets["tron123"]
    wallet_tron.addresses[address.address]=address

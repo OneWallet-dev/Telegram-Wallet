@@ -11,7 +11,8 @@ from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
-from Databases.DB_Postgres.models import Owner, Wallet
+from Databases.DB_Postgres.models import Owner, Wallet, Address, Token
+from crypto.address_gen import Wallet_web3
 
 router = Router()
 
@@ -30,6 +31,31 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 @router.message(F.text == "💹 Мой кошелек")
 async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSession):
     await state.set_state(WalletStates.create_token)
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
+    generator = Wallet_web3()
+    wallets = await generator.generate_all_walllets()
+    tron = wallets.get("tron", None)
+    eth = wallets.get("eth", None)
+    bitcoin = wallets.get("bitcoin", None)
+    print(tron)
+    print(eth)
+    print(bitcoin)
+
+    owner.wallets["tron"] = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
+    address: Address = Address(address=tron.get("address_0").get("address"), private_key=tron.get("private_key"))
+
+
+    owner.wallets["eth"] = Wallet(blockchain="eth", mnemonic=eth.get("mnemonic"))
+    address: Address = Address(address=eth.get("address_0").get("address"), private_key=eth.get("private_key"))
+
+    owner.wallets["bitcoin"] = Wallet(blockchain="bitcoin", mnemonic=bitcoin.get("mnemonic"))
+    address: Address = Address(address=bitcoin.get("address_0").get("address"), private_key=bitcoin.get("private_key"))
+
+
+    await session.commit()
+
+    await session.close()
+
     stick_msg = await message.answer('Список всех доступных криптовалют с балансом,'
                                      ' если валют нет, то сообщение о том, что валют нет',
                                      reply_markup=main_wallet_keys())
