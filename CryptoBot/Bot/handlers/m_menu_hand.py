@@ -5,6 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from Bot.handlers.loading_handler import loader
 from Bot.handlers.transaction_hand import transaction_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
@@ -40,9 +41,9 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     tron = wallets.get("tron", None)
     eth = wallets.get("eth", None)
     bitcoin = wallets.get("bitcoin", None)
-    Balance = 0
+    Balance = 0.00
     if owner.wallets.get("tron", None) is None:
-
+        await loader(message.from_user.id, "Выполняется генерация кошелька", 4)
         tronaddress: Address = Address(address=tron.get("address_0").get("address"), private_key=tron.get("address_0").get("private_key"))
         tronwallet = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
         tronwallet.addresses.update({tron.get("address_0").get("address"): tronaddress})
@@ -70,7 +71,6 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     bit_text = bit_text.format(bitcoin.get("address_0").get("address"), str(Balance))
     sep = "\n\n___________________\n\n"
     text = tron_text + sep + eth_text + sep + bit_text
-
     stick_msg = await message.answer(text, reply_markup=main_wallet_keys())
     await MManager.sticker_store(state, stick_msg)
 
