@@ -33,6 +33,7 @@ services:
     build:
       context: ../CryptoBot
       dockerfile: ./bot.dockerfile
+    command: bash -c 'python main.py'
     env_file: .env
     container_name: CryptoBot
     depends_on:

@@ -4,7 +4,7 @@ import os
 import requests
 from aiogram.types import User
 from cryptography.hazmat.primitives import hashes
-from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float
+from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float, Table
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,14 +29,14 @@ class Transaction(Base):
     from_wallet = Column(String)
     to_wallet = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    wallet_addres = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                           ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
+    wallet_address = Column(BigInteger,
+                           ForeignKey('addresses.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
 class Owner(Base):
     __tablename__ = "owners"
 
-    id = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
+    id = Column(String, primary_key=True, unique=True)
     username = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     datetime_come = Column(DateTime, default=datetime.datetime.now())
     password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
@@ -90,7 +90,7 @@ class Owner(Base):
         """ For new users """
         password = Owner._password_encode(password)
         try:
-            stmt = insert(Owner).values(id=user.id, username=user.username, password=password)
+            stmt = insert(Owner).values(id=str(user.id), username=user.username, password=password)
             do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
@@ -124,23 +124,42 @@ class Owner(Base):
         result = digest.finalize()
         return str(result)
 
+association_table = Table(
+    "wallets_tokens",
+    Base.metadata,
+    Column("wallet_id", ForeignKey("wallets.wallet_address"), primary_key=True),
+    Column("token_id", ForeignKey("tokens.id"), primary_key=True),
+)
+class Token(Base):
+    __tablename__ = "tokens"
 
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    # TODO: Вероятно устарело
+    contractId = Column(String)
+    token_name = Column(String)
+    wallets = relationship(
+        "Wallet", secondary=association_table, back_populates="tokens"
+    )
 
 class Wallet(Base):
     __tablename__ = "wallets"
 
-    wallet_address = Column(StringEncryptedType(String, Data.secret_key, AesEngine), primary_key=True, unique=True)
+    wallet_address = Column(String, primary_key=True, unique=True)
     # TODO: Вероятно устарело
     blockchain = Column(String)
     network = Column(String)
 
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+    user = Column(String,
                   ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
     addresses = relationship(
         "Address",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
+    )
+
+    tokens = relationship(
+        "Token", secondary=association_table, back_populates="wallets"
     )
 
 
@@ -170,10 +189,10 @@ class Wallet(Base):
             return user_tonens
 
 
-class Addresses(Base):
-    __tablename__ = "currencies"
+class Address(Base):
+    __tablename__ = "addresses"
 
-    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    id = Column(String, primary_key=True, unique=True)
     wallet = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                     ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
     token = Column(String)

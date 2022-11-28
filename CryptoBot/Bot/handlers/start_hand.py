@@ -22,7 +22,7 @@ router = Router()
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     await MManager.garbage_store(state, message.message_id)
-    user_check = await Owner.get(session, message.from_user)
+    user_check = await session.get(Owner, str(message.from_user.id))
     if not user_check:
         await registration_start(message, state)
     elif await NotAuthFilter()(message):
@@ -42,14 +42,14 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     owner: Owner = await session.get(Owner, message.from_user.id)
     print(owner.wallets)
-    for key in owner.wallets:
-        print(owner.wallets[key])
-        await message.answer(str(owner.wallets[key]), reply_markup=main_menu_kb())
+    # for key in owner.wallets:
+    #     print(owner.wallets[key])
+    #     await message.answer(str(owner.wallets[key]), reply_markup=main_menu_kb())
 
 
 @router.message(Command("getbalance"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    owner: Owner = await session.get(Owner, message.from_user.id)
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
     print(owner.wallets)
     for key in owner.wallets:
         try:
