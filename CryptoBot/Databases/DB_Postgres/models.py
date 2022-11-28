@@ -29,7 +29,7 @@ class Transaction(Base):
     from_wallet = Column(String)
     to_wallet = Column(String)
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
-    wallet_address = Column(BigInteger,
+    wallet_address = Column(String,
                            ForeignKey('addresses.id', onupdate="CASCADE", ondelete="CASCADE"))
 
 
