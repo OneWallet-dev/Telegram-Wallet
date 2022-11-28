@@ -137,11 +137,48 @@ class Wallet(Base):
     date_of_creation = Column(DateTime, default=datetime.datetime.now())
     user = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                   ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
-    currencies = relationship(
-        "Currency",
+    addresses = relationship(
+        "Address",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
+
+
+
+
+    def __str__(self):
+        return self.wallet_address
+
+    # get_balance from tronscan
+    async def getBalance(self):
+        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
+        with requests.Session() as httpSession:
+            r = httpSession.get(
+                f'{BASE}?address={self.wallet_address}')
+            r.raise_for_status()
+
+
+            user_tonens = dict()
+            for token in r.json().get("withPriceTokens"):
+                balance = token.get("balance", "NoneBalance")
+                balance = '{0:,}'.format(int(balance)).replace(',', '.')[:6]
+                user_tonens[token.get("tokenName", "NoneName")] = {
+                    "tokenType": token.get("tokenType", "NoneType"),
+                    "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
+                    "balance": balance
+                }
+            return user_tonens
+
+
+class Addresses(Base):
+    __tablename__ = "currencies"
+
+    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
+    wallet = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
+                    ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
+    token = Column(String)
+    network = Column(String)
+
     transactions = relationship(
         "Transaction",
         collection_class=attribute_mapped_collection("id"),
@@ -174,34 +211,3 @@ class Wallet(Base):
             r.raise_for_status()
             transactionRequestId = r.json()["data"]["item"]["transactionRequestId"]
             return f"Ваша транзакция создана. transactionRequestId {transactionRequestId}"
-
-    def __str__(self):
-        return self.wallet_address
-
-    # get_balance from tronscan
-    async def getBalance(self):
-        BASE = 'https://apilist.tronscanapi.com/api/accountv2'
-        with requests.Session() as httpSession:
-            r = httpSession.get(
-                f'{BASE}?address={self.wallet_address}')
-            r.raise_for_status()
-            user_tonens = dict()
-            for token in r.json().get("withPriceTokens"):
-                balance = token.get("balance", "NoneBalance")
-                balance = '{0:,}'.format(int(balance)).replace(',', '.')[:6]
-                user_tonens[token.get("tokenName", "NoneName")] = {
-                    "tokenType": token.get("tokenType", "NoneType"),
-                    "tokenAbbr": token.get("tokenAbbr", "NoneAbbr"),
-                    "balance": balance
-                }
-            return user_tonens
-
-
-class Currency(Base):
-    __tablename__ = "currencies"
-
-    id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-    wallet = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                    ForeignKey('wallets.wallet_address', onupdate="CASCADE", ondelete="CASCADE"))
-    token = Column(String)
-    network = Column(String)

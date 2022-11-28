@@ -10,6 +10,8 @@ from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.wallet_generator.wallet_generator import wallet_bip44
 
+from Databases.DB_Postgres.models import Wallet
+
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
@@ -17,7 +19,7 @@ router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 @router.message(F.text == "USDT (TRC-20)", StateFilter(WalletStates.create_wallet))
 async def create_wallet(message: Message, state: FSMContext):
     await loader(message.from_user.id, text="Генерация нового кошелька")
-    wallet = wallet_bip44(strength=256)
+    wallet: Wallet = wallet_bip44(strength=256)
     a = await wallet.create_TRON()
     ADDRESS_0 = a.get("ADDRESS 0")
     await message.answer(f"Ваш кошелек успешно сгенерирован!\n\n"
