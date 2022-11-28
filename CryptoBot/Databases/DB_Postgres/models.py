@@ -24,7 +24,7 @@ Base_api = Base_api + API_version
 association_table = Table(
     "address_tokens",
     Base.metadata,
-    Column("address", ForeignKey("addresses.address"), primary_key=True),
+    Column("address_id", ForeignKey("addresses.address"), primary_key=True),
     Column("contract_Id", ForeignKey("tokens.contract_Id"), primary_key=True),
 )
 
@@ -113,8 +113,8 @@ class Token(Base):
 
     contract_Id = Column(String, primary_key=True)
     token_name = Column(String)
-    wallets = relationship(
-        "Wallet", secondary=association_table, back_populates="tokens", lazy="joined"
+    addresses = relationship(
+        "Address", secondary=association_table, back_populates="tokens", lazy="joined"
     )
 
     def __str__(self):
@@ -127,18 +127,19 @@ class Token(Base):
 class Address(Base):
     __tablename__ = "addresses"
 
-    wallet_id = Column(String, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
-    address = Column(String)
+    address = Column(String, primary_key=True)
     private_key = Column(String)
 
+    wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
+
     transactions = relationship(
-        "Transaction",
+        "Transaction`",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
 
     tokens = relationship(
-        "Token", secondary=association_table, back_populates="addresses.address", lazy="joined"
+        "Token", secondary=association_table, back_populates="addresses", lazy="joined"
     )
 
     async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):

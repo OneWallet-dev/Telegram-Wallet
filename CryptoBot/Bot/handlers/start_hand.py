@@ -11,7 +11,7 @@ from Bot.handlers.m_menu_hand import main_menu
 from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.utilts.mmanager import MManager
-from Databases.DB_Postgres.models import Owner, Wallet, Token
+from Databases.DB_Postgres.models import Owner, Wallet, Token, Address
 
 router = Router()
 
@@ -66,6 +66,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
    owner: Owner = await session.get(Owner, str(message.from_user.id))
    token: Token = Token(contractId = "dwdwdqsdwe3123eweqwe", token_name = "TRON123")
+   address: Address = Address(address="adwdwdwd")
    owner.wallets["tron"] = Wallet(wallet_address="testadress123")
    wallet_tron: Wallet = owner.wallets["tron"]
    wallet_tron.tokens.append(token)
