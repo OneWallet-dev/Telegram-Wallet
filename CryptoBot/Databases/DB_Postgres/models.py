@@ -113,7 +113,7 @@ class Owner(Base):
 
     @staticmethod
     async def password_check(session: AsyncSession, user: User, text: str):
-        owner: Owner = await Owner.get(session, user)
+        owner: Owner = await session.get(Owner, str(user.id))
         phash = Owner._password_encode(text)
         return True if owner.password == phash else False
 
