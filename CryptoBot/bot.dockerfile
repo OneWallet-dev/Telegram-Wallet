@@ -17,4 +17,3 @@ COPY . /CryptoBot/
 RUN pip3 install --upgrade pip
 
 
-CMD ./starter.sh

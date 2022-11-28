@@ -59,7 +59,8 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 @MManager.garbage_manage(clean=True)
 async def registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
     password = (await state.get_data()).get("password")
-    await Owner.register(session, callback.from_user, password=password)
+    session.add(Owner(id=callback.from_user.id,username=callback.from_user.username, password = password))
+    # await Owner.register(session, callback.from_user, password=password)
     await callback.answer("Пароль успешно установлен")
     await MManager.clean(state, bot, callback.message.chat.id)
     await main_menu(callback, state, bot)
