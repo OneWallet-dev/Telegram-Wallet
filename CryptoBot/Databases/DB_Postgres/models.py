@@ -119,9 +119,7 @@ class Owner(Base):
     @staticmethod
     async def add_currency(session: AsyncSession, user: User, token: str, network: str):
         owner: Owner = await session.get(Owner, str(user.id))
-        print(owner)
         wallets: dict[str, Wallet] = owner.wallets
-        print(wallets)
         wall = wallets[network]
         wall.tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
         session.add(wall)

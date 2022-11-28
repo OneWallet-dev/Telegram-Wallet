@@ -41,8 +41,12 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     print(eth)
     print(bitcoin)
 
-    owner.wallets["tron"] = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
-    address: Address = Address(address=tron.get("address_0").get("address"), private_key=tron.get("address_0").get("private_key"))
+    tronaddress: Address = Address(address=tron.get("address_0").get("address"),
+                                   private_key=tron.get("address_0").get("private_key"))
+    tronwallet = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
+    tronwallet.addresses.update({tron.get("address_0").get("address"): tronaddress})
+
+    owner.wallets["tron"] = tronwallet
 
 
     owner.wallets["eth"] = Wallet(blockchain="eth", mnemonic=eth.get("mnemonic"))
@@ -51,9 +55,8 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     owner.wallets["bitcoin"] = Wallet(blockchain="bitcoin", mnemonic=bitcoin.get("mnemonic"))
     address: Address = Address(address=bitcoin.get("address_0").get("address"), private_key=bitcoin.get("address_0").get("private_key"))
 
-
+    session.add(owner)
     await session.commit()
-
     await session.close()
 
     stick_msg = await message.answer('Список всех доступных криптовалют с балансом,'
