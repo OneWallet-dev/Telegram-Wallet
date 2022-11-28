@@ -40,7 +40,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("getMyWallets"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    owner: Owner = await session.get(Owner, message.from_user.id)
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
     print(owner.wallets)
     # for key in owner.wallets:
     #     print(owner.wallets[key])
