@@ -28,6 +28,26 @@ association_table = Table(
     Column("contract_Id", ForeignKey("tokens.contract_Id"), primary_key=True),
 )
 
+class Address(Base):
+    __tablename__ = "addresses"
+
+    address = Column(String, primary_key=True)
+    private_key = Column(String)
+
+    wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
+
+    transactions = relationship(
+        "Transaction",
+        collection_class=attribute_mapped_collection("id"),
+        cascade="all, delete-orphan", lazy="joined"
+    )
+
+    tokens = relationship(
+        "Token", secondary=association_table, back_populates="addresses", lazy="joined"
+    )
+
+    async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
+        pass
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -36,9 +56,9 @@ class Wallet(Base):
     mnemonic = Column(String)
     blockchain = Column(String)
     owner_id = Column(String, ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
-    addresses = relationship(
+    addresses: dict[str, Address] = relationship(
         "Address",
-        collection_class=attribute_mapped_collection("id"),
+        collection_class=attribute_mapped_collection("address"),
         cascade="all, delete-orphan", lazy="joined"
     )
 
@@ -78,7 +98,7 @@ class Owner(Base):
             do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
             await session.execute(do_nothing)
             await session.commit()
-            return await Owner.get(session, user)
+            return await session.get(Owner, str(user.id))
         except IntegrityError:
             await session.rollback()
             raise
@@ -124,23 +144,3 @@ class Token(Base):
         pass
 
 
-class Address(Base):
-    __tablename__ = "addresses"
-
-    address = Column(String, primary_key=True)
-    private_key = Column(String)
-
-    wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
-
-    transactions = relationship(
-        "Transaction`",
-        collection_class=attribute_mapped_collection("id"),
-        cascade="all, delete-orphan", lazy="joined"
-    )
-
-    tokens = relationship(
-        "Token", secondary=association_table, back_populates="addresses", lazy="joined"
-    )
-
-    async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
-        pass
