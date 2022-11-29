@@ -33,49 +33,28 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 @router.message(F.text == "💹 Мой кошелек")
 async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSession):
     tron_text = "Tron:\nАдрес: <code>{}</code>\n\n- TRX: {}"
-    eth_text = "ERC-20:\nАдрес: <code>{}</code>\n\n- ETH: {}"
+    eth_text = "Ethereum:\nАдрес: <code>{}</code>\n\n- ETH: {}"
     bit_text = "Bitcoin:\nАдрес: <code>{}</code>\n\n- Bitcoin: {}"
     await state.set_state(WalletStates.create_token)
     owner: Owner = await session.get(Owner, str(message.from_user.id))
     Balance = 0.00
-    tron, eth, bitcoin = dict(), dict(), dict()
+    #tron_addrs, eth_addrs, bitcoin_addrs = str(), str(), str()
     if owner.wallets.get("tron", None) is None:
         generator = Wallet_web3()
-        wallets = await generator.generate_all_walllets()
-        tron = wallets.get("tron", None)
-        eth = wallets.get("eth", None)
-        bitcoin = wallets.get("bitcoin", None)
-        await loader(message.from_user.id, "Выполняется генерация кошелька", 4)
-        tronaddress: Address = Address(address=tron.get("address_0").get("address"),
-                                       private_key=tron.get("address_0").get("private_key"))
-        tronwallet = Wallet(blockchain="tron", mnemonic=tron.get("mnemonic"))
-        tronwallet.addresses.update({tron.get("address_0").get("address"): tronaddress})
-        owner.wallets["tron"] = tronwallet
-
-        ethaddress: Address = Address(address=eth.get("address_0").get("address"),
-                                      private_key=eth.get("address_0").get("private_key"))
-        ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth.get("mnemonic"))
-        ethnwallet.addresses.update({eth.get("address_0").get("address"): ethaddress})
-        owner.wallets["eth"] = ethnwallet
-
-        bitaddress: Address = Address(address=bitcoin.get("address_0").get("address"),
-                                      private_key=bitcoin.get("address_0").get("private_key"))
-        bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin.get("mnemonic"))
-        bitwallet.addresses.update({bitcoin.get("address_0").get("address"): bitaddress})
-        owner.wallets["bit"] = bitwallet
-
-        session.add(owner)
-        await session.commit()
-        await session.close()
+        wallets = await generator.generate_all_walllets(message, session)
+        print(wallets)
+        tron_addrs = wallets.get("tron")
+        eth_addrs = wallets.get("eth")
+        bitcoin_addrs = wallets.get("bitcoin")
     else:
         Balance = 0.00
-        tron['address_0'] = list(owner.wallets.get("tron").addresses.keys())[0]
-        eth['address_0'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
-        bitcoin['address_0'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
+        tron_addrs = list(owner.wallets.get("tron").addresses.keys())[0]
+        eth_addrs = list(owner.wallets.get("ethereum").addresses.keys())[0]
+        bitcoin_addrs = list(owner.wallets.get("bitcoin").addresses.keys())[0]
 
-    tron_text = tron_text.format(tron.get("address_0").get("address"), str(Balance))
-    eth_text = eth_text.format(eth.get("address_0").get("address"), str(Balance))
-    bit_text = bit_text.format(bitcoin.get("address_0").get("address"), str(Balance))
+    tron_text = tron_text.format(tron_addrs, str(Balance))
+    eth_text = eth_text.format(eth_addrs, str(Balance))
+    bit_text = bit_text.format(bitcoin_addrs, str(Balance))
     sep = "\n<code>——————————————————————</code>\n"
     text = tron_text + sep + eth_text + sep + bit_text
     stick_msg = await message.answer(text, reply_markup=main_wallet_keys())
