@@ -21,6 +21,8 @@ from Bot.utilts.qr_code_generator import qr_code
 from Databases.DB_Postgres.models import Owner, Wallet
 from cryptography.hazmat.primitives import hashes
 
+from Databases.DB_Redis import DataRedis
+
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
 
@@ -64,5 +66,6 @@ async def registration(callback: CallbackQuery, state: FSMContext, session: Asyn
     await session.close()
     # await Owner.register(session, callback.from_user, password=password)
     await callback.answer("Пароль успешно установлен")
+    await DataRedis.authorize(callback.from_user.id)
     await MManager.clean(state, bot, callback.message.chat.id)
     await main_menu(callback, state, bot)
