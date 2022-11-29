@@ -52,7 +52,7 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 async def registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
     password = (await state.get_data()).get("password")
     username: User = callback.from_user
-    session.add(Owner(id=str(callback.from_user.id), username=callback.from_user ))
+    session.add(Owner(id=str(callback.from_user.id), username=callback.from_user.username ))
     await session.commit()
     await session.close()
     # await Owner.register(session, callback.from_user, password=password)
