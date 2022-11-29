@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy import Column, BigInteger, Float, String, ForeignKey, DateTime
 
-from Dao.DB_Postgres.models import Base
+from Dao.models.models import Base
 
 
 class Transaction(Base):

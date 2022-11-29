@@ -2,7 +2,7 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from Dao.DB_Postgres.models import Base
+from Dao.models.models import Base
 
 
 async def create_session():

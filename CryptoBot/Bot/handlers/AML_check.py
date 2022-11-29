@@ -12,7 +12,6 @@ from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
-from Databases.DB_Postgres.models import Owner, Wallet
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, MainState.AML_check))

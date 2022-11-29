@@ -2,7 +2,7 @@ from sqlalchemy import Column, BigInteger, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from Dao.DB_Postgres.models import Base
+from Dao.models.models import Base
 from Dao.models.Address import Address
 
 

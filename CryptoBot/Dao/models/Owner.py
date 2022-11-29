@@ -1,5 +1,6 @@
 import datetime
 
+from aiogram.types import User
 from cryptography.hazmat.primitives import hashes
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.dialects.postgresql import insert
@@ -9,19 +10,18 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from Bot.utilts.currency_helper import base_tokens
-from Dao.DB_Postgres.models import Base
-from Dao.DB_Postgres.Token import Token
+from Dao.models.models import Base
+from Dao.models.Token import Token
 from Dao.models.Wallet import Wallet
-from bata import Data
 
 
 class Owner(Base):
     __tablename__ = "owners"
 
     id = Column(String, primary_key=True, unique=True)
-    username = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
+    username = Column(String)
     datetime_come = Column(DateTime, default=datetime.datetime.now())
-    password = Column(StringEncryptedType(String, Data.secret_key, AesEngine), default=None)
+    password = Column(String, default=None)
     wallets: dict[str: Wallet] = relationship(
         "Wallet",
         collection_class=attribute_mapped_collection("blockchain"),

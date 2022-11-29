@@ -9,7 +9,7 @@ from typing import Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Databases.DB_Postgres.models import Address, Owner, Wallet
+from Dao.models import Address, Owner, Wallet
 
 
 class Wallet_web3:
