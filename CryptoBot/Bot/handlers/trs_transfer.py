@@ -42,7 +42,7 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.set_state(Trs_transfer.address)
     await bot.edit_message_text(text, callback.from_user.id, message_id, reply_markup=change_transfer_token())
 
-@router.message(StateFilter(Trs_transfer.address))
+
 
 
 
