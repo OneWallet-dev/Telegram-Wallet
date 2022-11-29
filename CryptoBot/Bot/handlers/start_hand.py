@@ -71,7 +71,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
    # owner.wallets["tron"] = Wallet(blockchain="tron")
    address: Address = Address(address="token_address")
-   owner.wallets["tron123"] = Wallet(blockchain="tron")
+   owner.wallets["tron123"] = Wallet(blockchain="tron123")
    token: Token = Token(contract_Id = "token_contract", token_name = "token_name")
    address.tokens.append(token)
    wallet_tron: Wallet = owner.wallets["tron123"]
