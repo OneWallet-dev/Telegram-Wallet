@@ -1,8 +1,8 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from Databases.DB_Postgres.models import Base
+Base = declarative_base()
 
 
 async def create_session():
@@ -14,3 +14,5 @@ async def create_session():
 
     async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     return async_session
+
+

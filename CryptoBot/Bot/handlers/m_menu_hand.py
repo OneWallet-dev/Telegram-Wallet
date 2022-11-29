@@ -31,16 +31,20 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 
 
 @router.message(F.text == "💹 Мой кошелек")
-async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSession):
+@router.callback_query(F.data == 'refresh_wallet')
+async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+    message = event if isinstance(event, Message) else event.message
+    user_id = event.from_user.id
+
     tron_text = "Tron:\nАдрес: <code>{}</code>\n\n- TRX: {}"
     eth_text = "Ethereum:\nАдрес: <code>{}</code>\n\n- ETH: {}"
     bit_text = "Bitcoin:\nАдрес: <code>{}</code>\n\n- Bitcoin: {}"
     await state.set_state(WalletStates.create_token)
-    owner: Owner = await session.get(Owner, str(message.from_user.id))
+    owner: Owner = await session.get(Owner, str(user_id))
     Balance = 0.00
     if owner.wallets.get("tron", None) is None:
         generator = Wallet_web3()
-        wallets = await generator.generate_all_walllets(message, session)
+        wallets = await generator.generate_all_walllets(user_id, session)
         tron_addrs = wallets.get("tron")
         eth_addrs = wallets.get("eth")
         bitcoin_addrs = wallets.get("bitcoin")
@@ -55,8 +59,10 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     bit_text = bit_text.format(bitcoin_addrs, str(Balance))
     sep = "\n<code>——————————————————————</code>\n"
     text = tron_text + sep + eth_text + sep + bit_text
-    stick_msg = await message.answer(text, reply_markup=main_wallet_keys())
-    await MManager.sticker_store(state, stick_msg)
+
+    keep_old = False if isinstance(event, Message) else True
+    await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
+                                keyboard=main_wallet_keys(), keep_old=keep_old)
 
 
 @router.message(F.text == "👁‍🗨 AML Check")

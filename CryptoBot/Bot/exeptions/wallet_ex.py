@@ -1,0 +1,4 @@
+
+
+class DuplicateToken(Exception):
+    pass

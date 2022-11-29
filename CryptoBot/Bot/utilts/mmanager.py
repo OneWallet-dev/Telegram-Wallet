@@ -29,6 +29,8 @@ class MManager:
         if not keep_old:
             with suppress(TelegramBadRequest):
                 await bot.delete_message(chat_id, msg_id)
+        else:
+            await bot.edit_message_reply_markup(chat_id, msg_id)
         if store_sticker:
             await MManager.sticker_store(state, n_msg)
 
@@ -46,6 +48,12 @@ class MManager:
     @classmethod
     async def sticker_free(cls, state: FSMContext):
         await state.update_data({cls._stickerkey: None})
+
+    @classmethod
+    async def sticker_delete(cls, state: FSMContext, bot: Bot, chat_id: int):
+        mid = (await state.get_data()).get(cls._stickerkey).get("id")
+        with suppress(TelegramBadRequest):
+            await bot.delete_message(chat_id, mid)
 
     @classmethod
     def garbage_manage(cls, *, store: bool = True, clean: bool = False):

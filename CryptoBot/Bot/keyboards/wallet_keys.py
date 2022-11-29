@@ -32,6 +32,12 @@ def network_kb(token: str, custom_network_list: list | None = None):
     return mark.as_markup(resize_keyboard=True)
 
 
+def refresh_button():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet")))
+    return mark.as_markup(resize_keyboard=True)
+
+
 def currency_kb():
     mark = InlineKeyboardBuilder()
     for currency in base_tokens:

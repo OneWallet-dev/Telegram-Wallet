@@ -1,21 +1,19 @@
 import datetime
-import os
 
-import requests
 from aiogram.types import User
 from cryptography.hazmat.primitives import hashes
-from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float, Table
+from sqlalchemy import Column, String, DateTime, ForeignKey, select, BigInteger, Float, Table, Integer
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base, relationship, selectinload
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine, StringEncryptedType
 
+from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
+from Databases.DB_Postgres.session import create_session, Base
 from bata import Data
-
-Base = declarative_base()
 
 Base_api = 'https://rest.cryptoapis.io'
 API_version = "/v2"
@@ -28,9 +26,11 @@ association_table = Table(
     Column("contract_Id", ForeignKey("tokens.contract_Id"), primary_key=True),
 )
 
+
 class Address(Base):
     __tablename__ = "addresses"
 
+    path_index = Column(Integer, default=0)
     address = Column(String, primary_key=True)
     private_key = Column(String)
 
@@ -46,8 +46,15 @@ class Address(Base):
         "Token", secondary=association_table, back_populates="addresses", lazy="joined"
     )
 
-    async def createTransaction(self, session: AsyncSession, to_wallet: str, amount: float):
-        pass
+    @staticmethod
+    async def get(session: AsyncSession, user: User, blockchain: str, path_index: int = 0):
+        address: Address = (await session.execute(
+            select(Address).where(
+                Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
+                    Wallet.owner_id == str(user.id), Wallet.blockchain == blockchain).scalar_subquery()))
+                            ).first()[0]
+        return address
+
 
 class Wallet(Base):
     __tablename__ = "wallets"
@@ -117,13 +124,21 @@ class Owner(Base):
         return str(result)
 
     @staticmethod
-    async def add_currency(session: AsyncSession, user: User, token: str, network: str):
-        owner: Owner = await session.get(Owner, str(user.id))
-        wallets: dict[str, Wallet] = owner.wallets
-        wall = wallets[network]
-        wall.tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
-        session.add(wall)
-        await session.commit()
+    async def add_currency(user: User, token: str, network: str):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            token_ref = base_tokens.get(token)
+
+            address = await Address.get(session, user, token_ref['blockchain'])
+            token_obj = Token(token_name=token,
+                              contract_Id=base_tokens[token]['contract_address'],
+                              network=network)
+            if token_obj not in address.tokens:
+                address.tokens.append(token_obj)
+                session.add(address)
+                await session.commit()
+            else:
+                raise DuplicateToken
 
 
 class Token(Base):
@@ -131,6 +146,7 @@ class Token(Base):
 
     contract_Id = Column(String, primary_key=True)
     token_name = Column(String)
+    network = Column(String)
     addresses = relationship(
         "Address", secondary=association_table, back_populates="tokens", lazy="joined"
     )
@@ -138,7 +154,12 @@ class Token(Base):
     def __str__(self):
         return self.wallet_address
 
+    def __eq__(self, other):
+        if not isinstance(other, Token):
+            return NotImplemented
+
+        return self.token_name == other.token_name and self.network == other.network and \
+               self.contract_Id == other.contract_Id
+
     async def getBalance(self):
         pass
-
-
