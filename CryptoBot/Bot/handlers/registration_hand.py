@@ -6,8 +6,6 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove, InputFile, BufferedInputFile, InputMedia
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.keyboards.main_keys import confirmation_button
@@ -19,7 +17,6 @@ from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
 from Bot.utilts.qr_code_generator import qr_code
 from Databases.DB_Postgres.models import Owner, Wallet
-from cryptography.hazmat.primitives import hashes
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))

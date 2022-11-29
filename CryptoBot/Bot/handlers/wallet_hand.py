@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove, InputFile, BufferedInputFile, InputMedia
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
 from Bot.handlers.m_menu_hand import my_wallet_start
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \
@@ -86,7 +85,7 @@ async def use_wallet(callback: CallbackQuery, state: FSMContext, session: AsyncS
         await do_you_want_it(callback, state)
 
 
-@router.callback_query(~ChainOwned(), (F.data.in_(set(base_tokens.keys()))))
+@router.callback_query((F.data.in_(set(base_tokens.keys()))))
 async def do_you_want_it(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
     await state.set_state(WalletStates.create_wallet)

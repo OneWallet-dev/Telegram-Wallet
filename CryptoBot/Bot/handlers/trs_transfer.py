@@ -11,7 +11,7 @@ router = Router()
 router.message.filter(StateFilter(Trs_transfer))
 
 
-@router.callback_query()
+@router.callback_query("transfer" in F.data)
 async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     print(callback)
     print("hello")
