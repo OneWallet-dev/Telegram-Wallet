@@ -6,10 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.keyboards.wallet_keys import token_kb, network_kb, refresh_button
-from Bot.handlers.loading_handler import loader
-from Bot.handlers.m_menu_hand import my_wallet_start
-from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \
-    send_money_confirm_kb, token_kb, network_kb, refresh_button
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates, WalletSendMoney
 from Bot.utilts.currency_helper import base_tokens
