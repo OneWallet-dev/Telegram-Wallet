@@ -1,7 +1,8 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
+Base = declarative_base()
 from Dao.models.models import Base
 
 
@@ -14,3 +15,5 @@ async def create_session():
 
     async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
     return async_session
+
+

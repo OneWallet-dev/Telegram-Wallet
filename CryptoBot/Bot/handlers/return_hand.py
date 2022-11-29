@@ -3,7 +3,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from Bot.handlers.m_menu_hand import main_menu
-from Bot.handlers.wallet_hand import choose_currency
 from Bot.keyboards.wallet_keys import currency_kb
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
