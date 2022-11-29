@@ -9,6 +9,7 @@ class Trs_transfer(StatesGroup):
     new_transfer = State()
     set_network = State()
     address = State()
+    confirm_transfer = State()
 
 
 class Trs_exchange(StatesGroup):
