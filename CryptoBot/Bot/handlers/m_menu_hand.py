@@ -37,13 +37,14 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     bit_text = "Bitcoin:\nАдрес: <code>{}</code>\n\n- Bitcoin: {}"
     await state.set_state(WalletStates.create_token)
     owner: Owner = await session.get(Owner, str(message.from_user.id))
-    generator = Wallet_web3()
-    wallets = await generator.generate_all_walllets()
-    tron = wallets.get("tron", None)
-    eth = wallets.get("eth", None)
-    bitcoin = wallets.get("bitcoin", None)
     Balance = 0.00
+    tron, eth, bitcoin = dict(), dict(), dict()
     if owner.wallets.get("tron", None) is None:
+        generator = Wallet_web3()
+        wallets = await generator.generate_all_walllets()
+        tron = wallets.get("tron", None)
+        eth = wallets.get("eth", None)
+        bitcoin = wallets.get("bitcoin", None)
         await loader(message.from_user.id, "Выполняется генерация кошелька", 4)
         tronaddress: Address = Address(address=tron.get("address_0").get("address"),
                                        private_key=tron.get("address_0").get("private_key"))
@@ -53,7 +54,7 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
 
         ethaddress: Address = Address(address=eth.get("address_0").get("address"),
                                       private_key=eth.get("address_0").get("private_key"))
-        ethnwallet = Wallet(blockchain="etherium", mnemonic=eth.get("mnemonic"))
+        ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth.get("mnemonic"))
         ethnwallet.addresses.update({eth.get("address_0").get("address"): ethaddress})
         owner.wallets["eth"] = ethnwallet
 
@@ -67,7 +68,10 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
         await session.commit()
         await session.close()
     else:
-        Balance = 0.000
+        Balance = 0.00
+        tron['address_0'] = list(owner.wallets.get("tron").addresses.keys())[0]
+        eth['address_0'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
+        tron['address_0'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
 
     tron_text = tron_text.format(tron.get("address_0").get("address"), str(Balance))
     eth_text = eth_text.format(eth.get("address_0").get("address"), str(Balance))
