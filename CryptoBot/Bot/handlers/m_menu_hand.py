@@ -41,7 +41,6 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     if owner.wallets.get("tron", None) is None:
         generator = Wallet_web3()
         wallets = await generator.generate_all_walllets(message, session)
-        print(wallets)
         tron_addrs = wallets.get("tron")
         eth_addrs = wallets.get("eth")
         bitcoin_addrs = wallets.get("bitcoin")
