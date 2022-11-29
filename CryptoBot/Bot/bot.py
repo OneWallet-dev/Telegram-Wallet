@@ -7,8 +7,8 @@ from Bot.handlers import start_hand, wallet_hand, return_hand, AML_check, m_menu
     transaction_hand, trs_transfer
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.db import DbSession
-from Databases.DB_Postgres.session import create_session
-from Databases.DB_Redis import RedRedis
+from Dao.DB_Postgres.session import create_session
+from Dao.DB_Redis import RedRedis
 from bata import Data
 
 storage = RedisStorage.from_url(RedRedis.states_base_url())

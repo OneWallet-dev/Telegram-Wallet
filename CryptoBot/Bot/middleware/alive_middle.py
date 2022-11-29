@@ -4,7 +4,7 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from Databases.DB_Redis import RedRedis, DataRedis
+from Dao.DB_Redis import RedRedis, DataRedis
 
 
 class AliveMiddleware(BaseMiddleware):
