@@ -1,16 +1,24 @@
 import re
+from tkinter import Image
 
 from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove, InputFile, BufferedInputFile, InputMedia
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from Bot.handlers.loading_handler import loader
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.keyboards.main_keys import confirmation_button
-from Bot.states.main_states import RegistrationState
+from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, send_money_confirm_kb
+from Bot.states.main_states import MainState, RegistrationState
+from Bot.states.wallet_states import WalletStates, WalletSendMoney
 from Bot.utilts.mmanager import MManager
-from Dao.models.Owner import Owner
+from Bot.utilts.currency_helper import base_tokens
+from Bot.utilts.pretty_texts import pretty_balance
+from Bot.utilts.qr_code_generator import qr_code
+from Databases.DB_Postgres.models import Owner, Wallet
+
+from Databases.DB_Redis import DataRedis
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
@@ -55,5 +63,6 @@ async def registration(callback: CallbackQuery, state: FSMContext, session: Asyn
     await session.close()
     # await Owner.register(session, callback.from_user, password=password)
     await callback.answer("Пароль успешно установлен")
+    await DataRedis.authorize(callback.from_user.id)
     await MManager.clean(state, bot, callback.message.chat.id)
     await main_menu(callback, state, bot)
