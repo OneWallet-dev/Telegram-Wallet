@@ -19,7 +19,8 @@ from Bot.utilts.mmanager import MManager
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
 from Bot.utilts.qr_code_generator import qr_code
-from Databases.DB_Postgres.models import Owner, Wallet
+from Dao.models.Owner import Owner
+from Dao.models.Wallet import Wallet
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates, WalletSendMoney))

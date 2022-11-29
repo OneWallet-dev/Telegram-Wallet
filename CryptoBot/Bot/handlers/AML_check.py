@@ -4,7 +4,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \
     send_money_confirm_kb, AML_menu
@@ -13,7 +12,6 @@ from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
-from Databases.DB_Postgres.models import Owner, Wallet
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, MainState.AML_check))
