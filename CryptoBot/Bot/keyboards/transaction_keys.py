@@ -35,3 +35,11 @@ def change_transfer_token():
     mark = InlineKeyboardBuilder()
     mark.row((InlineKeyboardButton(text="Изменить токен", callback_data="change_transfer_token")))
     return mark.as_markup(resize_keyboard=True)
+
+
+def kb_confirm_transfer():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text="Подтвердить перевод", callback_data="confirm_transfer_token")))
+    mark.row((InlineKeyboardButton(text="Отменить перевод", callback_data="cancel_transfer_token")))
+    return mark.as_markup(resize_keyboard=True)
+
