@@ -10,6 +10,7 @@ from Bot.handlers.transaction_hand import transaction_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
+from Bot.states.trans_states import TransactionStates
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
 from Databases.DB_Postgres.models import Owner, Wallet, Address, Token
@@ -72,7 +73,7 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
     eth_text = eth_text.format(eth.get("address_0").get("address"), str(Balance))
     bit_text = bit_text.format(bitcoin.get("address_0").get("address"), str(Balance))
     sep = "\n<code>——————————————————————</code>\n"
-    text = sep + tron_text + sep + eth_text + sep + bit_text + sep
+    text = tron_text + sep + eth_text + sep + bit_text
     stick_msg = await message.answer(text, reply_markup=main_wallet_keys())
     await MManager.sticker_store(state, stick_msg)
 
@@ -85,4 +86,5 @@ async def menu_aml_start(message: Message, bot: Bot, state: FSMContext):
 
 @router.message(F.text == "↔️ Транзакции")
 async def menu_transaction_start(message: Message, bot: Bot, state: FSMContext):
+    await state.set_state(TransactionStates.main)
     await transaction_start(message, bot, state)
