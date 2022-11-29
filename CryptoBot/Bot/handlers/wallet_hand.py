@@ -8,7 +8,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
-from Bot.filters.wallet_filters import ChainOwned
 from Bot.handlers.loading_handler import loader
 from Bot.handlers.m_menu_hand import my_wallet_start
 from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \

@@ -25,6 +25,7 @@ class Tron_wallet:
             return await txn_ret.wait()
 
     async def trc20_transfer(self, private_key: str, contract: str, from_address: str, to_address: str, amount: int):
+        print(private_key, contract, from_address, to_address, amount)
         priv_key = PrivateKey(bytes.fromhex(private_key))
         async with AsyncTron(network=self.network, provider=AsyncHTTPProvider(api_key=self.api_key)) as client:
             contract = await client.get_contract(contract)
