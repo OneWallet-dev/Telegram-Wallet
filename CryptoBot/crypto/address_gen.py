@@ -9,8 +9,9 @@ from typing import Union
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Dao.models import Address, Owner, Wallet
-
+from Dao.models.Address import Address
+from Dao.models.Owner import Owner
+from Dao.models.Wallet import Wallet
 
 class Wallet_web3:
     def __init__(self, language: str = "english", strength: int = 256):
