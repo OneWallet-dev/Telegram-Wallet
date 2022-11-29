@@ -1,17 +1,14 @@
-import asyncio
-
 from aiogram.types import Message
 from hdwallet import BIP44HDWallet
 from hdwallet.cryptocurrencies import EthereumMainnet, TronMainnet, BitcoinMainnet
 from hdwallet.derivations import BIP44Derivation
 from hdwallet.utils import generate_mnemonic
 from typing import Union
-
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
+
 
 class Wallet_web3:
     def __init__(self, language: str = "english", strength: int = 256):
@@ -26,7 +23,6 @@ class Wallet_web3:
         eth_mnemomic = eth_wallet.get("mnemonic")
         bitcoin_wallet = await self._generate_address(BitcoinMainnet, passphrase=passphrase)
         bitcoin_mnemomic = bitcoin_wallet.get("mnemonic")
-        print(bitcoin_mnemomic)
 
         owner: Owner = await session.get(Owner, str(message.from_user.id))
         tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
@@ -54,8 +50,8 @@ class Wallet_web3:
             wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
             wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
             wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
-        except:
-            print("Кошельки не создались")
+        except Exception as e:
+            print("Кошельки не создались", e)
         return wallets
 
     async def _generate_address(
