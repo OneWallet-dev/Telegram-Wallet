@@ -5,8 +5,8 @@ from tronpy.providers.async_http import AsyncHTTPProvider
 
 
 class Tron_wallet:
-    def __init__(self, network: str = 'nile', api_key: str | list[str] | None = None, timeout: float = 10.0):
-        self.api_key = api_key
+    def __init__(self, network: str = 'nile', timeout: float = 10.0):
+        self.api_key = "23ec5f26-fc9d-49e2-8466-a2f1a1d963a7"
         self.network = network
         self.__fee_limit = 10000000
         self.timeout = timeout
@@ -25,7 +25,6 @@ class Tron_wallet:
             return await txn_ret.wait()
 
     async def trc20_transfer(self, private_key: str, contract: str, from_address: str, to_address: str, amount: int):
-        print(private_key, contract, from_address, to_address, amount)
         priv_key = PrivateKey(bytes.fromhex(private_key))
         async with AsyncTron(network=self.network, provider=AsyncHTTPProvider(api_key=self.api_key)) as client:
             contract = await client.get_contract(contract)
@@ -35,7 +34,9 @@ class Tron_wallet:
             txn = txn.sign(priv_key).inspect()
             try:
                 txn_ret = await txn.broadcast()
-                result = txn_ret.get("result")
+                result = txn_ret.get("result", None)
+                print(txn_ret)
+                print(result)
                 if result is True:
                     return "https://tronscan.org/#/transaction/" + txn_ret.get("txid")
                 else:
@@ -45,7 +46,7 @@ class Tron_wallet:
             except TvmError as er:
                 return {"Error": "601", "message": er}
             except Exception as er:
-                print("ex_trc20_transfer", er)
+                return {"Error": "601", "message": er}
 
     async def get_balance(self, contract: str, address: str):
         try:

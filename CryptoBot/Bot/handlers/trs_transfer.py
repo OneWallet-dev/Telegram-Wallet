@@ -2,6 +2,7 @@ from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.transaction_hand import transaction_start
@@ -94,11 +95,6 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     amount = sdata.get("amount")
     fee = sdata.get("fee")
 
-    print(token)
-    print(network)
-    print(to_address)
-    print(amount)
-    print(fee)
     token_info = base_tokens.get(token, None)
     if token_info is not None:
         contract_address = token_info.get("contract_address")
@@ -106,15 +102,21 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
         contract_address = None
         # пользовательский контракт
         pass
-    print(contract_address)
     if network in network_dict.get("tron"):
-        tron = Tron_wallet('mainnet', "23ec5f26-fc9d-49e2-8466-a2f1a1d963a7")
+        tron = Tron_wallet('mainnet')
         wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
         wallet_address = list(owner.wallets.get("tron").addresses.values())[0].address
         if network == "TRC-10":
             pass
         else:
-            await tron.trc20_transfer(wallet_private_key, contract_address, wallet_address, to_address, int(amount))
+
+            th = await tron.trc20_transfer(wallet_private_key, contract_address, wallet_address, to_address, int(amount))
+            if "https://tronscan.org/" in th:
+                link = hlink('ссылке', th)
+                await callback.message.delete()
+                await callback.message.answer(f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
+            else:
+                await callback.answer("Ошибка транзакции, пожалуйста проверьте баланс")
 
     elif network in network_dict.get("ethereum"):
         wallet_private_key = list(owner.wallets.get("ethereum").addresses.values())[0].private_key
