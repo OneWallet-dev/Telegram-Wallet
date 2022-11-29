@@ -1,8 +1,7 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from Dao.DB_Postgres.models import Base, association_table
-
+from Dao.models.models import Base, association_table
 
 class Token(Base):
     __tablename__ = "tokens"

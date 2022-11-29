@@ -11,7 +11,7 @@ from Bot.handlers.m_menu_hand import main_menu
 from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.utilts.mmanager import MManager
-from Dao.DB_Postgres.Token import Token
+from Dao.models.Token import Token
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
 from Dao.models.Address import Address

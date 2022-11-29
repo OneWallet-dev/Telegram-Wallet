@@ -16,9 +16,9 @@ from Bot.utilts.mmanager import MManager
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.pretty_texts import pretty_balance
 from Bot.utilts.qr_code_generator import qr_code
-from Databases.DB_Postgres.models import Owner, Wallet
+from Dao.models import Owner, Wallet
 
-from Databases.DB_Redis import DataRedis
+from Dao.DB_Redis import DataRedis
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
@@ -58,7 +58,8 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 @MManager.garbage_manage(clean=True)
 async def registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
     password = (await state.get_data()).get("password")
-    await Owner.register(session=session, user=callback.from_user, password=password)
+    username: User = callback.from_user
+    session.add(Owner(id=callback.from_user.id, username=callback.from_user ))
     await session.commit()
     await session.close()
     # await Owner.register(session, callback.from_user, password=password)

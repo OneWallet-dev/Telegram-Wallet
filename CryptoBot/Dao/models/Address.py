@@ -1,11 +1,10 @@
 from sqlalchemy import Column, String, BigInteger, ForeignKey
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from Dao.DB_Postgres.models import association_table
-
-Base = declarative_base()
+from Dao.models.models import association_table, Base
+from Dao.models.Transaction import Transaction
 
 class Address(Base):
     __tablename__ = "addresses"
