@@ -1,6 +1,4 @@
-from sre_parse import State
-
-from aiogram.fsm.state import StatesGroup
+from aiogram.fsm.state import StatesGroup, State
 
 
 class TransactionStates(StatesGroup):
