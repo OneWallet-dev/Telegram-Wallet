@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, BigInteger, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from Dao.models.models import association_table
+from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
 from Dao.models.Transaction import Transaction
 
@@ -22,5 +22,5 @@ class Address(Base):
     )
 
     tokens = relationship(
-        "Token", secondary=association_table, back_populates="addresses", lazy="joined"
+        "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
     )
