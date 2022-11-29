@@ -1,16 +1,12 @@
 import asyncio
-import functools
 import inspect
-import json
 from contextlib import suppress
 
 from aiogram import Bot
-from aiogram.dispatcher.event.handler import HandlerObject
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply, Message, \
-    CallbackQuery, Update, Chat
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.types import InlineKeyboardMarkup, Message, \
+    Update
 
 
 # TODO: Все же раскидать на два разных класса

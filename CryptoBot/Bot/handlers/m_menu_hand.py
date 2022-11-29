@@ -3,7 +3,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.loading_handler import loader
 from Bot.handlers.transaction_hand import transaction_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
@@ -11,9 +10,8 @@ from Bot.states.main_states import MainState
 from Bot.states.trans_states import TransactionStates
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
+from Bot.utilts.pretty_texts import pretty_wallet_text
 from Dao.models.Owner import Owner
-from Dao.models.Wallet import Wallet
-from Dao.models.Address import Address
 from crypto.address_gen import Wallet_web3
 
 router = Router()
@@ -54,11 +52,7 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
         eth_addrs = list(owner.wallets.get("ethereum").addresses.keys())[0]
         bitcoin_addrs = list(owner.wallets.get("bitcoin").addresses.keys())[0]
 
-    tron_text = tron_text.format(tron_addrs, str(Balance))
-    eth_text = eth_text.format(eth_addrs, str(Balance))
-    bit_text = bit_text.format(bitcoin_addrs, str(Balance))
-    sep = "\n<code>——————————————————————</code>\n"
-    text = tron_text + sep + eth_text + sep + bit_text
+    text = pretty_wallet_text(owner.wallets)
 
     keep_old = False if isinstance(event, Message) else True
     await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,

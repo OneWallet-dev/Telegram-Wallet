@@ -1,6 +1,5 @@
 import os
 
-
 from aiogram import Bot
 
 

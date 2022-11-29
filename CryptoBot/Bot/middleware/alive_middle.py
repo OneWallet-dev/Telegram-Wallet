@@ -1,10 +1,10 @@
-from aiogram import BaseMiddleware
 from typing import Any, Awaitable, Callable, Dict
 
+from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from Dao.DB_Redis import RedRedis, DataRedis
+from Dao.DB_Redis import DataRedis
 
 
 class AliveMiddleware(BaseMiddleware):

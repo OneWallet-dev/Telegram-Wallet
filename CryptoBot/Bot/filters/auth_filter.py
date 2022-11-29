@@ -1,7 +1,7 @@
 from aiogram.filters import Filter
-from aiogram.types import User, Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery
 
-from Dao.DB_Redis import RedRedis, DataRedis
+from Dao.DB_Redis import DataRedis
 
 
 class NotAuthFilter(Filter):

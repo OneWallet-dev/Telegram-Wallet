@@ -1,7 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Table
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
+from Dao.DB_Postgres.session import Base
 
 # Base_api = 'https://rest.cryptoapis.io'
 # API_version = "/v2"

@@ -8,8 +8,8 @@ from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.states.main_states import AuthState
 from Bot.utilts.mmanager import MManager
-from Dao.models.Owner import Owner
 from Dao.DB_Redis import DataRedis
+from Dao.models.Owner import Owner
 
 router = Router()
 router.message.filter(NotAuthFilter())

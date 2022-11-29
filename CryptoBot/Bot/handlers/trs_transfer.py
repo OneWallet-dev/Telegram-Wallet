@@ -1,10 +1,10 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.keyboards.transaction_keys import m_transaction, trans_token_kb, trans_network_kb, change_transfer_token
+from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token
 from Bot.states.trans_states import Trs_transfer
 
 router = Router()

@@ -1,17 +1,10 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from sqlalchemy.ext.asyncio import AsyncSession
+from aiogram.types import Message
 
-from Bot.handlers.loading_handler import loader
-from Bot.keyboards.wallet_keys import create_wallet_kb, currency_kb, use_wallet_kb, send_money_kb, \
-    send_money_confirm_kb, AML_menu
+from Bot.keyboards.wallet_keys import AML_menu
 from Bot.states.main_states import MainState
-from Bot.states.wallet_states import WalletStates
-from Bot.utilts.mmanager import MManager
-from Bot.utilts.currency_helper import base_tokens
-from Bot.utilts.pretty_texts import pretty_balance
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, MainState.AML_check))

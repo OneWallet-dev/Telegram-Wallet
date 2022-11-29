@@ -1,3 +1,4 @@
+from Bot.wallet_generator.wallet_generator import wallet_bip44
 from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -6,8 +7,6 @@ from aiogram.types import Message
 from Bot.handlers.loading_handler import loader
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
-from Bot.wallet_generator.wallet_generator import wallet_bip44
-
 from Dao.models.Wallet import Wallet
 
 router = Router()

@@ -2,15 +2,17 @@ import datetime
 
 from aiogram.types import User
 from cryptography.hazmat.primitives import hashes
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
+from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
-from Dao.models.models import Base
+from Dao.DB_Postgres.session import create_session, Base
+from Dao.models.Address import Address
 from Dao.models.Token import Token
 from Dao.models.Wallet import Wallet
 
@@ -59,10 +61,27 @@ class Owner(Base):
         return str(result)
 
     @staticmethod
-    async def add_currency(session: AsyncSession, user: User, token: str, network: str):
-        owner: Owner = await session.get(Owner, str(user.id))
-        wallets: dict[str, Wallet] = owner.wallets
-        wall = wallets[network]
-        wall.tokens.append(Token(token_name=token, contract_Id=base_tokens[token]['contract_address']))
-        session.add(wall)
-        await session.commit()
+    async def add_currency(user: User, token: str, network: str):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            token_ref = base_tokens.get(token)
+
+            address = await Owner.get_address(session, user, token_ref['blockchain'])
+            token_obj = Token(token_name=token,
+                              contract_Id=base_tokens[token]['contract_address'],
+                              network=network)
+            if token_obj not in address.tokens:
+                address.tokens.append(token_obj)
+                session.add(address)
+                await session.commit()
+            else:
+                raise DuplicateToken
+
+    @staticmethod
+    async def get_address(session: AsyncSession, user: User, blockchain: str, path_index: int = 0):
+        address: Address = (await session.execute(
+            select(Address).where(
+                Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
+                    Wallet.owner_id == str(user.id), Wallet.blockchain == blockchain).scalar_subquery()))
+                            ).first()[0]
+        return address
