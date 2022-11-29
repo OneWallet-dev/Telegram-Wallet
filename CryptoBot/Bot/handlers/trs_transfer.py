@@ -19,7 +19,7 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     token = data[-1]
     await state.update_data(token=token)
     text = "Перевод: token\nБаланс: Не определен\nСеть: Не выбрана\n" \
-           "Адрес получателя: Не известен\n\n"
+           "Адрес получателя: Не известен\nСумма: 0\n\n"
     text = text.replace("token", token)
     await state.update_data(text=text)
     network = ["TRC-20"]
@@ -41,6 +41,39 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     text = text + "Напишите адрес получателя"
     await state.set_state(Trs_transfer.address)
     await bot.edit_message_text(text, callback.from_user.id, message_id, reply_markup=change_transfer_token())
+
+@router.message(StateFilter(Trs_transfer.address))
+async def address(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    sdata = await state.get_data()
+    text = sdata.get("text")
+    message_id = sdata.get("message_id")
+
+    address = message.text
+    token = sdata.get("token")
+    text = text.replace("Не известен", address)
+    text = text + f"Напишите сумму для перевода в {token}"
+    await state.update_data(address=address)
+    await bot.edit_message_text(text, message.from_user.id, message_id, reply_markup=change_transfer_token())
+
+@router.message(StateFilter(Trs_transfer.confirm_transfer))
+async def confirm_transfer(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    await message.delete()
+    sdata = await state.get_data()
+    message_id = sdata.get("message_id")
+
+    token = sdata.get("token")
+    network = sdata.get("network")
+    to_address = sdata.get("address")
+    amount = float(message.text)
+    fee = 1.0
+
+    res_sum = amount + fee
+
+    text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
+           f"Перевод: {token}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
+           f"_________________________\nКомиссия: {fee} {token}\nСумма: {res_sum} {token}"
+
+    await message.answer(text)
 
 
 
