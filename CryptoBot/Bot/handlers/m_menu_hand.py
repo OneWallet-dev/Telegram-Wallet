@@ -71,7 +71,7 @@ async def my_wallet_start(message: Message, state: FSMContext, session: AsyncSes
         Balance = 0.00
         tron['address_0'] = list(owner.wallets.get("tron").addresses.keys())[0]
         eth['address_0'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
-        tron['address_0'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
+        bitcoin['address_0'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
 
     tron_text = tron_text.format(tron.get("address_0").get("address"), str(Balance))
     eth_text = eth_text.format(eth.get("address_0").get("address"), str(Balance))
