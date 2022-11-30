@@ -10,6 +10,7 @@ from Bot.keyboards.transaction_keys import m_transaction, trans_token_kb, trans_
     kb_confirm_transfer
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens
+from Bot.utilts.settings import DEBUG_MODE
 from Dao.models.Owner import Owner
 from crypto.TRON_wallet import Tron_wallet
 
@@ -96,8 +97,12 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     fee = sdata.get("fee")
 
     token_info = base_tokens.get(token, None)
+
     if token_info is not None:
-        contract_address = token_info.get("contract_address")
+        if DEBUG_MODE:
+            contract_address = token_info.get("testnet_contract_address")
+        else:
+            contract_address = token_info.get("contract_address")
     else:
         contract_address = None
         # пользовательский контракт
@@ -112,12 +117,14 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
 
             th = await tron.TRC_20_transfer(wallet_private_key, contract_address,
                                             wallet_address, to_address, float(amount))
+            print(1111)
+            print(th)
             if "https://" in th:
                 link = hlink('ссылке', th)
                 await callback.message.delete()
                 await callback.message.answer(f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
             else:
-                await callback.answer("Ошибка транзакции, пожалуйста проверьте баланс")
+                await callback.answer(th)
 
 
 @router.callback_query(lambda call: "cancel_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))

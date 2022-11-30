@@ -4,10 +4,7 @@ from tronpy.exceptions import *
 from tronpy.keys import PrivateKey
 from tronpy.providers.async_http import AsyncHTTPProvider
 
-
-nile_USDT = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"
-
-DEBUG_MODE = True
+from Bot.utilts.settings import DEBUG_MODE
 
 
 class Tron_wallet:
@@ -68,6 +65,8 @@ class Tron_wallet:
             return client.get_account_asset_balance()
 
     async def TRC_20_get_balance(self, contract: str, address: str):
+        print(contract)
+        print(address)
         if await self.is_valid_address(address) is False:
             raise ValueError(f"BadAddress {address}")
         if await self.is_valid_contract(contract) is False:
@@ -85,8 +84,11 @@ class Tron_wallet:
 
         client = self._get_client()
 
-        async with client as client:
-            return float(await client.get_account_balance(address))
+        try:
+            async with client as client:
+                return float(await client.get_account_balance(address))
+        except AddressNotFound:  # активация кошелька
+            return float(0)
 
     async def txn_info(self, txn_id, req=5):
         client = self._get_client()
@@ -158,8 +160,7 @@ class Tron_wallet:
 
         balance_token = await self.TRC_20_get_balance(contract=contract, address=from_address)
         if float(balance_token) < float(amount):
-            print("На счету недостаточно средств")
-            return False
+            return "На счету недостаточно средств"
 
         balance_trx = await self.TRX_get_balance(address=from_address)
         if balance_trx < self.__main_fee:
