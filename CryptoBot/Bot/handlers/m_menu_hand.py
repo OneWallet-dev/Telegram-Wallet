@@ -4,15 +4,13 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.transaction_hand import transaction_start
+from Bot.handlers.wallet_hand import my_wallet_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
 from Bot.states.trans_states import TransactionStates
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.pretty_texts import pretty_wallet_text
-from Dao.models.Owner import Owner
-from crypto.address_gen import Wallet_web3
 
 router = Router()
 
@@ -29,34 +27,9 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 
 
 @router.message(F.text == "💹 Мой кошелек")
-@router.callback_query(F.data == 'refresh_wallet')
-async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
-    message = event if isinstance(event, Message) else event.message
-    user_id = event.from_user.id
-
-    tron_text = "Tron:\nАдрес: <code>{}</code>\n\n- TRX: {}"
-    eth_text = "Ethereum:\nАдрес: <code>{}</code>\n\n- ETH: {}"
-    bit_text = "Bitcoin:\nАдрес: <code>{}</code>\n\n- Bitcoin: {}"
-    await state.set_state(WalletStates.create_token)
-    owner: Owner = await session.get(Owner, str(user_id))
-    Balance = 0.00
-    if owner.wallets.get("tron", None) is None:
-        generator = Wallet_web3()
-        wallets = await generator.generate_all_walllets(user_id, session)
-        tron_addrs = wallets.get("tron")
-        eth_addrs = wallets.get("eth")
-        bitcoin_addrs = wallets.get("bitcoin")
-    else:
-        Balance = 0.00
-        tron_addrs = list(owner.wallets.get("tron").addresses.keys())[0]
-        eth_addrs = list(owner.wallets.get("ethereum").addresses.keys())[0]
-        bitcoin_addrs = list(owner.wallets.get("bitcoin").addresses.keys())[0]
-
-    text = pretty_wallet_text(owner.wallets)
-
-    keep_old = False if isinstance(event, Message) else True
-    await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
-                                keyboard=main_wallet_keys(), keep_old=keep_old)
+async def menu_wallet_start(message: Message, bot: Bot, state: FSMContext, session: AsyncSession):
+    await state.set_state(WalletStates.main)
+    await my_wallet_start(event=message, state=state, bot=bot, session=session)
 
 
 @router.message(F.text == "👁‍🗨 AML Check")
