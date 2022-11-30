@@ -10,15 +10,24 @@ def main_wallet_keys():
     mark.row((InlineKeyboardButton(text=f"Добавить токен", callback_data="add_token")))
     mark.row((InlineKeyboardButton(text=f"Удалить токен", callback_data="delete_token")))
     mark.row((InlineKeyboardButton(text=f"Детальный вид", callback_data="inspect_token")))
+    mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet_edit")))
     mark.adjust(2, 1)
     return mark.as_markup(resize_keyboard=True)
 
 
-def token_kb(custom_token_list: list | None = None):
+def add_token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
     t_list = custom_token_list if custom_token_list else base_tokens.keys()
     for token in t_list:
         mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"new_t_{token}")))
+    mark.adjust(2)
+    return mark.as_markup(resize_keyboard=True)
+
+
+def delete_token_kb(token_list: list):
+    mark = InlineKeyboardBuilder()
+    for token in token_list:
+        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"del_t_{token}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 
@@ -34,7 +43,14 @@ def network_kb(token: str, custom_network_list: list | None = None):
 
 def refresh_button():
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet")))
+    mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet_keep")))
+    return mark.as_markup(resize_keyboard=True)
+
+
+def confirm_delete_kb():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"🗑 Подтвердить удаление", callback_data="сonfirm_delete")))
+    mark.row((InlineKeyboardButton(text=f"Отменить", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
 
 

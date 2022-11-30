@@ -17,7 +17,7 @@ class Token(Base):
     )
 
     def __str__(self):
-        return self.wallet_address
+        return f"{self.token_name}, {self.contract_Id}, {self.network}"
 
     def __eq__(self, other):
         if not isinstance(other, Token):

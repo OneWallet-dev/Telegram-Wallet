@@ -5,6 +5,8 @@ from hdwallet.derivations import BIP44Derivation
 from hdwallet.utils import generate_mnemonic
 from typing import Union
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
@@ -15,44 +17,49 @@ class Wallet_web3:
         self.language = language
         self.strength = strength
 
-    async def generate_all_walllets(self, user_id: int, session: AsyncSession, passphrase: str | None = None):
-        wallets = dict()
-        tron_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)
-        tron_mnemomic = tron_wallet.get("mnemonic")
-        eth_wallet = await self._generate_address(EthereumMainnet, passphrase=passphrase)
-        eth_mnemomic = eth_wallet.get("mnemonic")
-        bitcoin_wallet = await self._generate_address(BitcoinMainnet, passphrase=passphrase)
-        bitcoin_mnemomic = bitcoin_wallet.get("mnemonic")
+    async def generate_all_walllets(self, user_id: int, passphrase: str | None = None):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            wallets = dict()
+            tron_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)
+            tron_mnemomic = tron_wallet.get("mnemonic")
+            eth_wallet = await self._generate_address(EthereumMainnet, passphrase=passphrase)
+            eth_mnemomic = eth_wallet.get("mnemonic")
+            bitcoin_wallet = await self._generate_address(BitcoinMainnet, passphrase=passphrase)
+            bitcoin_mnemomic = bitcoin_wallet.get("mnemonic")
 
-        owner: Owner = await session.get(Owner, str(user_id))
-        tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
-                                       private_key=tron_wallet.get("address_0").get("private_key"))
-        tronwallet = Wallet(blockchain="tron", mnemonic=tron_mnemomic)
-        tronwallet.addresses.update({tron_wallet.get("address_0").get("address"): tronaddress})
-        owner.wallets["tron"] = tronwallet
+            new_wallets = dict()
 
-        ethaddress: Address = Address(address=eth_wallet.get("address_0").get("address"),
-                                      private_key=eth_wallet.get("address_0").get("private_key"))
-        ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth_mnemomic)
-        ethnwallet.addresses.update({eth_wallet.get("address_0").get("address"): ethaddress})
-        owner.wallets["ethereum"] = ethnwallet
+            owner: Owner = await session.get(Owner, str(user_id))
+            tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
+                                           private_key=tron_wallet.get("address_0").get("private_key"))
+            tronwallet = Wallet(blockchain="tron", mnemonic=tron_mnemomic)
+            tronwallet.addresses.update({tron_wallet.get("address_0").get("address"): tronaddress})
+            new_wallets["tron"] = tronwallet
 
-        bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
-                                      private_key=bitcoin_wallet.get("address_0").get("private_key"))
-        bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
-        bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
-        owner.wallets["bitcoin"] = bitwallet
+            ethaddress: Address = Address(address=eth_wallet.get("address_0").get("address"),
+                                          private_key=eth_wallet.get("address_0").get("private_key"))
+            ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth_mnemomic)
+            ethnwallet.addresses.update({eth_wallet.get("address_0").get("address"): ethaddress})
+            new_wallets["ethereum"] = ethnwallet
 
-        session.add(owner)
-        await session.commit()
-        await session.close()
-        try:
-            wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
-            wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
-            wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
-        except Exception as e:
-            print("Кошельки не создались", e)
-        return wallets
+            bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
+                                          private_key=bitcoin_wallet.get("address_0").get("private_key"))
+            bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
+            bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
+            new_wallets["bitcoin"] = bitwallet
+
+            owner.wallets.update(new_wallets)
+
+            session.add(owner)
+            await session.commit()
+            try:
+                wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
+                wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
+                wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
+            except Exception as e:
+                print("Кошельки не создались", e)
+            return new_wallets
 
     async def _generate_address(
             self,

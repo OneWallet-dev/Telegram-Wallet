@@ -1,4 +1,5 @@
 import datetime
+from contextlib import suppress
 
 from aiogram.types import User
 from cryptography.hazmat.primitives import hashes
@@ -24,7 +25,7 @@ class Owner(Base):
     username = Column(String)
     datetime_come = Column(DateTime, default=datetime.datetime.now())
     password = Column(String, default=None)
-    wallets: dict[str: Wallet] = relationship(
+    wallets: dict[str, Wallet] = relationship(
         "Wallet",
         collection_class=attribute_mapped_collection("blockchain"),
         cascade="all, delete-orphan", lazy="joined"
@@ -59,23 +60,6 @@ class Owner(Base):
         digest.update(bytes(text, "UTF-8"))
         result = digest.finalize()
         return str(result)
-
-    @staticmethod
-    async def add_currency(user: User, token: str, network: str):
-        session_connect = await create_session()
-        async with session_connect() as session:
-            token_ref = base_tokens.get(token)
-
-            address = await Owner.get_address(session, user, token_ref['blockchain'])
-            token_obj = Token(token_name=token,
-                              contract_Id=base_tokens[token]['contract_address'],
-                              network=network)
-            if token_obj not in address.tokens:
-                address.tokens.append(token_obj)
-                session.add(address)
-                await session.commit()
-            else:
-                raise DuplicateToken
 
     @staticmethod
     async def get_address(session: AsyncSession, user: User, blockchain: str, path_index: int = 0):

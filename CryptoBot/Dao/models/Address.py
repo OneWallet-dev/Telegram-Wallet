@@ -1,7 +1,9 @@
 from sqlalchemy import Column, String, BigInteger, ForeignKey, Integer
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
+from Dao.models.Token import Token
 from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
 from Dao.models.Transaction import Transaction
@@ -24,3 +26,5 @@ class Address(Base):
     tokens = relationship(
         "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
     )
+
+    token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
