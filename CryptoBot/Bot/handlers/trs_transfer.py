@@ -103,24 +103,21 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
         # пользовательский контракт
         pass
     if network in network_dict.get("tron"):
-        tron = Tron_wallet('mainnet')
+        tron = Tron_wallet()
         wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
         wallet_address = list(owner.wallets.get("tron").addresses.values())[0].address
         if network == "TRC-10":
             pass
         else:
 
-            th = await tron.trc20_transfer(wallet_private_key, contract_address, wallet_address, to_address, int(amount))
-            if "https://tronscan.org/" in th:
+            th = await tron.TRC_20_transfer(wallet_private_key, contract_address,
+                                            wallet_address, to_address, float(amount))
+            if "https://" in th:
                 link = hlink('ссылке', th)
                 await callback.message.delete()
                 await callback.message.answer(f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
             else:
                 await callback.answer("Ошибка транзакции, пожалуйста проверьте баланс")
-
-    elif network in network_dict.get("ethereum"):
-        wallet_private_key = list(owner.wallets.get("ethereum").addresses.values())[0].private_key
-        wallet_address = list(owner.wallets.get("ethereum").addresses.values())[0].address
 
 
 @router.callback_query(lambda call: "cancel_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
