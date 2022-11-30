@@ -22,5 +22,5 @@ class Address(Base):
     )
 
     tokens = relationship(
-        "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
+        "Token", secondary=address_tokens,back_populates="addresses", lazy="joined"
     )

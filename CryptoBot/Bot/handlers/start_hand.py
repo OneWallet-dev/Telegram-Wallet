@@ -4,6 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.collections import MappedCollection, InstrumentedList
 
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.auth_hand import you_need_tb_authenticated
@@ -67,19 +68,21 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-   owner: Owner = await session.get(Owner, str(message.from_user.id))
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
 
-   # owner.wallets["tron"] = Wallet(blockchain="tron")
-   address: Address = Address(address="token_address")
-   owner.wallets["tron123"] = Wallet(blockchain="tron123")
-   token: Token = Token(contract_Id = "token_contract", token_name = "token_name")
-   address.tokens.append(token)
-   wallet_tron: Wallet = owner.wallets["tron123"]
-   wallet_tron.addresses[address.address]=address
+    # owner.wallets["tron"] = Wallet(blockchain="tron")
+    address: Address = Address(address="token_address")
+    owner.wallets["tron123"] = Wallet(blockchain="tron123")
+    token: Token = Token(contract_Id="token_contract", token_name="token_name")
+    print(type(address.tokens))
+    address.tokens[token.token_name] = token
+    wallet_tron: Wallet = owner.wallets["tron123"]
+    wallet_tron.addresses[address.address] = address
 
-   session.add(owner)
-   await session.commit()
-   await session.close()
+    session.add(owner)
+    await session.commit()
+    await session.close()
+
 
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
@@ -87,3 +90,19 @@ async def command_test(message: Message, state: FSMContext, session: AsyncSessio
     await Owner.add_currency(session, message.from_user, 'USDT', 'aaaa')
     """Please use this function if you want to test something new"""
     pass
+
+
+@router.message(Command("testORM"))
+@MManager.garbage_manage(store=True, clean=True)
+async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
+    print(owner.wallets)
+    for wallet in owner.wallets.values():
+        print(wallet.id)
+        print(wallet.blockchain)
+        for address in wallet.addresses.values():
+            print(address.tokens)
+            tokens = address.tokens
+            for token in tokens:
+                print(token.token_name)
+                print(token.contract_Id)
