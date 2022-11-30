@@ -24,7 +24,7 @@ class Address(Base):
     )
 
     tokens = relationship(
-        "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
+        "Token", secondary=address_tokens,back_populates="addresses", lazy="joined"
     )
 
     token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
