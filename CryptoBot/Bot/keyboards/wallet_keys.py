@@ -3,6 +3,7 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 from Bot.keyboards.base_keys import back_button
 from Bot.utilts.currency_helper import base_tokens
+from Dao.models.Token import Token
 
 
 def main_wallet_keys():
@@ -28,6 +29,14 @@ def delete_token_kb(token_list: list):
     mark = InlineKeyboardBuilder()
     for token in token_list:
         mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"del_t_{token}")))
+    mark.adjust(2)
+    return mark.as_markup(resize_keyboard=True)
+
+
+def inspect_token_kb(token_list: list[Token]):
+    mark = InlineKeyboardBuilder()
+    for token in token_list:
+        mark.row((InlineKeyboardButton(text=str(token), callback_data=f"inspect_t_{token}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 

@@ -1,6 +1,8 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.collections import attribute_mapped_collection
 
+from Dao.models.Transaction import Transaction
 from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
 
@@ -15,7 +17,6 @@ class Token(Base):
     addresses = relationship(
         "Address", secondary=address_tokens, back_populates="tokens", lazy="joined"
     )
-
     def __str__(self):
         return f"{self.token_name} [{self.network}]"
 

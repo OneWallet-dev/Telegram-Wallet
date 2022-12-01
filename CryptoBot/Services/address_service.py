@@ -1,6 +1,7 @@
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Token import Token
+from Dao.models.Transaction import Transaction
 from crypto.TRON_wallet import Tron_wallet
 
 
@@ -24,3 +25,10 @@ class AdressService:
                         balance = await twallet.TRC_10_get_balance(address)
                     balances.update({token.token_name: balance})
         return balances
+
+    @staticmethod
+    async def createTransaction(adress: Address, amount: float) -> Transaction:
+        await Tron_wallet.TRC_20_transfer()
+
+
+        return Transaction()

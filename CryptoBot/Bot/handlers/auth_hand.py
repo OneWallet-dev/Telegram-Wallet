@@ -21,6 +21,8 @@ router.callback_query.filter(NotAuthFilter())
 @MManager.garbage_manage()
 async def you_need_tb_authenticated(event: Message | CallbackQuery, state: FSMContext):
     await state.set_state(AuthState.need_auth)
+    if isinstance(event, CallbackQuery):
+        await event.answer()
     message = event if isinstance(event, Message) else event.message
     msg = await message.answer("<i>К сожалению, ваша сессия истекла.\n"
                                "Авторизируйтесь в боте, отправив ему свой пароль.</i>")

@@ -15,8 +15,6 @@ from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Wallet import Wallet
-from Dao.models.Address import Address
-from Services.token_service import TokenService
 
 router = Router()
 
@@ -69,17 +67,22 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
-    owner: Owner = await session.get(Owner, str(message.from_user.id))
-
+    # owner: Owner = await session.get(Owner, str(message.from_user.id))
+    owner: Owner = Owner(id="Kakcam",
+                         username="wdwdwdwd")
     # owner.wallets["tron"] = Wallet(blockchain="tron")
     address: Address = Address(address="token_address")
     owner.wallets["tron123"] = Wallet(blockchain="tron123")
     token: Token = Token(contract_Id="token_contract", token_name="token_name")
     print(type(address.tokens))
-    address.tokens[token.token_name] = token
+    address.tokens.append(token)
     wallet_tron: Wallet = owner.wallets["tron123"]
     wallet_tron.addresses[address.address] = address
 
+    session.add(owner)
+    await session.commit()
+    await session.close()
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
     session.add(owner)
     await session.commit()
     await session.close()
@@ -95,14 +98,19 @@ async def command_test(message: Message, state: FSMContext, session: AsyncSessio
 @router.message(Command("testORM"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+    # query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
     owner: Owner = await session.get(Owner, str(message.from_user.id))
-    print(owner.wallets)
-    for wallet in owner.wallets.values():
-        print(wallet.id)
-        print(wallet.blockchain)
-        for address in wallet.addresses.values():
-            print(address.tokens)
-            tokens = address.tokens
-            for token in tokens:
-                print(token.token_name)
-                print(token.contract_Id)
+    fee = owner.wallets["tron"].addresses["TRBFpVNwNwZ4jBRgS7HMRsBmA5GRVsVDtE"].get_adress_freezed_fee()
+    await message.answer(str(fee))
+    await session.commit()
+    await session.close()
+
+    # for wallet in owner.wallets.values():
+    #     print(wallet.id)
+    #     print(wallet.blockchain)
+    #     for address in wallet.addresses.values():
+    #         print(address.tokens)
+    #         tokens = address.tokens
+    #         for token in tokens:
+    #             print(token.token_name)
+    #             print(token.contract_Id)
