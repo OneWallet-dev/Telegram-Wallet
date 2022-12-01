@@ -60,12 +60,3 @@ class Owner(Base):
         digest.update(bytes(text, "UTF-8"))
         result = digest.finalize()
         return str(result)
-
-    @staticmethod
-    async def get_address(session: AsyncSession, user: User, blockchain: str, path_index: int = 0):
-        address: Address = (await session.execute(
-            select(Address).where(
-                Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
-                    Wallet.owner_id == str(user.id), Wallet.blockchain == blockchain).scalar_subquery()))
-                            ).first()[0]
-        return address

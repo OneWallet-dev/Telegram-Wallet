@@ -1,13 +1,17 @@
 from contextlib import suppress
 
 from aiogram.types import User
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
 from Dao.DB_Postgres.session import create_session
+from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
+from Dao.models.Wallet import Wallet
 from Services.token_service import TokenService
 
 
@@ -40,7 +44,7 @@ class OwnerService:
         async with session_connect() as session:
             token_ref = base_tokens.get(token)
 
-            address = await Owner.get_address(session, user, token_ref['blockchain'])
+            address = await OwnerService.get_сhain_address(session, user, token_ref['blockchain'])
             token_obj = await TokenService.get_token(base_tokens[token]['contract_address'])
             if not token_obj:
                 token_obj = Token(token_name=token,
@@ -53,3 +57,14 @@ class OwnerService:
                     await session.commit()
             else:
                 raise DuplicateToken
+
+    @staticmethod
+    async def get_сhain_address(session: AsyncSession, user: User, blockchain: str, path_index: int = 0):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            address: Address = (await session.execute(
+                select(Address).where(
+                    Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
+                        Wallet.owner_id == str(user.id), Wallet.blockchain == blockchain).scalar_subquery()))
+                                ).first()[0]
+            return address
