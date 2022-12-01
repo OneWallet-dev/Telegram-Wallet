@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, KeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
+from Bot.keyboards.base_keys import back_button
 from Bot.utilts.currency_helper import base_tokens
 
 
@@ -10,7 +11,8 @@ def m_transaction():
     mark.row((KeyboardButton(text="Перевести")))
     mark.row((KeyboardButton(text="Вывести")))
     mark.row((KeyboardButton(text="История")))
-    mark.adjust(2)
+    mark.row((KeyboardButton(text="'⬅️ Назад'")))
+    mark.adjust(2, 1, 1, 1)
     return mark.as_markup(resize_keyboard=True)
 
 
