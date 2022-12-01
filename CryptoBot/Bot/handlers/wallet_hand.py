@@ -23,14 +23,12 @@ from Dao.models.Token import Token
 from Services.address_service import AdressService
 from Services.owner_service import OwnerService
 from Services.token_service import TokenService
-from crypto.TRON_wallet import Tron_wallet
 from crypto.address_gen import Wallet_web3
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 
-@router.callback_query(F.data == 'refresh_wallet')
 async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     message = event if isinstance(event, Message) else event.message
     user_id = event.from_user.id
@@ -43,7 +41,7 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
             text = 'Похоже, что у вас присутствуют не все базовые кошельки. Пожалуйста, обратитесь в поддержку.'
         else:
             generator = Wallet_web3()
-            owner_wallets = await generator.generate_all_walllets(user_id)
+            await generator.generate_all_walllets(user_id)
             await loader(message.chat.id, text="<i>Происходит генерация ваших основных кошельков.\n"
                                                "Пожалуйста, подождите.</i>")
     else:
@@ -136,17 +134,17 @@ async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, ses
 async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
-    bal_data = await TokenService.balance_data(user_id=callback.from_user.id, token_name=token, token_network=network)
-    address: str = bal_data['address']
-    token_obj: Token = bal_data['token']
-    balance = await AdressService.get_balances(address=address, specific=[token_obj])
+    bal_data = await TokenService.find_address_token(user_id=callback.from_user.id, token_name=token, token_network=network)
+    address: Address = bal_data.get('address')
+    token_obj: Token = bal_data.get('token')
+    balance = await AdressService.get_balances(address=address.address, specific=[token_obj])
     if balance:
-        text = f"Обнаружены средства: {balance} {token_obj.token_name}\n" \
+        text = f"Обнаружены средства: {balance} {balance[token_obj.token_name]}\n" \
                f"Если вы удалите токен, они никуда не пропадут, " \
                f"но вы не сможете их отслеживать, пока не добавите его снова."
     else:
         text = "Средств не обнаружено, запись токена может быть безопасно удалена."
-    await state.update_data(contract_Id=token_obj.contract_Id, address=address)
+    await state.update_data(contract_Id=token_obj.contract_Id, address=address.address)
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id,
                                 reply_markup=confirm_delete_kb())
@@ -159,8 +157,23 @@ async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot, s
     contract_id = data.get('contract_Id')
     address = data.get('address')
     address_obj: Address = await session.get(Address, address)
+    text = "Непредвиденная ошибка"
     for token in address_obj.tokens:
         if token.contract_Id == contract_id:
             address_obj.tokens.remove(token)
-    session.add(address_obj)
-    await session.commit()
+            session.add(address_obj)
+            await session.commit()
+            text = f"Вы больше не отслеживаете токен {str(token)}"
+            break
+        text = f"Произошла ошибка: токен с заданным контрактом не был обнаружен на данном адресе."
+    await bot.edit_message_text(text=text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                reply_markup=main_wallet_keys())
+
+
+
+
+
+
+@router.callback_query(F.data.startswith("inspect_token"), StateFilter(WalletStates.inspect_token))
+async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+    pass
