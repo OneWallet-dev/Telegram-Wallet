@@ -59,7 +59,7 @@ def refresh_button():
 def confirm_delete_kb():
     mark = InlineKeyboardBuilder()
     mark.row((InlineKeyboardButton(text=f"🗑 Подтвердить удаление", callback_data="сonfirm_delete")))
-    mark.row((InlineKeyboardButton(text=f"Отменить", callback_data="refresh_wallet")))
+    mark.row((InlineKeyboardButton(text=f"Отменить", callback_data="refresh_wallet_edit")))
     return mark.as_markup(resize_keyboard=True)
 
 
