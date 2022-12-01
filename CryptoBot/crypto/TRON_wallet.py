@@ -169,8 +169,8 @@ class Tron_wallet():
             from_address: str,
             to_address: str,
             amount: float,
-            fee_transaction: float = None,
-            fee_frozen: float = None,
+            fee_transaction: float = 0.0,
+            fee_frozen: float = 0.0,
             fee_limit: int = None
     ) -> dict:
 
