@@ -42,7 +42,7 @@ class OwnerService:
 
             address = await Owner.get_address(session, user, token_ref['blockchain'])
             token_obj = await TokenService.get_token(base_tokens[token]['contract_address'])
-            if not token:
+            if not token_obj:
                 token_obj = Token(token_name=token,
                                   contract_Id=base_tokens[token]['contract_address'],
                                   network=network)
