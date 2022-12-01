@@ -59,16 +59,13 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
         pass
     await state.update_data(contract_address=contract_address)
 
-    tron_address = await owner.get_сhain_address(int(callback.from_user.id), 'tron')
-    print(1, tron_address.address)
-    print(network)
+    tron_address = await owner.get_chain_address(int(callback.from_user.id), 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
         balance = await tron.TRX_get_balance(tron_address.address)
     elif network in blockchains.get("tron").get("networks"):
         balance = await tron.TRC_20_get_balance(contract_address, tron_address.address)
     else:
-        raise ValueError("Тetwork not supported")
-    print(balance)
+        raise ValueError("Network not supported")
 
     text = sdata.get("text")
     text = text.replace("Не выбрана", network)
@@ -125,7 +122,7 @@ async def confirm_transfer(message: Message, state: FSMContext):
 
 
 @router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
-async def start_transfer(callback: CallbackQuery, state: FSMContext, session: AsyncSession):
+async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
     await callback.message.delete()
     await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется",
                  time=20)
@@ -147,12 +144,14 @@ async def start_transfer(callback: CallbackQuery, state: FSMContext, session: As
 
             th = await tron.TRC_20_transfer(wallet_private_key, contract_address,
                                             wallet_address, to_address, float(amount))
-            if "https://" in th:
+            if th.get("status") == "SUCCESS":
                 await state.set_state(TransactionStates.main)
-                link = hlink('ссылке', th)
+                link = hlink('ссылке', th.get("txn_id"))
                 await callback.message.answer(
                     f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
+                await transaction_start(callback.message, bot, state)
             else:
+                await transaction_start(callback.message, bot, state)
                 await callback.answer("Ошибка транзакции")
                 await state.set_state(TransactionStates.main)
 
