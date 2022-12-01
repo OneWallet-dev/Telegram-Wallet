@@ -8,6 +8,7 @@ from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
 from Dao.models.Transaction import Transaction
 
+
 class Address(Base):
     __tablename__ = "addresses"
 
@@ -24,7 +25,15 @@ class Address(Base):
     )
 
     tokens = relationship(
-        "Token", secondary=address_tokens,back_populates="addresses", lazy="joined"
+        "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
     )
 
     token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
+
+
+    def get_adress_freezed_fee(self) -> float:
+        service_fee: float = 0
+        for transaction in self.transactions:
+            service_fee = +transaction.service_fee
+
+        return service_fee

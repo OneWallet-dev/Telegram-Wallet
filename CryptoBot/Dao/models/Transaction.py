@@ -4,7 +4,6 @@ from sqlalchemy import Column, BigInteger, Float, String, ForeignKey, DateTime, 
 from sqlalchemy.orm import relationship
 
 from Dao.DB_Postgres.session import Base
-from Dao.models.Token import Token
 
 
 class Transaction(Base):
@@ -12,7 +11,9 @@ class Transaction(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     tnx_id: str = Column(String)
-    token: Token=Column(String, ForeignKey('tokens.token_name', onupdate="CASCADE", ondelete="CASCADE"))
+    token = relationship(
+        "Token", lazy="joined"
+    )
     amount = Column(Float)
     from_wallet = Column(String, ForeignKey('addresses.address', onupdate="CASCADE", ondelete="CASCADE"))
     to_wallet = Column(String)

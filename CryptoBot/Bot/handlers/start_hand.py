@@ -98,8 +98,10 @@ async def command_test(message: Message, state: FSMContext, session: AsyncSessio
 @router.message(Command("testORM"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
-    await session.execute(query)
+    # query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
+    fee = owner.wallets["tron123"].addresses["token_address"].get_adress_freezed_fee()
+    await message.answer(str(fee))
     await session.commit()
     await session.close()
 
