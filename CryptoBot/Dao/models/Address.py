@@ -33,7 +33,7 @@ class Address(Base):
 
     def get_adress_freezed_fee(self) -> float:
         service_fee: float = 0
-        for transaction in self.transactions:
-            service_fee = +transaction.service_fee
+        for transaction in self.transactions.values():
+            service_fee = service_fee+transaction.service_fee
 
         return service_fee

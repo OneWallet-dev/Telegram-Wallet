@@ -11,9 +11,7 @@ class Transaction(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     tnx_id: str = Column(String)
-    token_name = relationship(
-        "Token", lazy="joined"
-    )
+    token_contract_id = Column(String, ForeignKey('tokens.contract_Id', onupdate="CASCADE", ondelete="CASCADE"))
     amount = Column(Float)
     from_wallet = Column(String, ForeignKey('addresses.address', onupdate="CASCADE", ondelete="CASCADE"))
     to_wallet = Column(String)

@@ -11,7 +11,7 @@ class Token(Base):
     __tablename__ = "tokens"
 
     contract_Id = Column(String, primary_key=True)
-    token_name = Column(String, ForeignKey('transactions.token', onupdate="CASCADE", ondelete="CASCADE"))
+    token_name = Column(String)
     network = Column(String)
 
     addresses = relationship(
