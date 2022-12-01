@@ -40,7 +40,7 @@ class Tron_wallet:
         except ValueError:
             return False
 
-    async def is_valid_contract(self, contract_address: str) -> str:
+    async def is_valid_contract(self, contract_address: str) -> str | bool:
         """
         :param contract_address:
         :return: "contract name"

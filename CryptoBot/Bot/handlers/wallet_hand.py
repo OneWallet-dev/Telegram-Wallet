@@ -20,6 +20,7 @@ from Bot.utilts.pretty_texts import all_wallets_text
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
+from Services.address_service import AdressService
 from Services.owner_service import OwnerService
 from Services.token_service import TokenService
 from crypto.TRON_wallet import Tron_wallet
@@ -138,8 +139,8 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
     bal_data = await TokenService.balance_data(user_id=callback.from_user.id, token_name=token, token_network=network)
     address: str = bal_data['address']
     token_obj: Token = bal_data['token']
-    if bal_data:
-        balance = await Tron_wallet().get_balance(contract=token_obj.contract_Id, address=bal_data['address'])
+    balance = await AdressService.get_balances(address=address, specific=[token_obj])
+    if balance:
         text = f"Обнаружены средства: {balance} {token_obj.token_name}\n" \
                f"Если вы удалите токен, они никуда не пропадут, " \
                f"но вы не сможете их отслеживать, пока не добавите его снова."
@@ -159,9 +160,7 @@ async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot, s
     address = data.get('address')
     address_obj: Address = await session.get(Address, address)
     for token in address_obj.tokens:
-        print(address_obj.tokens)
         if token.contract_Id == contract_id:
             address_obj.tokens.remove(token)
-    print(address_obj.tokens)
     session.add(address_obj)
     await session.commit()
