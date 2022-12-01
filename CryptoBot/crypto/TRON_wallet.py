@@ -25,8 +25,10 @@ class Tron_wallet:
 
     def _get_client(self):
         if self.network == "mainnet":
+            print(1)
             return AsyncTron(provider=AsyncHTTPProvider(api_key=self.api_key))
         elif self.network == "nile":
+            print(2)
             return AsyncTron(network="nile")
         else:
             raise ValueError(f"network: <{self.network}>  not supported")
@@ -73,10 +75,18 @@ class Tron_wallet:
             raise ValueError(f"BadContract {contract}")
 
         client = self._get_client()
-
         async with client as client:
             contract = await client.get_contract(contract)
-            return float(await contract.functions.balanceOf(address) / 1_000_000)
+            try:
+                return float(await contract.functions.balanceOf(address) / 1_000_000)
+
+            except ValueError:
+                print(f"'{contract.name}' новый адрес, необходимо активировать")
+                return float(0)
+
+            except AddressNotFound:
+                print(1, f"'{contract.name}' новый адрес, необходимо активировать")
+                pass
 
     async def TRX_get_balance(self, address):
         if await self.is_valid_address(address) is False:
@@ -87,7 +97,13 @@ class Tron_wallet:
         try:
             async with client as client:
                 return float(await client.get_account_balance(address))
+
+        except ValueError:
+            print("TRX новый адрес, необходимо активировать")
+            return float(0)
+
         except AddressNotFound:  # активация кошелька
+            print(1, "TRX новый адрес, необходимо активировать")
             return float(0)
 
     async def txn_info(self, txn_id, req=5):
