@@ -5,10 +5,9 @@ from tronpy.keys import PrivateKey
 from tronpy.providers.async_http import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
-from Services.address_service import AdressService
 
 
-class Tron_wallet(AdressService):
+class Tron_wallet():
     def __init__(self):
         self.api_key = os.getenv('tron_API')
         if DEBUG_MODE:
