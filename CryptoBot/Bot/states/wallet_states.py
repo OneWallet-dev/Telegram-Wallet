@@ -5,6 +5,7 @@ class WalletStates(StatesGroup):
     main = State()
     add_token = State()
     delete_token = State()
+    inspect_token = State()
     choose_currency = State()
     create_wallet = State()
     use_wallet = State()
