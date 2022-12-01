@@ -38,6 +38,7 @@ def inspect_token_kb(token_list: list[Token]):
     for token in token_list:
         mark.row((InlineKeyboardButton(text=str(token), callback_data=f"inspect_t_{token}")))
     mark.adjust(2)
+    mark.row((InlineKeyboardButton(text=f"Вернуться", callback_data="refresh_wallet_edit")))
     return mark.as_markup(resize_keyboard=True)
 
 
