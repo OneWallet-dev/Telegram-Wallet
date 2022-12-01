@@ -23,6 +23,7 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
     bot_name = (await bot.get_me()).full_name
     stick_msg = await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
                                      'Чем я могу вам помочь?', reply_markup=main_menu_kb())
+    await MManager.sticker_store(state, stick_msg)
 
 
 @router.message(F.text == "💹 Мой кошелек")
