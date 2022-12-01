@@ -5,9 +5,10 @@ from tronpy.keys import PrivateKey
 from tronpy.providers.async_http import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
+from Services.address_service import AdressService
 
 
-class Tron_wallet:
+class Tron_wallet(AdressService):
     def __init__(self):
         self.api_key = os.getenv('tron_API')
         if DEBUG_MODE:
@@ -19,7 +20,7 @@ class Tron_wallet:
         # TODO Будем ли мы это брать из базы или конфигурации?
         self.__fee_limit = 20_000_000  # Максимальный размер газа за транзакцию
         self.__add_fee = 5_000_000  # если лимита газа недостаточно для транзакции - будет добавлено данное число к газу
-        self.__main_fee = 8.4  # будет добавляться эта сумма если недостаточно TRX для перевода
+        self.__main_fee = 9  # будет добавляться эта сумма если недостаточно TRX для перевода
         self.max_user_trx_balance = 14  # если сумма выше данного числа то комиссия добавляться не будет
         self.timeout = 10
 
@@ -110,8 +111,7 @@ class Tron_wallet:
         client = self._get_client()
         async with client as client:
             try:
-                info = await client.get_transaction(txn_id)
-                return info.get("ret")[0].get("contractRet")
+                return await client.get_transaction(txn_id)
             except BadHash:
                 req -= 1
                 if req == 0:
@@ -163,18 +163,42 @@ class Tron_wallet:
             print(f"Добавлена комиссия в размере: {fee} TRX")
             # wait asyncio.sleep(7)
 
-    async def TRC_20_transfer(self, private_key: str, contract: str, from_address: str, to_address: str,
-                              amount: float,
-                              fee: int = None):
-        if await self.is_valid_contract(contract) is False:
-            raise ValueError(f"BadContract {contract}")
+    async def TRC_20_transfer(
+            self,
+            private_key: str,
+            contract_address: str,
+            from_address: str,
+            to_address: str,
+            amount: float,
+            fee_transaction: float = None,
+            fee_frozen: float = None,
+            fee_limit: int = None
+    ) -> dict:
+
+        """
+        :param private_key: from owner address
+        :param contract_address: token contract
+        :param from_address: owner address
+        :param to_address: address of the recipient
+        :param amount: amount sent
+        :param fee_transaction: service commission
+        :param fee_frozen: frozen owner balance
+        :param fee_limit: it is advisable not to touch the technical parameter
+        :return: private_key, contract_address, from_address, to_address, amount, fee_transaction, fee_frozen, fee_limit
+        """
+        is_contract = await self.is_valid_contract(contract_address)
+        if is_contract is False:
+            raise ValueError(f"BadContract {contract_address}")
         if await self.is_valid_address(from_address) is False:
             raise ValueError(f"BadFromAddress {from_address}")
         if await self.is_valid_address(to_address) is False:
             print("Адрес получателя указан неверно")
             raise ValueError(f"BadToAddress {to_address}")
 
-        balance_token = await self.TRC_20_get_balance(contract=contract, address=from_address)
+        balance_token = await self.TRC_20_get_balance(contract=contract_address, address=from_address)
+        balance_token = balance_token - fee_transaction
+        balance_token = balance_token - fee_frozen
+
         if float(balance_token) < float(amount):
             return "На счету недостаточно средств"
 
@@ -188,35 +212,59 @@ class Tron_wallet:
         priv_key = PrivateKey(bytes.fromhex(private_key))
 
         async with client as client:
-            contract_f = await client.get_contract(contract)
+            contract_f = await client.get_contract(contract_address)
             txb = await contract_f.functions.transfer(to_address, int(amount * 1_000_000))
-            if fee is None:
-                fee = self.__fee_limit
+            if fee_limit is None:
+                fee_limit = self.__fee_limit
             else:
-                fee = fee
-            txb = txb.with_owner(from_address).fee_limit(fee)
+                fee_limit = fee_limit
+            txb = txb.with_owner(from_address).fee_limit(fee_limit)
             txn = await txb.build()
             txn = txn.sign(priv_key).inspect()
             try:
                 txn_ret = await txn.broadcast()
                 txn_id = txn_ret.get("txid")
                 txn_info = await self.txn_info(txn_id)
-                if txn_info == "SUCCESS":
-                    if self.network == "mainnet":
-                        return str("https://tronscan.org/#/transaction/" + txn_id)
-                    elif self.network == "nile":
-                        return str("https://nile.tronscan.org/#/transaction/" + txn_id)
-                    print("Успешная транзакция")
+                status = txn_info.get("ret")[0].get("contractRet")
+                if status == "SUCCESS":
+                    return {"status": status,
+                            "txn_id": txn_id,
+                            "contract": contract_address,
+                            "from_address": from_address,
+                            "to_address": to_address,
+                            "token": is_contract,
+                            "amount": amount,
+                            "fee_transaction": fee_transaction,
+                            "fee_frozen": fee_frozen}
 
-                elif txn_info == "OUT_OF_ENERGY":
-                    fee += self.__add_fee
+                elif status == "OUT_OF_ENERGY":
+                    fee_limit += self.__add_fee
                     print(1, "Лимита газа или TRX не достаточно для транзакции")
                     await self.__additive_trx(address=from_address)
-                    await self.TRC_20_transfer(private_key, contract, from_address, to_address, amount, fee)
+                    await self.TRC_20_transfer(
+                        private_key,
+                        contract_address,
+                        from_address,
+                        to_address,
+                        amount,
+                        fee_transaction,
+                        fee_frozen,
+                        fee_limit
+                    )
                 else:
-                    raise ValueError(txn_info)
+                    return {"status": status,
+                            "txn_id": txn_id}
 
             except UnknownError:
                 print(2, "Не хватает средств для оплаты газа")
                 await self.__additive_trx(address=from_address)
-                await self.TRC_20_transfer(private_key, contract, from_address, to_address, amount, fee)
+                await self.TRC_20_transfer(
+                    private_key,
+                    contract_address,
+                    from_address,
+                    to_address,
+                    amount,
+                    fee_transaction,
+                    fee_frozen,
+                    fee_limit
+                )
