@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import suppress
 from logging import warning
 
@@ -11,12 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from Bot.handlers.loading_handler import loader
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
-    confirm_delete_kb, delete_token_kb
+    confirm_delete_kb, delete_token_kb, inspect_token_kb
 from Bot.states.main_states import MainState
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.pretty_texts import all_wallets_text
+from Bot.utilts.pretty_texts import all_wallets_text, detail_view_text
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
@@ -48,14 +49,18 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
         pass
     text = await all_wallets_text(user_id)
 
-    keep_old = False if isinstance(event, Message) else True
-    await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
-                                keyboard=main_wallet_keys(), keep_old=keep_old)
+    state_str = await state.get_state()
+    if 'MainState' not in state_str:
+        await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
+                                    keyboard=main_wallet_keys())
+    else:
+        msg = await message.answer(text, reply_markup=main_wallet_keys())
+        await MManager.sticker_store(state, msg)
+    await state.set_state(WalletStates.main)
 
 
 @router.callback_query(F.data.startswith('refresh_wallet'))
 async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await callback.answer()
     await state.set_state(WalletStates.main)
     text = await all_wallets_text(callback.from_user.id)
     if 'edit' in callback.data:
@@ -64,6 +69,7 @@ async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                         message_id=callback.message.message_id, reply_markup=main_wallet_keys())
     elif 'keep' in callback.data:
         await callback.message.answer(text, reply_markup=main_wallet_keys())
+    await callback.answer()
 
 
 @router.callback_query(F.data == "add_token", StateFilter(WalletStates.main))
@@ -134,12 +140,13 @@ async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, ses
 async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
-    bal_data = await TokenService.find_address_token(user_id=callback.from_user.id, token_name=token, token_network=network)
+    bal_data = await TokenService.find_address_token(user_id=callback.from_user.id, token_name=token,
+                                                     token_network=network)
     address: Address = bal_data.get('address')
     token_obj: Token = bal_data.get('token')
-    balance = await AdressService.get_balances(address=address.address, specific=[token_obj])
-    if balance:
-        text = f"Обнаружены средства: {balance} {balance[token_obj.token_name]}\n" \
+    balance = (await AdressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]
+    if balance > 0:
+        text = f"Обнаружены средства: {token_obj.token_name}: {balance}\n" \
                f"Если вы удалите токен, они никуда не пропадут, " \
                f"но вы не сможете их отслеживать, пока не добавите его снова."
     else:
@@ -167,13 +174,31 @@ async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot, s
             break
         text = f"Произошла ошибка: токен с заданным контрактом не был обнаружен на данном адресе."
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-                                reply_markup=main_wallet_keys())
+                                reply_markup=refresh_button())
 
 
+@router.callback_query(F.data.startswith("inspect_token"), StateFilter(WalletStates.main))
+async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+    if user_tokens:
+        await state.set_state(WalletStates.inspect_token)
+        await bot.edit_message_text("Выберите токен, который вы хотите изучить подробнее:",
+                                    chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                    reply_markup=inspect_token_kb(user_tokens))
+    else:
+        msg = await callback.message.answer(
+            text='На ваших адресах пока нет токенов!')
+        await asyncio.sleep(3)
+        await bot.delete_message(chat_id=callback.message.chat.id, message_id=msg.message_id)
 
 
-
-
-@router.callback_query(F.data.startswith("inspect_token"), StateFilter(WalletStates.inspect_token))
-async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
-    pass
+@router.callback_query(F.data.startswith("inspect_t_"), StateFilter(WalletStates.inspect_token))
+async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    token, network = callback.data.replace('inspect_t_', "").replace('[', "").replace(']', "").split(" ")
+    text = await detail_view_text(token_name=token, token_network=network, user_id=callback.from_user.id)
+    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+    with suppress(TelegramBadRequest):
+        await bot.edit_message_text(text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                    reply_markup=inspect_token_kb(user_tokens))
+    await callback.answer()
