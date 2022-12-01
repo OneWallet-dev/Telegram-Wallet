@@ -11,7 +11,7 @@ class Transaction(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     tnx_id: str = Column(String)
-    token = relationship(
+    token_name = relationship(
         "Token", lazy="joined"
     )
     amount = Column(Float)
