@@ -127,13 +127,19 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, s
 @router.callback_query(F.data == "delete_token", StateFilter(WalletStates.main))
 async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     await callback.answer()
-    await state.set_state(WalletStates.delete_token)
-    all_tokens = await OwnerService.get_tokens(callback.from_user.id)
-    all_tokens_names = [f'{token.token_name} [{token.network}]' for token in all_tokens]
-    await bot.edit_message_text('Выберите токен, который вы хотите удалить:',
-                                chat_id=callback.message.chat.id,
-                                message_id=callback.message.message_id,
-                                reply_markup=delete_token_kb(all_tokens_names))
+    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+    if user_tokens:
+        await state.set_state(WalletStates.delete_token)
+        all_tokens_names = [f'{token.token_name} [{token.network}]' for token in user_tokens]
+        await bot.edit_message_text('Выберите токен, который вы хотите удалить:',
+                                    chat_id=callback.message.chat.id,
+                                    message_id=callback.message.message_id,
+                                    reply_markup=delete_token_kb(all_tokens_names))
+    else:
+        msg = await callback.message.answer(
+            text='На ваших адресах пока нет токенов!')
+        await asyncio.sleep(3)
+        await bot.delete_message(chat_id=callback.message.chat.id, message_id=msg.message_id)
 
 
 @router.callback_query(F.data.startswith("del_t"), StateFilter(WalletStates.delete_token))
