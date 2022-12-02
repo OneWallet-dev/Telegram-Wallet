@@ -8,7 +8,7 @@ from Dao.models.Token import Token
 class TokenService:
 
     @staticmethod
-    async def find_address_token(user_id: int, token_name: str, token_network: str, path_index: int = 0):
+    async def find_address_token(u_id: str, token_name: str, token_network: str, path_index: int = 0):
         """
         Method to get info about token and linked address for given user, token name, token network.
 
@@ -16,7 +16,7 @@ class TokenService:
         """
         session_connect = await create_session()
         async with session_connect() as session:
-            owner: Owner = await session.get(Owner, str(user_id))
+            owner: Owner = await session.get(Owner, u_id)
             wallets = owner.wallets
             for wallet in wallets:
                 wallet_obj = wallets[wallet]
