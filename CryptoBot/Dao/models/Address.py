@@ -19,7 +19,7 @@ class Address(Base):
 
     wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
     wallet = relationship("Wallet", lazy="joined", back_populates="addresses")
-    transactions: dict[int: Transaction] = relationship(
+    transactions: dict[int, Transaction] = relationship(
         "Transaction",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"

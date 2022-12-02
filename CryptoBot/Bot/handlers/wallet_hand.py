@@ -6,7 +6,7 @@ from aiogram import Router, F, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, BufferedInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.loading_handler import loader
@@ -18,6 +18,7 @@ from Bot.states.wallet_states import WalletStates
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.pretty_texts import all_wallets_text, detail_view_text
+from Bot.utilts.qr_code_generator import qr_code
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -78,6 +79,7 @@ async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router.callback_query(F.data.startswith('back_to_wall'))
 async def wallet_backing(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await MManager.clean(state, bot, callback.message.chat.id)
     await state.set_state(WalletStates.main)
     text = await DataRedis.get_cached_text(callback.from_user.id, 'wallet')
     if not text:
@@ -212,9 +214,10 @@ async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: B
     user_tokens = await OwnerService.get_tokens(u_id)
     if user_tokens:
         await state.set_state(WalletStates.inspect_token)
-        await bot.edit_message_text("Выберите токен, который вы хотите изучить подробнее:",
-                                    chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-                                    reply_markup=inspect_token_kb(user_tokens))
+        msg = await bot.edit_message_text("Выберите токен, который вы хотите изучить подробнее:",
+                                          chat_id=callback.message.chat.id, message_id=callback.message.message_id,
+                                          reply_markup=inspect_token_kb(user_tokens))
+        await MManager.sticker_store(state, msg)
     else:
         msg = await callback.message.answer(
             text='На ваших адресах пока нет токенов!')
@@ -223,14 +226,20 @@ async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: B
 
 
 @router.callback_query(F.data.startswith("inspect_t_"), StateFilter(WalletStates.inspect_token))
-async def inspect_one_token(callback: CallbackQuery, bot: Bot):
+async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await MManager.clean(state, bot, chat_id=callback.message.chat.id)
     token, network = callback.data.replace('inspect_t_', "").replace('[', "").replace(']', "").split(" ")
-    text = await detail_view_text(token_name=token, token_network=network, user_id=callback.from_user.id)
+    text, address = await detail_view_text(token_name=token, token_network=network, user_id=callback.from_user.id)
+
+    qr = await qr_code(address)
+    img = BufferedInputFile(file=qr, filename=str(address) + ".PNG")
+
     u_id = await DataRedis.find_user(callback.from_user.id)
     user_tokens = await OwnerService.get_tokens(u_id)
     with suppress(TelegramBadRequest):
-        await bot.edit_message_text(text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
-                                    reply_markup=inspect_token_kb(user_tokens))
+        garb = await callback.message.answer_photo(photo=img)
+        await MManager.sticker_surf(state, bot, callback.message.chat.id, text, inspect_token_kb(user_tokens),)
+        await MManager.garbage_store(state=state, tech_msg_id=garb.message_id)
     await callback.answer()
 
 
