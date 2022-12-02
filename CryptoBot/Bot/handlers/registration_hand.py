@@ -3,12 +3,12 @@ import re
 from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message, User
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.keyboards.main_keys import confirmation_button, back_button
-from Bot.states.main_states import RegistrationState, AuthState
+from Bot.states.main_states import RegistrationState
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
 from Dao.models.Owner import Owner

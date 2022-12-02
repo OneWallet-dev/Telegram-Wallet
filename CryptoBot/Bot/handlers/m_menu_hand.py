@@ -22,7 +22,7 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
     await state.clear()
     await state.set_state(MainState.welcome_state)
     bot_name = (await bot.get_me()).full_name
-    u_id = await DataRedis.find_user(message.from_user.id)
+    u_id = await DataRedis.find_user(update.from_user.id)
     await message.answer(f'Вы авторизированы как пользователь с UID: <code>{u_id}</code>.\n'
                          f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
                          'Чем я могу вам помочь?', reply_markup=main_menu_kb())
