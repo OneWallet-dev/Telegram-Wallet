@@ -5,4 +5,4 @@ from Dao.models.Owner import Owner
 async def getFeeStrategy(address: Address):
     owner: Owner = address.wallet.owner
     # TODO Надо придумать откуда брать фи
-    return 2
+    return 0
