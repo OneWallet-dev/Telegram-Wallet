@@ -105,3 +105,11 @@ class MManager:
         except TelegramBadRequest:
             pass
         await state.update_data({cls._garbagekey: []})
+
+    @classmethod
+    async def purge_chat(cls, bot: Bot, message_id: int, chat_id: int):
+        corutines = [bot.delete_message(chat_id, msg_id) for msg_id in range(message_id, 0, -1)]
+        try:
+            await asyncio.gather(*corutines, return_exceptions=True)
+        except TelegramBadRequest:
+            pass

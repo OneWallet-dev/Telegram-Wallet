@@ -34,6 +34,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     # user_check = await session.get(Owner, str(message.from_user.id))
     # if not user_check:
     #     await registration_start(message, state)
+    await MManager.purge_chat(bot, message_id=message.message_id, chat_id=message.chat.id)
     if await NotAuthFilter()(message):
         await you_need_tb_authenticated(message, state)
     else:
