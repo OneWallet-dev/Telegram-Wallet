@@ -144,7 +144,7 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     to_address = sdata.get("address")
     amount = sdata.get("amount")
     fee = sdata.get("fee")
-    print(network)
+
     if network in blockchains.get("tron").get("networks"):
         # wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
         address: Address = AddressService.get_address_for_transaction(owner,
@@ -172,7 +172,11 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
                         f"Недостаточно средств") #TODO сделать нормальный баланс с учётом комиссии
                 elif transaction.status == "SUCCESS":
                     await state.set_state(TransactionStates.main)
-                    link = hlink('ссылке', transaction.tnx_id) #TODO Поправить это
+                    if DEBUG_MODE:
+                        link = "https://nile.tronscan.org/#/transaction/"
+                    else:
+                        link = "https://tronscan.org/#/transaction/"
+                    link = hlink('ссылке', link + transaction.tnx_id)
                     await callback.message.answer(
                         f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
                     await transaction_start(callback.message, state)
