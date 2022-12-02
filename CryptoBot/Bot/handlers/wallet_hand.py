@@ -207,7 +207,7 @@ async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: B
 
 
 @router.callback_query(F.data.startswith("inspect_t_"), StateFilter(WalletStates.inspect_token))
-async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def inspect_one_token(callback: CallbackQuery, bot: Bot):
     token, network = callback.data.replace('inspect_t_', "").replace('[', "").replace(']', "").split(" ")
     text = await detail_view_text(token_name=token, token_network=network, user_id=callback.from_user.id)
     u_id = await DataRedis.find_user(callback.from_user.id)

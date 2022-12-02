@@ -37,9 +37,10 @@ async def all_wallets_text(user_id: int):
 
 
 async def detail_view_text(user_id: int, token_name: str, token_network: str):
+    u_id = await DataRedis.find_user(user_id)
     token_and_address = await TokenService.find_address_token(token_name=token_name,
                                                               token_network=token_network,
-                                                              user_id=user_id)
+                                                              u_id=u_id)
     token = token_and_address.get('token')
     address = token_and_address.get('address')
     balance = (await AddressService.get_balances(address=address.address, specific=[token]))[token.token_name]
