@@ -11,7 +11,5 @@ class NotAuthFilter(Filter):
         is_auth_value = await DataRedis.get_data(f"Users: {user_id}: authorized")
         if not is_auth_value or is_auth_value == 'False':
             return True
-        elif is_auth_value == "True":
-            return False
         else:
-            raise Exception("Bad auth state in redis data database!")
+            return False

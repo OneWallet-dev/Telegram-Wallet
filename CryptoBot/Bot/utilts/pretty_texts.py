@@ -1,6 +1,7 @@
 from aiogram.types import User
 
 from Bot.utilts.currency_helper import base_tokens, blockchains
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Wallet import Wallet
 from Services.address_service import AdressService
@@ -9,8 +10,9 @@ from Services.token_service import TokenService
 
 
 async def all_wallets_text(user_id: int):
-    user_wallets = await OwnerService.get_wallets(user_id)
-    text = '<b>Кошелек пользователя UID</b>\n'
+    u_id = await DataRedis.find_user(user_id)
+    user_wallets = await OwnerService.get_wallets(u_id)
+    text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'
     text += '<b>Балансы:\n</b>'
     text += "<code>——————————————————————</code>\n"
     for blockchain in user_wallets:

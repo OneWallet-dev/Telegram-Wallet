@@ -18,6 +18,7 @@ from Bot.states.wallet_states import WalletStates
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.pretty_texts import all_wallets_text, detail_view_text
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
@@ -34,7 +35,8 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
     message = event if isinstance(event, Message) else event.message
     user_id = event.from_user.id
 
-    owner: Owner = await session.get(Owner, str(user_id))
+    u_id = await DataRedis.find_user(message.from_user.id)
+    owner: Owner = await session.get(Owner, u_id)
     base_wallets = {"tron", "ethereum", "bitcoin"}
     if not {"tron", "ethereum", "bitcoin"}.issubset(set(owner.wallets)):
         if base_wallets.intersection(set(owner.wallets)):
@@ -42,7 +44,7 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
             text = 'Похоже, что у вас присутствуют не все базовые кошельки. Пожалуйста, обратитесь в поддержку.'
         else:
             generator = Wallet_web3()
-            await generator.generate_all_walllets(user_id)
+            await generator.generate_all_walllets(u_id)
             await loader(message.chat.id, text="<i>Происходит генерация ваших основных кошельков.\n"
                                                "Пожалуйста, подождите.</i>")
     else:

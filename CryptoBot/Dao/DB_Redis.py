@@ -51,5 +51,11 @@ class DataRedis(RedRedis):
         return alive_state
 
     @classmethod
-    async def authorize(cls, user_id: int):
-        await cls.set_data(f"Users: {user_id}: {cls.auth_key}", "True", ttl=600)
+    async def authorize(cls, telegram_user_id: int, uid: str):
+        await cls.set_data(f"Users: {telegram_user_id}: {cls.auth_key}", uid, ttl=600)
+
+    @classmethod
+    async def find_user(cls, telegram_user_id: int):
+        search = await cls.get_data(f"Users: {telegram_user_id}: {cls.auth_key}")
+        if search is not None:
+            return search

@@ -1,5 +1,5 @@
 from aiogram import Router, Bot
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
@@ -10,6 +10,7 @@ from Bot.handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.m_menu_hand import main_menu
 from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
+from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -25,10 +26,10 @@ router = Router()
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     await MManager.garbage_store(state, message.message_id)
-    user_check = await session.get(Owner, str(message.from_user.id))
-    if not user_check:
-        await registration_start(message, state)
-    elif await NotAuthFilter()(message):
+    # user_check = await session.get(Owner, str(message.from_user.id))
+    # if not user_check:
+    #     await registration_start(message, state)
+    if await NotAuthFilter()(message):
         await you_need_tb_authenticated(message, state)
     else:
         await main_menu(message, state, bot)

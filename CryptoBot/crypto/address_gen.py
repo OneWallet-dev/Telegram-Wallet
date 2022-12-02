@@ -17,7 +17,7 @@ class Wallet_web3:
         self.language = language
         self.strength = strength
 
-    async def generate_all_walllets(self, user_id: int, passphrase: str | None = None):
+    async def generate_all_walllets(self, u_id: str, passphrase: str | None = None):
         session_connect = await create_session()
         async with session_connect() as session:
             wallets = dict()
@@ -30,7 +30,7 @@ class Wallet_web3:
 
             new_wallets = dict()
 
-            owner: Owner = await session.get(Owner, str(user_id))
+            owner: Owner = await session.get(Owner, u_id)
             tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
                                            private_key=tron_wallet.get("address_0").get("private_key"))
             tronwallet = Wallet(blockchain="tron", mnemonic=tron_mnemomic)

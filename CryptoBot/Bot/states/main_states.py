@@ -13,4 +13,7 @@ class RegistrationState(StatesGroup):
 
 
 class AuthState(StatesGroup):
+    pass_wait = State()
+    uid_wait = State()
+    start = State()
     need_auth = State()
