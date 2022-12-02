@@ -7,5 +7,5 @@ class Maker:
             transaction: Transaction,
             service_fee,
             fee_limit: float = None
-    ) -> dict:
+    ) -> dict or None:
         pass
