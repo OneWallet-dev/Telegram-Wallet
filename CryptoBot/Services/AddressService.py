@@ -32,7 +32,7 @@ class AddressService:
             twallet = TronMaker()
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
-                    if token.token_name == 'TRX':
+                    if token.token_name == 'trx':
                         balance = await twallet.TRX_get_balance(address)
                     elif token.network == 'TRC-20':
                         balance = await twallet.TRC_20_get_balance(token.contract_Id, address)
