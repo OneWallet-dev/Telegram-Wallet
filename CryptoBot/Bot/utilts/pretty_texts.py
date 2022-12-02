@@ -55,10 +55,12 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
     text = f"<b>Токен: {token.token_name}\nСеть: {token.network}\nТекущий баланс: {balance}</b>\n\n"
     text += f"<b>Публичный адрес:</b> <code>{address.address}</code>\n"
     text += f"<i>- - Используйте его для получения транзакций - -</i>\n\n"
-    text += f"<b>Список транзакций:</b>\n"
+    text += f"<b>Список последних транзакций:</b>\n"
     if transactions:
+        count = 0
         for trsc in transactions:
-            text += f" - {trsc}"
+            if count < 3:
+                text += f"<code>\n{trsc}\n</code>"
     else:
         text += f"<i>- - Список пока пуст - -</i>"
     return text, address.address

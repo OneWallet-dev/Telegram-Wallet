@@ -238,7 +238,7 @@ async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot
     user_tokens = await OwnerService.get_tokens(u_id)
     with suppress(TelegramBadRequest):
         garb = await callback.message.answer_photo(photo=img)
-        await MManager.sticker_surf(state, bot, callback.message.chat.id, text, inspect_token_kb(user_tokens),)
+        await MManager.sticker_surf(state, bot, callback.message.chat.id, text, inspect_token_kb(user_tokens))
         await MManager.garbage_store(state=state, tech_msg_id=garb.message_id)
     await callback.answer()
 

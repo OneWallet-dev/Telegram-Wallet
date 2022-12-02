@@ -22,5 +22,7 @@ class Transaction(Base):
     address = relationship("Address", lazy="joined", back_populates="transactions")
 
     def __str__(self):
-        return f"{self.tnx_id}: [{self.amount}]\n{self.from_address} ==>> {self.to_address}\nSTATUS: {self.status}"
-    
+        return f"- Tnx link: {self.tnx_id}\n" \
+               f"- {self.amount} from {self.from_address} ==> {self.to_address}\n" \
+               f"- Status: {self.status}\n\n"
+
