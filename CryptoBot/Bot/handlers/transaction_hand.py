@@ -4,22 +4,24 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.m_menu_hand import main_menu
-from Bot.keyboards.base_keys import back_button
 from Bot.keyboards.transaction_keys import m_transaction, trans_token_kb
 from Bot.states.trans_states import TransactionStates, Trs_transfer
+from Bot.utilts.mmanager import MManager
 
 router = Router()
 router.message.filter(StateFilter(TransactionStates))
 
 
-async def transaction_start(message: Message, bot: Bot, state: FSMContext):
-    stick_msg = await message.answer('Данное меню предназначено для управления вашими активами',
-                                     reply_markup=m_transaction())
+@MManager.garbage_manage()
+async def transaction_start(message: Message, state: FSMContext):
+    grab = await message.answer('Данное меню предназначено для управления вашими активами',
+                                reply_markup=m_transaction())
+    await MManager.garbage_store(state, grab.message_id)
 
-@router.message(F.text == "⬅️ Назад")
-async def back(message: Message, state: FSMContext, bot: Bot):
-    await main_menu(message, state, bot)
+
+# @router.message(F.text == "⬅️ Назад")
+# async def back(message: Message, state: FSMContext, bot: Bot):
+#     await main_menu(message, state, bot)
 
 
 @router.message(F.text == "🔄 Обменять")
