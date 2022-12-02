@@ -19,7 +19,7 @@ async def all_wallets_text(user_id: int):
         text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'
         text += '<b>Балансы:\n</b>'
         text += "<code>——————————————————————</code>\n"
-
+        fee = 0
         for blockchain in user_wallets:
             addressess = user_wallets[blockchain].addresses
             for address in addressess:
@@ -27,10 +27,14 @@ async def all_wallets_text(user_id: int):
                 balances = await AddressService.get_balances(address=address)
                 for token in adress_obj.tokens:
                     balance = balances.get(token.token_name, 'Iternal Error!')
-                    text += f"{token.token_name}: {balance}\n"
+                    text += f"{token.token_name}: {balance}"
+                fee += adress_obj.get_address_freezed_fee()
 
         text += "<code>——————————————————————</code>\n"
-        text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
+        if fee:
+            text += f'Заморожена комиссия сервиса: {fee} USDT'
+        else:
+            text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
     else:
         text += '<i>▫️ Вы пока не отслеживаете ни один токен.</i>'
     return text

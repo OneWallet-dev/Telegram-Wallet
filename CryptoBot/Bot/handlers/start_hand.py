@@ -1,4 +1,4 @@
-from aiogram import Router, Bot
+from aiogram import Router, Bot, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -32,20 +32,7 @@ router = Router()
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     await MManager.garbage_store(state, message.message_id)
-    id =  message.message_id
-    chat = message.chat
-    for i in range(20,0,-1):
-        print(i)
-        try:
-            await bot.delete_message(chat.id, message_id=id-i)
-            print("deleted")
-        except TelegramBadRequest:
-            continue
-    # for i in range(id):
-
-    # user_check = await session.get(Owner, str(message.from_user.id))
-    # if not user_check:
-    #     await registration_start(message, state)
+    await MManager.purge_chat(bot, message_id=message.message_id, chat_id=message.chat.id)
     if await NotAuthFilter()(message):
         await you_need_tb_authenticated(message, state)
     else:
@@ -115,7 +102,6 @@ async def command_test(message: Message, state: FSMContext, session: AsyncSessio
     print(await getPkey_by_address_id("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea"))
 
 
-
 @router.message(Command("try"))
 @MManager.garbage_manage(store=True, clean=True)
 async def asd(message: Message, state: FSMContext, bot: Bot):
@@ -134,12 +120,13 @@ async def asd(message: Message, state: FSMContext, bot: Bot):
 
         print(transaction)
 
-    # for wallet in owner.wallets.values():
-    #     print(wallet.id)
-    #     print(wallet.blockchain)
-    #     for address in wallet.addresses.values():
-    #         print(address.tokens)
-    #         tokens = address.tokens
-    #         for token in tokens:
-    #             print(token.token_name)
-    #             print(token.contract_Id)
+
+@router.message(Command("pic"))
+async def pic_kostul(message: Message, state: FSMContext, bot: Bot):
+    await state.set_state(MainState.kostul)
+
+
+@router.message(F.photo)
+async def pic_kostul2(message: Message, state: FSMContext, bot: Bot):
+    photo_id = message.photo[-1].file_id
+    print(photo_id)
