@@ -66,7 +66,7 @@ async def registration(callback: CallbackQuery, state: FSMContext, session: Asyn
     await callback.answer("Пароль успешно установлен")
     await DataRedis.authorize(callback.from_user.id, u_id)
     await MManager.clean(state, bot, callback.message.chat.id)
-    await callback.message.answer(f'Вам присвоен уникальный ID: <code> {u_id} </code>\n'
+    await callback.message.answer(f'Вам присвоен уникальный ID:<code> {u_id} </code>\n'
                                   f'Запомните, а лучше запишите его: '
                                   f'вход в аккаунт производится <u>только</u> с помощью него.')
     await main_menu(callback, state, bot)
