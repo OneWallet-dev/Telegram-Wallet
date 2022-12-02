@@ -20,3 +20,7 @@ class Transaction(Base):
     service_fee: float = Column(Float)
     network_fee: float = Column(Float)
     address = relationship("Address", lazy="joined", back_populates="transactions")
+
+    def __str__(self):
+        return f"{self.tnx_id}: [{self.amount}]\n{self.from_address} ==>> {self.to_address}\nSTATUS: {self.status}"
+    
