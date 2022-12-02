@@ -14,6 +14,7 @@ router.message.filter(StateFilter(TransactionStates))
 
 @MManager.garbage_manage()
 async def transaction_start(message: Message, state: FSMContext):
+    await message.delete()
     grab = await message.answer('Данное меню предназначено для управления вашими активами',
                                 reply_markup=m_transaction())
     await MManager.garbage_store(state, grab.message_id)
@@ -26,11 +27,13 @@ async def transaction_start(message: Message, state: FSMContext):
 
 @router.message(F.text == "🔄 Обменять")
 async def trs_exchange(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    await message.delete()
     await message.answer("Данное меню находится в разработке")
 
 
 @router.message(F.text == "⤴️ Перевести")
 async def trs_transfer(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    await message.delete()
     await state.set_state(Trs_transfer.new_transfer)
     token_list = ["USDT"]
     await message.answer("Выберите токен, который вы хотите перевести", reply_markup=trans_token_kb(token_list))
@@ -38,4 +41,5 @@ async def trs_transfer(message: Message, state: FSMContext, bot: Bot, session: A
 
 @router.message(F.text == "📝 История")
 async def trs_history(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    await message.delete()
     await message.answer("Данное меню находится в разработке")

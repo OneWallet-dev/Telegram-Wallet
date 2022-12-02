@@ -12,6 +12,7 @@ from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_tok
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens, blockchains
 from Bot.utilts.settings import DEBUG_MODE
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Transaction import Transaction
@@ -62,7 +63,7 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
         # пользовательский контракт
         pass
     await state.update_data(contract_address=contract_address)
-    u_id = await DataRedis.find_user(callback.from_user.id)
+    u_id = await DataRedis.find_user(int(callback.from_user.id))
     tron_address = await owner.get_chain_address(u_id, 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
         balance = await tron.TRX_get_balance(tron_address.address)
@@ -103,6 +104,7 @@ async def confirm_transfer(message: Message, state: FSMContext):
     sdata = await state.get_data()
     fee = 1.0
     amount = float(message.text)
+    print(amount)
     balance = sdata.get("balance")
     token = sdata.get("token")
 
@@ -130,7 +132,8 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     await callback.message.delete()
     await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется",
                  time=20)
-    owner: Owner = await session.get(Owner, str(callback.from_user.id))
+    u_id = await DataRedis.find_user(int(callback.from_user.id))
+    owner: Owner = await session.get(Owner, u_id)
 
     sdata = await state.get_data()
     contract_address = sdata.get("contract_address")
@@ -138,12 +141,14 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     to_address = sdata.get("address")
     amount = sdata.get("amount")
     fee = sdata.get("fee")
-
+    print(network)
     if network in blockchains.get("tron").get("networks"):
         # wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
         address: Address = AddressService.get_address_for_transaction(owner,
                                                                       "tron",
                                                                       contract_address)
+        print(address)
+        print(network)
         if network == "TRC-10":
             pass
         if network == "TRC-20":
