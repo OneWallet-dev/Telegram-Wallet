@@ -34,7 +34,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     await MManager.garbage_store(state, message.message_id)
     id =  message.message_id
     chat = message.chat
-    for i in range(10,0,-1):
+    for i in range(20,0,-1):
         print(i)
         try:
             await bot.delete_message(chat.id, message_id=id-i)

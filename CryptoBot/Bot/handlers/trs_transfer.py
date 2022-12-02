@@ -132,8 +132,9 @@ async def confirm_transfer(message: Message, state: FSMContext):
 @router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
 async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
     await callback.message.delete()
-    await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется",
-                 time=20)
+    message = await bot.send_message(chat_id=callback.from_user.id, text="Начинаем транзакцию...")
+    # await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется",
+    #              time=20)
     u_id = await DataRedis.find_user(int(callback.from_user.id))
     owner: Owner = await session.get(Owner, u_id)
 
@@ -160,7 +161,9 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
                 transaction: Transaction = await AddressService().createTransaction(address,
                                                                                     amount,
                                                                                     token,
-                                                                                    to_address
+                                                                                    to_address,
+                                                                                    message,
+                                                                                    callback.from_user.id
                                                                                     )
 
                 if transaction == "Недостаточно средств":
