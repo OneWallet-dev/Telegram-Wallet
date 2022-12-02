@@ -245,4 +245,4 @@ async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot
 
 @router.callback_query(F.data == "put_money", StateFilter(WalletStates.inspect_token))
 async def put_money(callback: CallbackQuery):
-    await callback.message.answer("Функция пополнения кошелька находится в разработке")
+    await callback.message.answer("Функция пополнения кошелька фиатными валютами находится в разработке")

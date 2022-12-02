@@ -11,7 +11,7 @@ def main_wallet_keys():
     mark.row((InlineKeyboardButton(text=f"☑️ Пополнить кошелек", callback_data="put_money")))
     mark.row((InlineKeyboardButton(text=f"🆕 Добавить токен", callback_data="add_token")))
     mark.row((InlineKeyboardButton(text=f"🔽 Удалить токен", callback_data="delete_token")))
-    mark.row((InlineKeyboardButton(text=f"⤵️ Детальная информация о токене", callback_data="inspect_token")))
+    mark.row((InlineKeyboardButton(text=f"📬 Мои адреса", callback_data="inspect_token")))
     mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet_edit")))
     mark.adjust(1, 2, 1)
     return mark.as_markup(resize_keyboard=True)
