@@ -4,9 +4,9 @@ from Bot.utilts.currency_helper import base_tokens, blockchains
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Wallet import Wallet
-from Services.address_service import AdressService
+from Services.AddressService import AddressService
 from Services.owner_service import OwnerService
-from Services.token_service import TokenService
+from Services.TokenService import TokenService
 
 
 async def all_wallets_text(user_id: int):
@@ -19,7 +19,7 @@ async def all_wallets_text(user_id: int):
         addressess = user_wallets[blockchain].addresses
         for address in addressess:
             adress_obj = addressess.get(address)
-            balances = await AdressService.get_balances(address=address)
+            balances = await AddressService.get_balances(address=address)
             for token in adress_obj.tokens:
                 balance = balances.get(token.token_name, 'Iternal Error!')
                 text += f"{token.token_name}: {balance}\n"
@@ -34,7 +34,7 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
                                                               user_id=user_id)
     token = token_and_address.get('token')
     address = token_and_address.get('address')
-    balance = (await AdressService.get_balances(address=address.address, specific=[token]))[token.token_name]
+    balance = (await AddressService.get_balances(address=address.address, specific=[token]))[token.token_name]
     transactions = [str(transaction) for transaction in address.transactions]
 
     text = f"<b>Токен: {token.token_name}\nСеть: {token.network}\nТекущий баланс: {balance}</b>\n\n"

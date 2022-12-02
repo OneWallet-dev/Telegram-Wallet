@@ -3,6 +3,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter
@@ -12,10 +13,14 @@ from Bot.handlers.registration_hand import registration_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager
+from Bot.utilts.p_key_getter import getPkey_by_address_id
+from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
+from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.AddressService import AddressService
 
 router = Router()
 
@@ -69,10 +74,13 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("createTransaction"))
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession):
     # owner: Owner = await session.get(Owner, str(message.from_user.id))
+
     owner: Owner = Owner(id="Kakcam",
                          username="wdwdwdwd")
     # owner.wallets["tron"] = Wallet(blockchain="tron")
     address: Address = Address(address="token_address")
+    address.transactions["newTrans"] = Transaction(id=25, token_contract_id="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+                                                   from_wallet=address.address)
     owner.wallets["tron123"] = Wallet(blockchain="tron123")
     token: Token = Token(contract_Id="token_contract", token_name="token_name")
     print(type(address.tokens))
@@ -92,19 +100,27 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    """Please use this function if you want to test something new"""
-    pass
+    print(await getPkey_by_address_id("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea"))
 
 
-@router.message(Command("testORM"))
+
+@router.message(Command("try"))
 @MManager.garbage_manage(store=True, clean=True)
-async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+async def asd(message: Message, state: FSMContext, bot: Bot):
     # query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
-    owner: Owner = await session.get(Owner, str(message.from_user.id))
-    fee = owner.wallets["tron"].addresses["TRBFpVNwNwZ4jBRgS7HMRsBmA5GRVsVDtE"].get_adress_freezed_fee()
-    await message.answer(str(fee))
-    await session.commit()
-    await session.close()
+    session = await create_session()
+    async with session() as session:
+        owner: Owner = await session.get(Owner, str(message.from_user.id))
+        wallet = owner.wallets.get("tron")
+        address = wallet.addresses.get("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea")
+        token_list = address.tokens
+        print(f'token - {token_list[0].token_name}')
+        transaction = await AddressService.createTransaction(address=address,
+                                                             amount=50,
+                                                             token=token_list[0],
+                                                             to_address="THMxwS8Rq21jVtySrjipD5rU5h32XDj51V")
+
+        print(transaction)
 
     # for wallet in owner.wallets.values():
     #     print(wallet.id)

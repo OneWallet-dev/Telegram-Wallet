@@ -7,6 +7,7 @@ from Dao.models.Token import Token
 from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
 from Dao.models.Transaction import Transaction
+from Dao.models.Wallet import Wallet
 
 
 class Address(Base):
@@ -17,23 +18,26 @@ class Address(Base):
     path_index = Column(Integer, default=0)
 
     wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
-
+    wallet = relationship("Wallet", lazy="joined", back_populates="addresses")
     transactions: dict[int: Transaction] = relationship(
         "Transaction",
         collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
-
     tokens = relationship(
         "Token", secondary=address_tokens, back_populates="addresses", lazy="joined"
     )
 
     token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
 
+    # def getWalleet(self):
 
     def get_adress_freezed_fee(self) -> float:
-        service_fee: float = 0
+        freezed_fee: float = 0
         for transaction in self.transactions.values():
-            service_fee = service_fee+transaction.service_fee
-
-        return service_fee
+            print(transaction)
+            if transaction.service_fee is not None:
+                freezed_fee = freezed_fee+transaction.service_fee
+            else:
+                break
+        return freezed_fee

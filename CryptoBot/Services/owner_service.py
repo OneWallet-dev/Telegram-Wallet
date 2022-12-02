@@ -12,7 +12,7 @@ from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Wallet import Wallet
-from Services.token_service import TokenService
+from Services.TokenService import TokenService
 
 
 class OwnerService:

@@ -17,7 +17,7 @@ class Wallet_web3:
         self.language = language
         self.strength = strength
 
-    async def generate_all_walllets(self, u_id: str, passphrase: str | None = None):
+    async def generate_all_wallets(self, u_id: str, passphrase: str | None = None):
         session_connect = await create_session()
         async with session_connect() as session:
             wallets = dict()

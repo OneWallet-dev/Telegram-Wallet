@@ -12,13 +12,17 @@ from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_tok
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens, blockchains
 from Bot.utilts.settings import DEBUG_MODE
+from Dao.models.Address import Address
 from Dao.models.Owner import Owner
+from Dao.models.Transaction import Transaction
+from Services.AddressService import AddressService
+from Services.TokenService import TokenService
 from Services.owner_service import OwnerService
-from crypto.TRON_wallet import Tron_wallet
+from crypto.TronMaker import TronMaker
 
 router = Router()
 router.message.filter(StateFilter(Trs_transfer))
-tron = Tron_wallet()
+tron = TronMaker()
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
@@ -136,24 +140,37 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
     fee = sdata.get("fee")
 
     if network in blockchains.get("tron").get("networks"):
-        wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
-        wallet_address = list(owner.wallets.get("tron").addresses.values())[0].address
+        # wallet_private_key = list(owner.wallets.get("tron").addresses.values())[0].private_key
+        address: Address = AddressService.get_address_for_transaction(owner,
+                                                                      "tron",
+                                                                      contract_address)
         if network == "TRC-10":
             pass
         if network == "TRC-20":
 
-            th = await tron.TRC_20_transfer(wallet_private_key, contract_address,
-                                            wallet_address, to_address, float(amount))
-            if th.get("status") == "SUCCESS":
-                await state.set_state(TransactionStates.main)
-                link = hlink('ссылке', th.get("txn_id"))
-                await callback.message.answer(
-                    f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
-                await transaction_start(callback.message, bot, state)
-            else:
-                await transaction_start(callback.message, bot, state)
-                await callback.answer("Ошибка транзакции")
-                await state.set_state(TransactionStates.main)
+            if address:
+                token = await TokenService.get_token(contract_address)
+                transaction: Transaction = await AddressService().createTransaction(address,
+                                                                                    amount,
+                                                                                    token,
+                                                                                    to_address
+                                                                                    )
+
+                if transaction == "Недостаточно средств":
+                    await state.set_state(TransactionStates.main)
+                    await callback.message.answer(
+                        f"Недостаточно средств") #TODO сделать нормальный баланс с учётом комиссии
+                elif transaction.status == "SUCCESS":
+                    await state.set_state(TransactionStates.main)
+                    link = hlink('ссылке', transaction.tnx_id) #TODO Поправить это
+                    await callback.message.answer(
+                        f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
+                    await transaction_start(callback.message, bot, state)
+                else:
+                    print(transaction.status)
+                    await transaction_start(callback.message, bot, state)
+                    await callback.message.answer("Ошибка транзакции")
+                    await state.set_state(TransactionStates.main)
 
 
 @router.callback_query(lambda call: "cancel_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))

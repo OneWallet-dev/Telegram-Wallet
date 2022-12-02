@@ -22,9 +22,9 @@ from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
-from Services.address_service import AdressService
+from Services.AddressService import AddressService
 from Services.owner_service import OwnerService
-from Services.token_service import TokenService
+from Services.TokenService import TokenService
 from crypto.address_gen import Wallet_web3
 
 router = Router()
@@ -44,7 +44,7 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
             text = 'Похоже, что у вас присутствуют не все базовые кошельки. Пожалуйста, обратитесь в поддержку.'
         else:
             generator = Wallet_web3()
-            await generator.generate_all_walllets(u_id)
+            await generator.generate_all_wallets(u_id)
             await loader(message.chat.id, text="<i>Происходит генерация ваших основных кошельков.\n"
                                                "Пожалуйста, подождите.</i>")
     else:
@@ -152,7 +152,7 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
                                                      token_network=network)
     address: Address = bal_data.get('address')
     token_obj: Token = bal_data.get('token')
-    balance = (await AdressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]
+    balance = (await AddressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]
     if balance > 0:
         text = f"Обнаружены средства: {token_obj.token_name}: {balance}\n" \
                f"Если вы удалите токен, они никуда не пропадут, " \
