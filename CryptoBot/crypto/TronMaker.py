@@ -187,19 +187,12 @@ class TronMaker(Maker):
             else:
                 await session.close()
 
-
-
     async def transfer(
             self,
-            private_key: str,
-            contract_address: str,
-            from_address: str,
-            to_address: str,
-            amount: float,
-            fee_transaction: float = 0.0,
-            fee_frozen: float = 0.0,
-            fee_limit: int = None
-    ) -> dict:
+            transaction: Transaction,
+            service_fee,
+            fee_limit: float = None
+    ) -> dict or None:
 
         """
         :param private_key: from owner address
