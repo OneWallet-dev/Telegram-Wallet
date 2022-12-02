@@ -8,11 +8,12 @@ from Dao.models.Token import Token
 
 def main_wallet_keys():
     mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"☑️ Пополнить кошелек", callback_data="add_token")))
     mark.row((InlineKeyboardButton(text=f"🆕 Добавить токен", callback_data="add_token")))
     mark.row((InlineKeyboardButton(text=f"🔽 Удалить токен", callback_data="delete_token")))
     mark.row((InlineKeyboardButton(text=f"⤵️ Детальная информация о токене", callback_data="inspect_token")))
     mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet_edit")))
-    mark.adjust(2, 1)
+    mark.adjust(1, 2, 1)
     return mark.as_markup(resize_keyboard=True)
 
 
