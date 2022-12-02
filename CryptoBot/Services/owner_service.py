@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
+from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -45,10 +46,14 @@ class OwnerService:
             token_ref = base_tokens.get(token)
 
             address = await OwnerService.get_chain_address(u_id, token_ref['blockchain'])
-            token_obj = await TokenService.get_token(base_tokens[token]['contract_address'])
+            if DEBUG_MODE==True:
+                contract_string = 'testnet_contract_address'
+            if DEBUG_MODE == False:
+                contract_string = 'contract_address'
+            token_obj = await TokenService.get_token(base_tokens[token][contract_string])
             if not token_obj:
                 token_obj = Token(token_name=token,
-                                  contract_Id=base_tokens[token]['contract_address'],
+                                  contract_Id=base_tokens[token][contract_string],
                                   network=network)
             if token_obj not in address.tokens:
                 address.tokens.append(token_obj)
@@ -67,4 +72,5 @@ class OwnerService:
                     Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
                         Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
                                 ).first()[0]
+            print(address)
             return address

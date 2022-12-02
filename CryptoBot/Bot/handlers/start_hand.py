@@ -1,4 +1,5 @@
 from aiogram import Router, Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -31,6 +32,17 @@ router = Router()
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     await MManager.garbage_store(state, message.message_id)
+    id =  message.message_id
+    chat = message.chat
+    for i in range(10,0,-1):
+        print(i)
+        try:
+            await bot.delete_message(chat.id, message_id=id-i)
+            print("deleted")
+        except TelegramBadRequest:
+            continue
+    # for i in range(id):
+
     # user_check = await session.get(Owner, str(message.from_user.id))
     # if not user_check:
     #     await registration_start(message, state)

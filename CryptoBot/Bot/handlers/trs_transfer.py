@@ -63,7 +63,8 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
         # пользовательский контракт
         pass
     await state.update_data(contract_address=contract_address)
-    u_id = await DataRedis.find_user(int(callback.from_user.id))
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    print(u_id)
     tron_address = await owner.get_chain_address(u_id, 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
         balance = await tron.TRX_get_balance(tron_address.address)
@@ -79,7 +80,7 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(network=network)
     await state.update_data(balance=balance)
     await state.update_data(text=text)
-    text = text + "Напишите адрес получателя"
+    text = text + "Напишите адрес получателя\n✅"
     await state.set_state(Trs_transfer.address)
     await bot.edit_message_text(text, callback.from_user.id, message_id, reply_markup=change_transfer_token())
 
@@ -92,7 +93,7 @@ async def address(message: Message, state: FSMContext, bot: Bot):
     address = message.text
     token = sdata.get("token")
     text = text.replace("Не известен", address)
-    text = text + f"Напишите сумму для перевода в {token}"
+    text = text + f"Напишите сумму для перевода в {token}\n✅✅"
     await state.update_data(address=address)
     await state.set_state(Trs_transfer.confirm_transfer)
     await bot.edit_message_text(text, message.from_user.id, message_id, reply_markup=change_transfer_token())
@@ -122,7 +123,7 @@ async def confirm_transfer(message: Message, state: FSMContext):
         await state.update_data(fee=fee)
         text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
                f"Перевод: {token}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
-               f"_________________________\nКомиссия: {fee} {token}\nСумма: {amount} {token}"
+               f"_________________________\nКомиссия: {fee} {token}\nСумма: {amount} {token}\n\n\n\n\✅✅✅"
         await state.set_state(Trs_transfer.transfer)
         await message.answer(text, reply_markup=kb_confirm_transfer())
 
@@ -170,10 +171,10 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, s
                     link = hlink('ссылке', transaction.tnx_id) #TODO Поправить это
                     await callback.message.answer(
                         f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}")
-                    await transaction_start(callback.message, bot, state)
+                    await transaction_start(callback.message, state)
                 else:
                     print(transaction.status)
-                    await transaction_start(callback.message, bot, state)
+                    await transaction_start(callback.message, state)
                     await callback.message.answer("Ошибка транзакции")
                     await state.set_state(TransactionStates.main)
 
@@ -183,4 +184,4 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.set_state(TransactionStates.main)
     await callback.message.delete()
     await callback.message.answer("Ваша транзакция отменена")
-    await transaction_start(callback.message, bot, state)
+    await transaction_start(callback.message, state)
