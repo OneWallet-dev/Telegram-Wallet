@@ -23,13 +23,13 @@ async def registration_start(callback: CallbackQuery, state: FSMContext, bot: Bo
     await callback.answer()
     await state.set_state(RegistrationState.main)
     msg_garb = await bot.edit_message_text(text="Здравствуйте.\n"
-                                           "Для использования бота вам нужно установить сильный пароль.\n\n"
-                                           "Обратите внимание, что все пароли хранятся в зашифрованном виде, и "
-                                           "в случае утери восстановить аккаунт будет затруднительно.\n\n"
-                                           "Для продолжения отправьте выбранный вами пароль:",
-                                      chat_id=callback.message.chat.id,
-                                      message_id=callback.message.message_id,
-                                      reply_markup=back_button())
+                                                "Для использования бота вам нужно установить сильный пароль.\n\n"
+                                                "Обратите внимание, что все пароли хранятся в зашифрованном виде, и "
+                                                "в случае утери восстановить аккаунт будет затруднительно.\n\n"
+                                                "Для продолжения отправьте выбранный вами пароль:",
+                                           chat_id=callback.message.chat.id,
+                                           message_id=callback.message.message_id,
+                                           reply_markup=back_button())
     msg_stick = await callback.message.answer("Для продолжения пришлите пароль:")
     await MManager.sticker_store(state, msg_stick)
     await MManager.garbage_store(state, msg_garb.message_id)

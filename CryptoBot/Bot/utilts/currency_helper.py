@@ -1,7 +1,8 @@
 base_tokens = {
     'USDT': {'network': ['TRC-20'], 'blockchain': 'tron',
              'contract_address': "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
-             'testnet_contract_address': "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"}
+             'testnet_contract_address': "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"},
+    'trx': {'network': ['TRC-20'], 'blockchain': 'tron', 'contract_address': "trx", 'testnet_contract_address': "trx"}
 }
 
 

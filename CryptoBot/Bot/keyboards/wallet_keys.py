@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
 from Bot.keyboards.base_keys import rep_back_button
