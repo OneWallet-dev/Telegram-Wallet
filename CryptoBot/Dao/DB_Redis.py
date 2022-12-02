@@ -34,6 +34,7 @@ class RedRedis:
 
 class DataRedis(RedRedis):
     auth_key = "authorized"
+    text_key = "cached_texts"
 
     @classmethod
     async def set_data(cls, key: str, value: str | int, ttl: int = None):
@@ -41,7 +42,9 @@ class DataRedis(RedRedis):
 
     @classmethod
     async def get_data(cls, key: str):
-        return await cls.data_redis.get(key)
+        data = await cls.data_redis.get(key)
+        if data:
+            return data
 
     @classmethod
     async def update_user_life(cls, user_id: int):
@@ -56,6 +59,12 @@ class DataRedis(RedRedis):
 
     @classmethod
     async def find_user(cls, telegram_user_id: int):
-        search = await cls.get_data(f"Users: {telegram_user_id}: {cls.auth_key}")
-        if search is not None:
-            return search
+        return await cls.get_data(f"Users: {telegram_user_id}: {cls.auth_key}")
+
+    @classmethod
+    async def cache_text(cls, telegram_user_id: int, text: str, key: str):
+        await cls.set_data(f"Users: {telegram_user_id}: {cls.text_key}: {key}", text, ttl=600)
+
+    @classmethod
+    async def get_cached_text(cls, telegram_user_id: int, key: str):
+        return await cls.get_data(f"Users: {telegram_user_id}: {cls.text_key}: {key}")

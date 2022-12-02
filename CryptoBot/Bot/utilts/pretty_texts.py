@@ -29,7 +29,7 @@ async def all_wallets_text(user_id: int):
                     balance = balances.get(token.token_name, 'Iternal Error!')
                     text += f"{token.token_name}: {balance}\n"
 
-            text += "<code>——————————————————————</code>\n"
+        text += "<code>——————————————————————</code>\n"
         text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
     else:
         text += '<i>▫️ Вы пока не отслеживаете ни один токен.</i>'

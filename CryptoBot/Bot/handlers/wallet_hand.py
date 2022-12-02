@@ -65,15 +65,30 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
 async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.main)
     text = await all_wallets_text(callback.from_user.id)
+    await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
     if 'edit' in callback.data:
         with suppress(TelegramBadRequest):
             await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                         message_id=callback.message.message_id, reply_markup=main_wallet_keys())
     elif 'keep' in callback.data:
         await callback.message.answer(text, reply_markup=main_wallet_keys())
+        await bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id)
     await callback.answer()
 
 
+@router.callback_query(F.data.startswith('back_to_wall'))
+async def wallet_backing(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await state.set_state(WalletStates.main)
+    text = await DataRedis.get_cached_text(callback.from_user.id, 'wallet')
+    if not text:
+        text = await all_wallets_text(callback.from_user.id)
+        await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
+    await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id, reply_markup=main_wallet_keys())
+    await callback.answer()
+
+
+@router.callback_query(F.data == "back", StateFilter(WalletStates.add_token))
 @router.callback_query(F.data == "add_token", StateFilter(WalletStates.main))
 async def add_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
@@ -127,6 +142,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, s
                                 reply_markup=refresh_button())
 
 
+@router.callback_query(F.data == "back", StateFilter(WalletStates.delete_token))
 @router.callback_query(F.data == "delete_token", StateFilter(WalletStates.main))
 async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     await callback.answer()
@@ -151,8 +167,8 @@ async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, ses
 async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
-    bal_data = await TokenService.find_address_token(user_id=callback.from_user.id, token_name=token,
-                                                     token_network=network)
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    bal_data = await TokenService.find_address_token(u_id, token_name=token, token_network=network)
     address: Address = bal_data.get('address')
     token_obj: Token = bal_data.get('token')
     balance = (await AddressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]

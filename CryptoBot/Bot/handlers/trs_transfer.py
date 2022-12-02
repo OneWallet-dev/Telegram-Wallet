@@ -23,6 +23,7 @@ from crypto.TronMaker import TronMaker
 
 router = Router()
 router.message.filter(StateFilter(Trs_transfer))
+router.message.filter(StateFilter(Trs_transfer))
 tron = TronMaker()
 
 
