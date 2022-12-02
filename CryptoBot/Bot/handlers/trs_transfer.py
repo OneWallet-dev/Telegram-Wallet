@@ -62,8 +62,8 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
         # пользовательский контракт
         pass
     await state.update_data(contract_address=contract_address)
-
-    tron_address = await owner.get_chain_address(int(callback.from_user.id), 'tron')
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    tron_address = await owner.get_chain_address(u_id, 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
         balance = await tron.TRX_get_balance(tron_address.address)
     elif network in blockchains.get("tron").get("networks"):
