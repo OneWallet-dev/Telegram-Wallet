@@ -243,8 +243,11 @@ class TronMaker(Maker):
             try:
                 txn_ret = await txn.broadcast()
                 txn_id = txn_ret.get("txid")
+                print(txn_id)
                 txn_info = await self.txn_info(txn_id)
+
                 status = txn_info.get("ret")[0].get("contractRet")
+
                 print(status)
                 if status == "SUCCESS":
                     return {"status": status,
