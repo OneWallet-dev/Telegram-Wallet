@@ -7,11 +7,10 @@ from Bot.utilts.currency_helper import base_tokens
 
 def m_transaction():
     mark = ReplyKeyboardBuilder()
-    mark.row((KeyboardButton(text="Обменять")))
-    mark.row((KeyboardButton(text="Перевести")))
-    mark.row((KeyboardButton(text="Вывести")))
-    mark.row((KeyboardButton(text="История")))
-    mark.row((KeyboardButton(text="'⬅️ Назад'")))
+    mark.row((KeyboardButton(text="🔄 Обменять")))
+    mark.row((KeyboardButton(text="⤴️ Перевести")))
+    mark.row((KeyboardButton(text="📝 История")))
+    mark.row((KeyboardButton(text="⬅️ Назад")))
     mark.adjust(2, 1, 1, 1)
     return mark.as_markup(resize_keyboard=True)
 
