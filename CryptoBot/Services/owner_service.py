@@ -25,11 +25,11 @@ class OwnerService:
             return owner.wallets
 
     @staticmethod
-    async def get_tokens(user_id: int):
+    async def get_tokens(u_id: str):
         all_tokens = list()
         session_connect = await create_session()
         async with session_connect() as session:
-            owner: Owner = await session.get(Owner, str(user_id))
+            owner: Owner = await session.get(Owner, u_id)
             wallets = owner.wallets
             for wallet in wallets:
                 wallet_obj = wallets[wallet]
@@ -39,12 +39,12 @@ class OwnerService:
         return all_tokens
 
     @staticmethod
-    async def add_currency(user: User, token: str, network: str):
+    async def add_currency(u_id: str, token: str, network: str):
         session_connect = await create_session()
         async with session_connect() as session:
             token_ref = base_tokens.get(token)
 
-            address = await OwnerService.get_chain_address(user.id, token_ref['blockchain'])
+            address = await OwnerService.get_chain_address(u_id, token_ref['blockchain'])
             token_obj = await TokenService.get_token(base_tokens[token]['contract_address'])
             if not token_obj:
                 token_obj = Token(token_name=token,
@@ -59,12 +59,12 @@ class OwnerService:
                 raise DuplicateToken
 
     @staticmethod
-    async def get_chain_address(user_id: int, blockchain: str, path_index: int = 0):
+    async def get_chain_address(u_id: str, blockchain: str, path_index: int = 0):
         session_connect = await create_session()
         async with session_connect() as session:
             address: Address = (await session.execute(
                 select(Address).where(
                     Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
-                        Wallet.owner_id == str(user_id), Wallet.blockchain == blockchain).scalar_subquery()))
+                        Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
                                 ).first()[0]
             return address

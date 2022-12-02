@@ -11,20 +11,28 @@ from Services.TokenService import TokenService
 
 async def all_wallets_text(user_id: int):
     u_id = await DataRedis.find_user(user_id)
-    user_wallets = await OwnerService.get_wallets(u_id)
-    text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'
-    text += '<b>Балансы:\n</b>'
-    text += "<code>——————————————————————</code>\n"
-    for blockchain in user_wallets:
-        addressess = user_wallets[blockchain].addresses
-        for address in addressess:
-            adress_obj = addressess.get(address)
-            balances = await AddressService.get_balances(address=address)
-            for token in adress_obj.tokens:
-                balance = balances.get(token.token_name, 'Iternal Error!')
-                text += f"{token.token_name}: {balance}\n"
-    text += "<code>——————————————————————</code>\n"
-    text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
+    user_tokens = await OwnerService.get_tokens(u_id)
+    text = f'UID: <code>{u_id}</code> 👤\n'
+    text += f'<b>Кошелек:</b>\n\n'
+    if user_tokens:
+        user_wallets = await OwnerService.get_wallets(u_id)
+        text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'
+        text += '<b>Балансы:\n</b>'
+        text += "<code>——————————————————————</code>\n"
+
+        for blockchain in user_wallets:
+            addressess = user_wallets[blockchain].addresses
+            for address in addressess:
+                adress_obj = addressess.get(address)
+                balances = await AddressService.get_balances(address=address)
+                for token in adress_obj.tokens:
+                    balance = balances.get(token.token_name, 'Iternal Error!')
+                    text += f"{token.token_name}: {balance}\n"
+
+            text += "<code>——————————————————————</code>\n"
+            text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
+    else:
+        text += '<i>▫️ Вы пока не отслеживаете ни один токен.</i>'
     return text
 
 

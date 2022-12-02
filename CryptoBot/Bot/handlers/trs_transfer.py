@@ -12,6 +12,7 @@ from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_tok
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens, blockchains
 from Bot.utilts.settings import DEBUG_MODE
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Transaction import Transaction
@@ -128,9 +129,9 @@ async def confirm_transfer(message: Message, state: FSMContext):
 @router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
 async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
     await callback.message.delete()
-    await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется",
-                 time=20)
-    owner: Owner = await session.get(Owner, str(callback.from_user.id))
+    await loader(chat_id=callback.from_user.id, text="Пожалуйста дождитесь завершения, транзакция выполняется", time=20)
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    owner: Owner = await session.get(Owner, u_id)
 
     sdata = await state.get_data()
     contract_address = sdata.get("contract_address")

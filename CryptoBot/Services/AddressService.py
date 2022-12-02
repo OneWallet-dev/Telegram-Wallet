@@ -49,7 +49,6 @@ class AddressService:
             if contract_id in address.token_list:
                 return address
 
-
     @staticmethod
     async def createTransaction(address: Address,
                                 amount: float,

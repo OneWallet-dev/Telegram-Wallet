@@ -107,7 +107,8 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, s
                 f"В сети:  <code>{network}</code>\n"
     if network in base_tokens.get(token).get("network"):
         try:
-            await OwnerService.add_currency(user=callback.from_user, token=token, network=network)
+            u_id = await DataRedis.find_user(callback.from_user.id)
+            await OwnerService.add_currency(u_id, token=token, network=network)
         except DuplicateToken:
             await callback.answer('❌')
             text = "❌  ❌  ❌\n" \
@@ -129,7 +130,9 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, s
 @router.callback_query(F.data == "delete_token", StateFilter(WalletStates.main))
 async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     await callback.answer()
-    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    user_tokens = await OwnerService.get_tokens(u_id)
     if user_tokens:
         await state.set_state(WalletStates.delete_token)
         all_tokens_names = [f'{token.token_name} [{token.network}]' for token in user_tokens]
@@ -188,7 +191,9 @@ async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot, s
 @router.callback_query(F.data.startswith("inspect_token"), StateFilter(WalletStates.main))
 async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
-    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    user_tokens = await OwnerService.get_tokens(u_id)
     if user_tokens:
         await state.set_state(WalletStates.inspect_token)
         await bot.edit_message_text("Выберите токен, который вы хотите изучить подробнее:",
@@ -205,7 +210,8 @@ async def inspect_token_start(callback: CallbackQuery, state: FSMContext, bot: B
 async def inspect_one_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     token, network = callback.data.replace('inspect_t_', "").replace('[', "").replace(']', "").split(" ")
     text = await detail_view_text(token_name=token, token_network=network, user_id=callback.from_user.id)
-    user_tokens = await OwnerService.get_tokens(callback.from_user.id)
+    u_id = await DataRedis.find_user(callback.from_user.id)
+    user_tokens = await OwnerService.get_tokens(u_id)
     with suppress(TelegramBadRequest):
         await bot.edit_message_text(text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                     reply_markup=inspect_token_kb(user_tokens))

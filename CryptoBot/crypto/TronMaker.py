@@ -35,10 +35,8 @@ class TronMaker(Maker):
 
     def _get_client(self):
         if self.network == "mainnet":
-            print(1)
             return AsyncTron(provider=AsyncHTTPProvider(api_key=self.api_key))
         elif self.network == "nile":
-            print(2)
             return AsyncTron(network="nile")
         else:
             raise ValueError(f"network: <{self.network}>  not supported")
@@ -77,8 +75,6 @@ class TronMaker(Maker):
             return client.get_account_asset_balance()
 
     async def TRC_20_get_balance(self, contract: str, address: str):
-        print(contract)
-        print(address)
         if await self.is_valid_address(address) is False:
             raise ValueError(f"BadAddress {address}")
         if await self.is_valid_contract(contract) is False:
@@ -223,7 +219,7 @@ class TronMaker(Maker):
 
         address = transaction.address
         fee_service_for_transaction = service_fee
-        fee_frozen_on_address = address.get_adress_freezed_fee()
+        fee_frozen_on_address = address.get_address_freezed_fee()
         balance_token = await self.TRC_20_get_balance(contract=transaction.token_contract_id, address=transaction.from_address)
         balance_token_avalible_without_fee = balance_token - fee_frozen_on_address
         balance_token_avalible = balance_token_avalible_without_fee - fee_service_for_transaction
