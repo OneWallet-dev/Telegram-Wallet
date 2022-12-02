@@ -27,14 +27,15 @@ async def all_wallets_text(user_id: int):
                 balances = await AddressService.get_balances(address=address)
                 for token in adress_obj.tokens:
                     balance = balances.get(token.token_name, 'Iternal Error!')
-                    text += f"{token.token_name}: {balance}"
+                    text += f"{token.token_name}: {balance}\n"
                 fee += adress_obj.get_address_freezed_fee()
 
         text += "<code>——————————————————————</code>\n"
         if fee:
             text += f'Заморожена комиссия сервиса: {fee} USDT'
         else:
-            text += '<i>▫️ Для получения адреса нужного кошелька нажмите "Детальный вид"</i>'
+            text += '<i>▫️ Для получения публичного адреса и списка транзакций нажмите ' \
+                    '"Детальная информация о токене"</i>'
     else:
         text += '<i>▫️ Вы пока не отслеживаете ни один токен.</i>'
     return text
@@ -46,9 +47,10 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
                                                               token_network=token_network,
                                                               u_id=u_id)
     token = token_and_address.get('token')
-    address = token_and_address.get('address')
+    address: Address = token_and_address.get('address')
+
     balance = (await AddressService.get_balances(address=address.address, specific=[token]))[token.token_name]
-    transactions = [str(transaction) for transaction in address.transactions]
+    transactions = [str(address.transactions[transaction]) for transaction in address.transactions]
 
     text = f"<b>Токен: {token.token_name}\nСеть: {token.network}\nТекущий баланс: {balance}</b>\n\n"
     text += f"<b>Публичный адрес:</b> <code>{address.address}</code>\n"
@@ -59,4 +61,4 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
             text += f" - {trsc}"
     else:
         text += f"<i>- - Список пока пуст - -</i>"
-    return text
+    return text, address.address
