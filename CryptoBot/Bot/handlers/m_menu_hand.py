@@ -1,4 +1,5 @@
 from aiogram import Router, Bot, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,9 +23,12 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
     await state.set_state(MainState.welcome_state)
     bot_name = (await bot.get_me()).full_name
     u_id = await DataRedis.find_user(update.from_user.id)
-    await message.answer(f'Добро пожаловать в главное меню криптовалютного бота {bot_name}\n'
-                         f'Вы авторизированы как пользователь с UID: <code>{u_id}</code>.\n'
-                         'Чем я могу вам помочь?', reply_markup=main_menu_kb())
+    text = f'<b>👤 <code>{u_id}</code>, добро пожаловать в криптовалютный бот {bot_name}!</b>\n\nЧем я могу вам помочь?'
+    try:
+        await message.answer_photo("AgACAgIAAxkBAAIM0mOKBCTWItMvrz7imXQtDVQDdozGAALVwTEbxw5RSDqwGnza3E4jAQADAgADeAADKwQ",
+                                   caption=text, reply_markup=main_menu_kb())
+    except TelegramBadRequest:
+        await message.answer(text, reply_markup=main_menu_kb())
 
 
 @router.message(F.text == "💹 Мой кошелек")
