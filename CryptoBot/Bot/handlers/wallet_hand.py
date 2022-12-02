@@ -232,3 +232,8 @@ async def inspect_one_token(callback: CallbackQuery, bot: Bot):
         await bot.edit_message_text(text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                     reply_markup=inspect_token_kb(user_tokens))
     await callback.answer()
+
+
+@router.callback_query(F.data == "put_money", StateFilter(WalletStates.inspect_token))
+async def put_money(callback: CallbackQuery):
+    await callback.message.answer("Функция пополнения кошелька находится в разработке")
