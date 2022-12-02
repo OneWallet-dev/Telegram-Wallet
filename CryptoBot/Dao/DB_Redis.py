@@ -47,12 +47,12 @@ class DataRedis(RedRedis):
     async def update_user_life(cls, user_id: int):
         alive_state = await cls.get_data(f"Users: {user_id}: {cls.auth_key}")
         new_value = alive_state if alive_state else "False"
-        await cls.set_data(f"Users: {user_id}: {cls.auth_key}", new_value, ttl=600)
+        await cls.set_data(f"Users: {user_id}: {cls.auth_key}", new_value, ttl=6000)
         return alive_state
 
     @classmethod
     async def authorize(cls, telegram_user_id: int, uid: str):
-        await cls.set_data(f"Users: {telegram_user_id}: {cls.auth_key}", uid, ttl=600)
+        await cls.set_data(f"Users: {telegram_user_id}: {cls.auth_key}", uid, ttl=6000)
 
     @classmethod
     async def find_user(cls, telegram_user_id: int):
