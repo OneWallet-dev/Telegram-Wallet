@@ -222,7 +222,7 @@ class TronMaker(Maker):
             return None
 
         balance_trx = await self.TRX_get_balance(address=transaction.from_address)
-        if balance_trx < self.__main_fee:
+        if balance_trx < float(self.__main_fee):
             add_fee = self.__main_fee - balance_trx
             print(1, "Не хватает средств для оплаты газа")
             await self.__additive_trx_from_main(address=transaction.from_address, amount=add_fee)
@@ -245,7 +245,7 @@ class TronMaker(Maker):
                 txn_id = txn_ret.get("txid")
                 print(txn_id)
                 txn_info = await self.txn_info(txn_id)
-
+                print(111, txn_info)
                 status = txn_info.get("ret")[0].get("contractRet")
 
                 print(status)
