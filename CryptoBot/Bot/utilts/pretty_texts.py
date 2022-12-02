@@ -27,7 +27,7 @@ async def all_wallets_text(user_id: int):
                 balances = await AddressService.get_balances(address=address)
                 for token in adress_obj.tokens:
                     balance = balances.get(token.token_name, 'Iternal Error!')
-                    text += f"{token.token_name}: {balance}"
+                    text += f"{token.token_name}: {balance}\n"
                 fee += adress_obj.get_address_freezed_fee()
 
         text += "<code>——————————————————————</code>\n"
