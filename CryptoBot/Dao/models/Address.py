@@ -30,7 +30,8 @@ class Address(Base):
 
     token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
 
-    def get_address_freezed_fee(self) -> float:
+    def get_address_freezed_fee(self,
+                                token_name: str = None) -> float:
         freezed_fee: float = 0
         for transaction in self.transactions.values():
             if transaction.service_fee is not None:

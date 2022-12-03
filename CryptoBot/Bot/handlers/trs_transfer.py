@@ -11,10 +11,12 @@ from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_tok
     kb_confirm_transfer
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens, blockchains
+from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
+from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Services.AddressService import AddressService
 from Services.TokenService import TokenService
@@ -35,7 +37,7 @@ async def start_transfer(callback: CallbackQuery, state: FSMContext):
     token = data[-1]
     await state.update_data(token=token)
     text = "Перевод: token\nБаланс: Не определен\nСеть: Не выбрана\n" \
-           "Адрес получателя: Не известен\nСумма: 0\n\n"
+           "Адрес получателя: Не известен\nСумма: 0\n\n\n\n\n\n\n"
     text = text.replace("token", token)
     await state.update_data(text=text)
 
@@ -69,8 +71,12 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     tron_address = await owner.get_chain_address(u_id, 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
         balance = await tron.TRX_get_balance(tron_address.address)
+        frozen_fee = tron_address.get_address_freezed_fee("TRX")
+        balance = balance-frozen_fee
     elif network in blockchains.get("tron").get("networks"):
         balance = await tron.TRC_20_get_balance(contract_address, tron_address.address)
+        frozen_fee = tron_address.get_address_freezed_fee("USDT")
+        balance = balance - frozen_fee
     else:
         raise ValueError("Network not supported")
 
@@ -81,41 +87,55 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(network=network)
     await state.update_data(balance=balance)
     await state.update_data(text=text)
-    text = text + "Напишите адрес получателя\n✅"
+    text = text + "<b>Напишите адрес получателя</b>️\n" \
+                  "Будьте очень внимательны и не торопитесь❗"
     await state.set_state(Trs_transfer.address)
-    await bot.edit_message_text(text, callback.from_user.id, message_id, reply_markup=change_transfer_token())
+    await bot.edit_message_text(text,
+                                callback.from_user.id,
+                                message_id,
+                                reply_markup=change_transfer_token(),
+                                parse_mode="HTML")
 
 
 @router.message(StateFilter(Trs_transfer.address))
-async def address(message: Message, state: FSMContext, bot: Bot):
+async def address123(message: Message, state: FSMContext, bot: Bot):
     sdata = await state.get_data()
     text = sdata.get("text")
     message_id = sdata.get("message_id")
     address = message.text
     token = sdata.get("token")
     text = text.replace("Не известен", address)
-    text = text + f"Напишите сумму для перевода в {token}\n✅✅"
+    text = text + f"<b>Напишите сумму для перевода в {token}</b>❗️❗️\n"
     await state.update_data(address=address)
     await state.set_state(Trs_transfer.confirm_transfer)
-    await bot.edit_message_text(text, message.from_user.id, message_id, reply_markup=change_transfer_token())
+    await bot.edit_message_text(text, message.from_user.id, message_id, reply_markup=change_transfer_token(),parse_mode="HTML")
 
 
 @router.message(StateFilter(Trs_transfer.confirm_transfer))
-async def confirm_transfer(message: Message, state: FSMContext):
+async def confirm_transfer(message: Message, state: FSMContext, session: AsyncSession):
     await message.delete()
+    u_id = await DataRedis.find_user(int(message.from_user.id))
+    owner: Owner = await session.get(Owner, u_id)
+    data = await state.get_data()
+    contract_id = data.get("contract_address")
+    token_object: Token = await TokenService.get_token(contract_id)
+    address = AddressService.get_address_for_transaction(owner,
+                                                     "tron",#TODO здесь не доджно быть хардкода
+                                                     token_object.contract_Id)
     sdata = await state.get_data()
-    fee = 1.0
+    fee = await getFeeStrategy(address)
+    frozen_fee = address.get_address_freezed_fee()
     amount = float(message.text)
     print(amount)
     balance = sdata.get("balance")
-    token = sdata.get("token")
+    token_string = sdata.get("token")
 
     if balance < amount + fee:
-        lacks_fee = (amount + fee) - balance
+        lacks_fee = (amount + fee) - (balance-frozen_fee)
         await message.answer(f"Вашего баланса недостаточно для перевода данной суммы:\n\n"
-                             f"Баланс: {balance} {token}\n"
-                             f"Комиссия сети: {fee} {token}\n\n"
-                             f"Для перевода не хватает: {lacks_fee} {token}")
+                             f"Баланс: {balance-frozen_fee} {token_string}\n"
+                             f"Комиссия сети: {fee} {token_string}\n\n"
+                             f"Для перевода не хватает: {lacks_fee} {token_string}")
         await message.answer("Пожалуйста напишите новую сумму или пополните баланс")
     else:
         network = sdata.get("network")
@@ -123,8 +143,8 @@ async def confirm_transfer(message: Message, state: FSMContext):
         await state.update_data(amount=amount)
         await state.update_data(fee=fee)
         text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
-               f"Перевод: {token}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
-               f"_________________________\nКомиссия: {fee} {token}\nСумма: {amount} {token}\n\n\n\n\✅✅✅"
+               f"Перевод: {token_string}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
+               f"_________________________\nКомиссия: {fee} {token_string}\nСумма: {amount} {token_string}\n\n\n\n✅✅✅"
         await state.set_state(Trs_transfer.transfer)
         await message.answer(text, reply_markup=kb_confirm_transfer())
 

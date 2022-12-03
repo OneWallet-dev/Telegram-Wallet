@@ -37,10 +37,16 @@ class AddressService:
                 if (specific and token in specific) or not specific:
                     if token.token_name == 'trx':
                         balance = await twallet.TRX_get_balance(address)
+                        frozen_fee = address_obj.get_address_freezed_fee('trx')
+                        balance = balance - frozen_fee
                     elif token.network == 'TRC-20':
                         balance = await twallet.TRC_20_get_balance(token.contract_Id, address)
+                        frozen_fee = address_obj.get_address_freezed_fee('TRC-20')
+                        balance = balance - frozen_fee
                     elif token.network == 'TRC-10':
                         balance = await twallet.TRC_10_get_balance(address_obj)
+                        frozen_fee = address_obj.get_address_freezed_fee('TRC-10')
+                        balance = balance - frozen_fee
                     balances.update({token.token_name: balance})
         return balances
 
@@ -60,20 +66,20 @@ class AddressService:
                                 message: Message = None,
                                 chait_id: int = None) -> Transaction or str:
 
-        await new_loader(message,chait_id,1,"Проверяем баланс...")
+        await new_loader(message, chait_id, 1, "Проверяем баланс...")
         my_transaction = Transaction(token_contract_id=token.contract_Id,
                                      amount=amount,
                                      from_address=address.address,
                                      to_address=to_address,
                                      address=address)
         service_fee = await getFeeStrategy(address)
-        await new_loader(message,chait_id, 1, "Проверяем нагрузку сети...")
-        await new_loader(message,chait_id, 1, "Вычисляем блоки...")
-        await new_loader(message,chait_id, 2, "Запрос к блокчейну...")
-        await new_loader(message,chait_id, 2, "Проверяем количество энергии.")
-        await new_loader(message,chait_id, 2, "Проверяем количество энергии..")
-        await new_loader(message,chait_id, 2, "Проверяем количество энергии...")
-        await new_loader(message,chait_id, 3, "Проверяем количество энергии...")
+        await new_loader(message, chait_id, 1, "Проверяем нагрузку сети...")
+        await new_loader(message, chait_id, 1, "Вычисляем блоки...")
+        await new_loader(message, chait_id, 2, "Запрос к блокчейну...")
+        await new_loader(message, chait_id, 2, "Проверяем количество энергии.")
+        await new_loader(message, chait_id, 2, "Проверяем количество энергии..")
+        await new_loader(message, chait_id, 2, "Проверяем количество энергии...")
+        await new_loader(message, chait_id, 3, "Проверяем количество энергии...")
         await new_loader(message, chait_id, 3, "Формируем транзакци...")
         await new_loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
         await new_loader(message, chait_id, 4, "Совершаем транзакцию...")
