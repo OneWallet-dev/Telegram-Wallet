@@ -166,7 +166,7 @@ class TronMaker(Maker):
                                           token_contract_id = "trx",
                                           to_address=address,
                                           from_address=self.main_address,
-                                          status="False")
+                                          status="SUCCESS")
             trx_transaction.from_address = self.main_address
             balance_trx = await self.TRX_get_balance(address)
             if float(balance_trx) < float(self.max_user_trx_balance):
