@@ -168,8 +168,8 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
     u_id = await DataRedis.find_user(callback.from_user.id)
     bal_data = await TokenService.find_address_token(u_id, token_name=token, token_network=network)
-    address: Address = bal_data.get('address')
-    token_obj: Token = bal_data.get('token')
+    address = bal_data.address
+    token_obj = bal_data.token
     balance = (await AddressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]
     if balance > 0:
         text = f"Обнаружены средства: {token_obj.token_name}: {balance}\n" \

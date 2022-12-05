@@ -48,7 +48,7 @@ class OwnerService:
                 contract_string = 'testnet_contract_address'
             if DEBUG_MODE == False:
                 contract_string = 'contract_address'
-            token_obj = await TokenService.get_token(base_tokens[token][contract_string])
+            token_obj = await TokenService.get_token(token, network)
             if not token_obj:
                 token_obj = Token(token_name=token,
                                   contract_Id=base_tokens[token][contract_string],
