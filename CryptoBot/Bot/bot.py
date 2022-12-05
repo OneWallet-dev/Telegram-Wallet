@@ -3,8 +3,9 @@ from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
-from Bot.handlers import start_hand, wallet_hand, return_hand, AML_check, m_menu_hand, registration_hand, auth_hand, \
-    transaction_hand, trs_transfer
+from Bot.handlers import start_hand, wallet_hand, m_menu_hand, registration_hand, auth_hand
+from Bot.handlers.Service_routers import return_hand
+from Bot.handlers.Transaction import transaction_hand, trs_transfer, AML_check
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.db import DbSession
 from Dao.DB_Postgres.session import create_session
