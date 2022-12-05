@@ -6,8 +6,8 @@ from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter
-from Bot.handlers.auth_hand import you_need_tb_authenticated
-from Bot.handlers.m_menu_hand import main_menu
+from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
+from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager

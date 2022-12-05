@@ -6,7 +6,7 @@ from aiogram.types import Message
 from bata import Data
 
 
-async def new_loader(message: Message, chait_id: int, stage: int, text: str):
+async def loader(message: Message, chait_id: int, stage: int, text: str):
     bot = Data.main_bot
     if stage == 7:
         await bot.delete_message(chait_id, message.message_id)

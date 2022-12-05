@@ -2,7 +2,7 @@ from aiogram import F, Router, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from Bot.handlers.m_menu_hand import main_menu
+from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.utilts.mmanager import MManager
 
 router = Router()

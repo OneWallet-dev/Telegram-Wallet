@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter
-from Bot.handlers.m_menu_hand import main_menu
+from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.keyboards.main_keys import auth_kb, back_button
 from Bot.states.main_states import AuthState, RegistrationState
 from Bot.utilts.mmanager import MManager
