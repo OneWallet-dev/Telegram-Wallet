@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.Transaction.transaction_hand import transaction_start
+from Bot.handlers.main_handlers.transaction_menu_hand import transaction_start
 from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token, \
     kb_confirm_transfer
 from Bot.states.trans_states import Trs_transfer, TransactionStates

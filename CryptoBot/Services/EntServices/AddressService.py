@@ -2,7 +2,7 @@ from aiogram.types import Message
 
 
 from Bot.utilts.fee_strategy import getFeeStrategy
-from Bot.utilts.new_loader import new_loader
+from Bot.handlers.Service_routers.loader_hand import loader
 from Services.CryptoMakers import Maker
 from Services.CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
 from Services.CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
@@ -70,7 +70,7 @@ class AddressService:
                                 message: Message = None,
                                 chait_id: int = None) -> Transaction or str:
 
-        await new_loader(message, chait_id, 1, "Проверяем баланс...")
+        await loader(message, chait_id, 1, "Проверяем баланс...")
         service_fee = await getFeeStrategy(address)
 
         my_transaction = Transaction(token_contract_id=token.contract_Id,
@@ -79,32 +79,32 @@ class AddressService:
                                      to_address=to_address,
                                      address=address,
                                      service_fee=service_fee)
-        await new_loader(message, chait_id, 1, "Проверяем нагрузку сети...")
-        await new_loader(message, chait_id, 1, "Вычисляем блоки...")
-        await new_loader(message, chait_id, 2, "Запрос к блокчейну...")
-        await new_loader(message, chait_id, 2, "Проверяем количество энергии.")
-        await new_loader(message, chait_id, 2, "Проверяем количество энергии..")
-        await new_loader(message, chait_id, 2, "Проверяем количество энергии...")
-        await new_loader(message, chait_id, 3, "Проверяем количество энергии...")
-        await new_loader(message, chait_id, 3, "Формируем транзакци...")
-        await new_loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
-        await new_loader(message, chait_id, 4, "Совершаем транзакцию...")
+        await loader(message, chait_id, 1, "Проверяем нагрузку сети...")
+        await loader(message, chait_id, 1, "Вычисляем блоки...")
+        await loader(message, chait_id, 2, "Запрос к блокчейну...")
+        await loader(message, chait_id, 2, "Проверяем количество энергии.")
+        await loader(message, chait_id, 2, "Проверяем количество энергии..")
+        await loader(message, chait_id, 2, "Проверяем количество энергии...")
+        await loader(message, chait_id, 3, "Проверяем количество энергии...")
+        await loader(message, chait_id, 3, "Формируем транзакци...")
+        await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
+        await loader(message, chait_id, 4, "Совершаем транзакцию...")
         transaction_maker = Transaction_maker_Factory().getMaker(token.token_name, token.network)
         transaction_dict = await transaction_maker.transfer(my_transaction)
         if transaction_dict:
             my_transaction.tnx_id = transaction_dict.get("txn_id")
             my_transaction.service_fee = service_fee
             my_transaction.status = transaction_dict.get("status")
-            await new_loader(message, chait_id, 5, "Совершаем транзакцию...")
+            await loader(message, chait_id, 5, "Совершаем транзакцию...")
             session = await create_session()
-            await new_loader(message, chait_id, 5, "Завершаем транзакцию...")
+            await loader(message, chait_id, 5, "Завершаем транзакцию...")
             async with session() as session:
                 local_object = await session.merge(my_transaction)
                 session.add(local_object)
                 await session.commit()
                 await session.close()
-                await new_loader(message, chait_id, 6, "Записываем данные в базу...")
-                await new_loader(message, chait_id, 7, "Записываем данные в базу...")
+                await loader(message, chait_id, 6, "Записываем данные в базу...")
+                await loader(message, chait_id, 7, "Записываем данные в базу...")
                 return my_transaction
 
         else:

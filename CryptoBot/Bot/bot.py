@@ -3,9 +3,10 @@ from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
-from Bot.handlers import start_hand, wallet_hand, m_menu_hand, registration_hand, auth_hand
-from Bot.handlers.Service_routers import return_hand
-from Bot.handlers.Transaction import transaction_hand, trs_transfer, AML_check
+from Bot.handlers import start_hand
+from Bot.handlers.Service_routers import return_hand, AML_check_hand
+from Bot.handlers.Transaction_metods import transfer_hand
+from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand, wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.db import DbSession
 from Dao.DB_Postgres.session import create_session
@@ -34,14 +35,14 @@ async def bot_start():
     dp.include_router(registration_hand.router)
     dp.include_router(auth_hand.router)
 
-    dp.include_router(m_menu_hand.router)
+    dp.include_router(main_menu_hand.router)
     dp.include_router(return_hand.router)
 
     dp.include_router(wallet_hand.router)
-    dp.include_router(transaction_hand.router)
-    dp.include_router(trs_transfer.router)
+    dp.include_router(transaction_menu_hand.router)
+    dp.include_router(transfer_hand.router)
 
-    dp.include_router(AML_check.router)
+    dp.include_router(AML_check_hand.router)
 
     # wallets
 

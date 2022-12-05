@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.Transaction.transaction_hand import transaction_start
-from Bot.handlers.wallet_hand import my_wallet_start
+from Bot.handlers.main_handlers.transaction_menu_hand import transaction_start
+from Bot.handlers.main_handlers.wallet_hand import my_wallet_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState

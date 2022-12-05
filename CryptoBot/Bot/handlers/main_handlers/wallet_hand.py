@@ -9,7 +9,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.Service_routers.loading_handler import loader
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
@@ -46,8 +45,6 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
         else:
             generator = Wallet_web3()
             await generator.generate_all_wallets(u_id)
-            await loader(message.chat.id, text="<i>Происходит генерация ваших основных кошельков.\n"
-                                               "Пожалуйста, подождите.</i>")
     else:
         pass
     text = await all_wallets_text(user_id)

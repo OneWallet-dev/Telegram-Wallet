@@ -1,13 +1,12 @@
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter
-from Bot.handlers.auth_hand import you_need_tb_authenticated
-from Bot.handlers.m_menu_hand import main_menu
+from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
 from Bot.utilts.mmanager import MManager
 
 router = Router()
