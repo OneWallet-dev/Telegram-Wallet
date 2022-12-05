@@ -57,11 +57,8 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 
 @router.callback_query(F.data == "confirm_thing", StateFilter(RegistrationState.check))
 @MManager.garbage_manage(clean=True)
-async def registration(callback: CallbackQuery, state: FSMContext, session: AsyncSession, bot: Bot):
+async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
     password = (await state.get_data()).get("password")
-    # session.add(Owner(id=str(callback.from_user.id), username=callback.from_user.username ))
-    await session.commit()
-    await session.close()
     u_id = await Owner.register(password=password)
     await callback.answer("Пароль успешно установлен")
     await DataRedis.authorize(callback.from_user.id, u_id)

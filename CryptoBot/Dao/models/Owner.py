@@ -32,9 +32,6 @@ class Owner(Base):
         cascade="all, delete-orphan", lazy="joined"
     )
 
-    async def createWallet(self, session: AsyncSession, blockchain: str):
-        pass
-
     @staticmethod
     async def _form_uid():
         session_connect = await create_session()

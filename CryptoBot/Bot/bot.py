@@ -4,7 +4,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import BotLogger
 from Bot.handlers import start_hand
-from Bot.handlers.service_functions import return_hand, AML_check_hand
+from Bot.handlers.service_handlers import return_hand, AML_check_hand
 from Bot.handlers.Transaction_metods import transfer_hand
 from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand, wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware

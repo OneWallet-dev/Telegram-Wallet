@@ -54,7 +54,7 @@ async def uid_request(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router.message(StateFilter(AuthState.uid_wait))
 @MManager.garbage_manage()
-async def uid_save(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+async def uid_save(message: Message, state: FSMContext, bot: Bot):
     await bot.delete_message(message.chat.id, message.message_id)
     await state.set_state(AuthState.pass_wait)
     edit_id = (await state.get_data())['edit_msg']
