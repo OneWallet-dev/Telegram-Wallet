@@ -18,4 +18,4 @@ async def loader(message: Message, chait_id: int, stage: int, text: str):
         try:
             await bot.edit_message_text(final_text, chat_id=chait_id, message_id=message.message_id)
         except TelegramBadRequest:
-            print('не нашел message')
+            print('Не нашел message')

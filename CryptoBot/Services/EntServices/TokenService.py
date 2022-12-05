@@ -27,14 +27,16 @@ class TokenService:
                     address_obj = wallet_obj.addresses[address]
                     if address_obj.path_index == path_index:
                         for token in address_obj.tokens:
-                            if token.token_name == token_name and token.network == token_network:
-                                return result(address_obj, token)
-                        return result(address_obj, None)
+                            if token.network == token_network:
+                                if token.token_name == token_name:
+                                    return result(address_obj, token)
+                            return result(address_obj, None)
 
     @staticmethod
     async def get_token(token_name: str, token_network: str):
         session_connect = await create_session()
         async with session_connect() as session:
             query = select(Token).filter(Token.token_name == token_name, Token.network == token_network)
-            result = await session.execute(query)
-            return result.first()
+            result = (await session.execute(query)).first()
+            if result:
+                return result[0]
