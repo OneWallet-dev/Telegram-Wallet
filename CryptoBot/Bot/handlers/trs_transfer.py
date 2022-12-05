@@ -5,7 +5,6 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.loading_handler import loader
 from Bot.handlers.transaction_hand import transaction_start
 from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token, \
     kb_confirm_transfer
@@ -13,6 +12,7 @@ from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.utilts.currency_helper import base_tokens, blockchains
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.settings import DEBUG_MODE
+from CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -21,12 +21,12 @@ from Dao.models.Transaction import Transaction
 from Services.AddressService import AddressService
 from Services.TokenService import TokenService
 from Services.owner_service import OwnerService
-from crypto.TronMaker import TronMaker
+from CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
 
 router = Router()
 router.message.filter(StateFilter(Trs_transfer))
 router.message.filter(StateFilter(Trs_transfer))
-tron = TronMaker()
+tron = Tron_TRC20_Maker()
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
@@ -48,7 +48,7 @@ async def start_transfer(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(lambda call: "transferNetwork_" in call.data, StateFilter(Trs_transfer.set_network))
-async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
+async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):#TODO рефакторинг! В на уровне роутеров мы не вызываем мейкеры. Только сервисы
     sdata = await state.get_data()
     cdata = callback.data.split('_')
     token = sdata.get("token")
@@ -70,11 +70,11 @@ async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     print(u_id)
     tron_address = await owner.get_chain_address(u_id, 'tron')
     if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
-        balance = await tron.TRX_get_balance(tron_address.address)
+        balance = await Tron_TRC10_Maker().TRX_get_balance(tron_address.address)
         frozen_fee = tron_address.get_address_freezed_fee("TRX")
         balance = balance-frozen_fee
     elif network in blockchains.get("tron").get("networks"):
-        balance = await tron.TRC_20_get_balance(contract_address, tron_address.address)
+        balance = await Tron_TRC20_Maker().get_balance(contract_address, tron_address.address)
         frozen_fee = tron_address.get_address_freezed_fee("USDT")
         balance = balance - frozen_fee
     else:

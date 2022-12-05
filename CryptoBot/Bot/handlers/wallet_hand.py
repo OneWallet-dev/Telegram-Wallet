@@ -26,7 +26,7 @@ from Dao.models.Token import Token
 from Services.AddressService import AddressService
 from Services.owner_service import OwnerService
 from Services.TokenService import TokenService
-from crypto.address_gen import Wallet_web3
+from CryptoMakers.address_gen import Wallet_web3
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
