@@ -35,6 +35,6 @@ class TokenService:
     async def get_token(token_name: str, token_network: str):
         session_connect = await create_session()
         async with session_connect() as session:
-            token: Token = (await session.execute(select(Token).filter(Token.token_name == token_name,
-                                                                      Token.network == token_network))).first()
-            return token
+            query = select(Token).filter(Token.token_name == token_name,Token.network == token_network)
+            result = await session.execute(query)
+            return result.first()
