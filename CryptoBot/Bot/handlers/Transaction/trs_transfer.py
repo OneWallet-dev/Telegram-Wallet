@@ -5,11 +5,11 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.transaction_hand import transaction_start
+from Bot.handlers.Transaction.transaction_hand import transaction_start
 from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token, \
     kb_confirm_transfer
 from Bot.states.trans_states import Trs_transfer, TransactionStates
-from Bot.utilts.currency_helper import base_tokens, blockchains
+from Bot.utilts.currency_helper import blockchains
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.settings import DEBUG_MODE
 from Services.CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
@@ -48,28 +48,22 @@ async def start_transfer(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(lambda call: "transferNetwork_" in call.data, StateFilter(Trs_transfer.set_network))
-async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):#TODO рефакторинг! В на уровне роутеров мы не вызываем мейкеры. Только сервисы
+async def start_transfer(callback: CallbackQuery, bot: Bot, state: FSMContext):
     sdata = await state.get_data()
     cdata = callback.data.split('_')
     token = sdata.get("token")
     network = cdata[-1]
-    token_info = base_tokens.get(token, None)
+
     owner = OwnerService()
 
-    if token_info is not None:  # TODO Это надо вешать на удобные функции и модели
-        if DEBUG_MODE:
-            contract_address = token_info.get("testnet_contract_address")
-        else:
-            contract_address = token_info.get("contract_address")
-    else:
-        contract_address = None
-        # пользовательский контракт
-        pass
-    await state.update_data(contract_address=contract_address)
     u_id = await DataRedis.find_user(callback.from_user.id)
-    print(u_id)
+
     tron_address = await owner.get_chain_address(u_id, 'tron')
-    if token == "TRX":  # TODO Это надо вешать на удобные функции и модели
+
+    contract_address = await TokenService.find_address_token(u_id, token, network, path_index=0)
+    await state.update_data(contract_address=contract_address)
+
+    if token == "TRX":
         balance = await Tron_TRC10_Maker().TRX_get_balance(tron_address.address)
         frozen_fee = tron_address.get_address_freezed_fee("TRX")
         balance = balance-frozen_fee
