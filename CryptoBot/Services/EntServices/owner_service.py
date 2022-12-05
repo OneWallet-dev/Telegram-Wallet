@@ -70,5 +70,4 @@ class OwnerService:
                     Address.path_index == path_index, Address.wallet_id == select(Wallet.id).where(
                         Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
                                 ).first()[0]
-            print(address)
             return address
