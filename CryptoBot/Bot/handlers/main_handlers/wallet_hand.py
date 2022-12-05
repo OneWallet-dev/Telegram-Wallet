@@ -23,7 +23,7 @@ from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Services.EntServices.AddressService import AddressService
-from Services.EntServices.owner_service import OwnerService
+from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
 from Services.CryptoMakers.address_gen import Wallet_web3
 

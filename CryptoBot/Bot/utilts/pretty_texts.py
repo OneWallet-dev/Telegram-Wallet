@@ -1,7 +1,7 @@
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Services.EntServices.AddressService import AddressService
-from Services.EntServices.owner_service import OwnerService
+from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
 
 

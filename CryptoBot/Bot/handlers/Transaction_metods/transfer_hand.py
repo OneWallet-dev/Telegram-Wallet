@@ -20,7 +20,7 @@ from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.TokenService import TokenService
-from Services.EntServices.owner_service import OwnerService
+from Services.EntServices.OwnerService import OwnerService
 from Services.CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
 
 router = Router()
