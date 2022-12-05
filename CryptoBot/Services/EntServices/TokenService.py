@@ -14,7 +14,7 @@ class TokenService:
         """
         Method to get info about token and linked address for given user, token name, token network.
 
-        Returns dict {"address": Address object with given token, "token": Token object}
+        Returns object with parameters "adress" (Address object) and "token" (Token object)
         """
         result = namedtuple("adress_token", "address token")
         session_connect = await create_session()
@@ -35,6 +35,6 @@ class TokenService:
     async def get_token(token_name: str, token_network: str):
         session_connect = await create_session()
         async with session_connect() as session:
-            query = select(Token).filter(Token.token_name == token_name,Token.network == token_network)
+            query = select(Token).filter(Token.token_name == token_name, Token.network == token_network)
             result = await session.execute(query)
             return result.first()
