@@ -25,8 +25,9 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
     u_id = await DataRedis.find_user(update.from_user.id)
     text = f'<b>👤 <code>{u_id}</code>, добро пожаловать в криптовалютный бот {bot_name}!</b>\n\nЧем я могу вам помочь?'
     try:
-        await message.answer_photo("AgACAgIAAxkBAAICdGOKCDV-1-wERkVoojLvwO0ocCVdAALVwTEbxw5RSH90t1FwCJMUAQADAgADeAADKwQ",
-                                   caption=text, reply_markup=main_menu_kb())
+        await message.answer_photo(
+            "AgACAgIAAxkBAAICdGOKCDV-1-wERkVoojLvwO0ocCVdAALVwTEbxw5RSH90t1FwCJMUAQADAgADeAADKwQ",
+            caption=text, reply_markup=main_menu_kb())
     except TelegramBadRequest:
         await message.answer(text, reply_markup=main_menu_kb())
 
