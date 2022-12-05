@@ -1,4 +1,4 @@
-# cryptowalletMVP
+# CryptoWalletBot
 
 ---
 
