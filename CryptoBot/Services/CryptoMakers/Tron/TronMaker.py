@@ -5,7 +5,7 @@ from tronpy.exceptions import BadAddress
 from tronpy.providers import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
-from CryptoMakers.Maker import Maker
+from Services.CryptoMakers.Maker import Maker
 
 
 class TronMaker(Maker):

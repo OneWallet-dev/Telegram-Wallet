@@ -1,12 +1,8 @@
-from aiogram.types import User
-
-from Bot.utilts.currency_helper import base_tokens, blockchains
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
-from Dao.models.Wallet import Wallet
-from Services.AddressService import AddressService
-from Services.owner_service import OwnerService
-from Services.TokenService import TokenService
+from Services.EntServices.AddressService import AddressService
+from Services.EntServices.owner_service import OwnerService
+from Services.EntServices.TokenService import TokenService
 
 
 async def all_wallets_text(user_id: int):

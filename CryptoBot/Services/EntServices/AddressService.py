@@ -3,9 +3,9 @@ from aiogram.types import Message
 
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.new_loader import new_loader
-from CryptoMakers.Maker import Maker
-from CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
-from CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
+from Services.CryptoMakers import Maker
+from Services.CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
+from Services.CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner

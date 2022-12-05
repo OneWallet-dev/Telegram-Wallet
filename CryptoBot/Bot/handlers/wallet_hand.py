@@ -23,10 +23,10 @@ from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
-from Services.AddressService import AddressService
-from Services.owner_service import OwnerService
-from Services.TokenService import TokenService
-from CryptoMakers.address_gen import Wallet_web3
+from Services.EntServices.AddressService import AddressService
+from Services.EntServices.owner_service import OwnerService
+from Services.EntServices.TokenService import TokenService
+from Services.CryptoMakers.address_gen import Wallet_web3
 
 router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))

@@ -14,7 +14,7 @@ router.message.filter(StateFilter(TransactionStates))
 
 @MManager.garbage_manage()
 async def transaction_start(message: Message, state: FSMContext):
-    await message.delete()
+    # await message.delete() TODO понять что это и какое сообщение должно удаляться?
     grab = await message.answer('Данное меню предназначено для управления вашими активами',
                                 reply_markup=m_transaction())
     await MManager.garbage_store(state, grab.message_id)

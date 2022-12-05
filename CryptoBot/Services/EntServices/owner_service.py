@@ -1,9 +1,7 @@
 from contextlib import suppress
 
-from aiogram.types import User
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
@@ -13,7 +11,7 @@ from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Wallet import Wallet
-from Services.TokenService import TokenService
+from Services.EntServices.TokenService import TokenService
 
 
 class OwnerService:

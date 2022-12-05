@@ -1,10 +1,7 @@
-import os
-
 from tronpy.exceptions import AddressNotFound, ValidationError, BadHash, TransactionNotFound
 from tronpy.keys import PrivateKey
 
-from Bot.utilts.settings import DEBUG_MODE
-from CryptoMakers.Tron.TronMaker import TronMaker
+from Services.CryptoMakers.Tron.TronMaker import TronMaker
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
