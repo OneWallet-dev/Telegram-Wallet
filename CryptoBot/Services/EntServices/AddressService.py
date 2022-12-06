@@ -3,28 +3,15 @@ from aiogram.types import Message
 
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
-from Services.CryptoMakers import Maker
-from Services.CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
-from Services.CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
 
-class Transaction_maker_Factory:
-    # TODO ФАбрика мейкеров. Возвращает нужного мейкека
-    def getMaker(self,
-                 token_name: str,
-                 network: str) -> Maker:
-        if network == "TRC-20":
-            return Tron_TRC20_Maker()
-        if network == "TRC-10":
-            return  Tron_TRC10_Maker()
-        if token_name == "trx":
-            return  Tron_TRC10_Maker()
 
 class AddressService:
 
@@ -36,21 +23,13 @@ class AddressService:
             balances = dict()
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
+                    twallet = Tron_TRC_Maker()
                     if token.token_name == 'trx':
-                        twallet = Tron_TRC10_Maker()
-                        balance = await twallet.TRX_get_balance(address)
-                        frozen_fee = address_obj.get_address_freezed_fee('trx')
-                        balance = balance - frozen_fee
+                        balance = await twallet.get_balance(address)
                     elif token.network == 'TRC-20':
-                        twallet = Tron_TRC20_Maker()
-                        balance = await twallet.get_balance(token.contract_Id, address)
-                        frozen_fee = address_obj.get_address_freezed_fee('TRC-20')
-                        balance = balance - frozen_fee
+                        balance = await twallet.get_balance(address, token.contract_Id)
                     elif token.network == 'TRC-10':
-                        twallet = Tron_TRC10_Maker()
-                        balance = await twallet.get_balance(address_obj)
-                        frozen_fee = address_obj.get_address_freezed_fee('TRC-10')
-                        balance = balance - frozen_fee
+                        balance = await twallet.get_balance(address=address, token_id=token.contract_Id)
                     balances.update({token.token_name: balance})
         return balances
 
@@ -77,6 +56,7 @@ class AddressService:
                                      amount=amount,
                                      from_address=address.address,
                                      to_address=to_address,
+                                     network=token.network,
                                      address=address,
                                      service_fee=service_fee)
         await loader(message, chait_id, 1, "Проверяем нагрузку сети...")
@@ -89,23 +69,27 @@ class AddressService:
         await loader(message, chait_id, 3, "Формируем транзакци...")
         await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
         await loader(message, chait_id, 4, "Совершаем транзакцию...")
-        transaction_maker = Transaction_maker_Factory().getMaker(token.token_name, token.network)
+        transaction_maker = Tron_TRC_Maker()
         transaction_dict = await transaction_maker.transfer(my_transaction)
-        if transaction_dict:
-            my_transaction.tnx_id = transaction_dict.get("txn_id")
-            my_transaction.service_fee = service_fee
-            my_transaction.status = transaction_dict.get("status")
-            await loader(message, chait_id, 5, "Совершаем транзакцию...")
-            session = await create_session()
-            await loader(message, chait_id, 5, "Завершаем транзакцию...")
-            async with session() as session:
-                local_object = await session.merge(my_transaction)
-                session.add(local_object)
-                await session.commit()
-                await session.close()
-                await loader(message, chait_id, 6, "Записываем данные в базу...")
-                await loader(message, chait_id, 7, "Записываем данные в базу...")
-                return my_transaction
+        transaction_dict = transaction_dict.txn_resp
+        if transaction_dict.get("status") == "SUCCESS":
+            if transaction_dict.get("result") != "FAILED":
+                my_transaction.tnx_id = transaction_dict.get("txn").get("id")
+                my_transaction.service_fee = service_fee
+                my_transaction.status = transaction_dict.get("status")
+                await loader(message, chait_id, 5, "Совершаем транзакцию...")
+                session = await create_session()
+                await loader(message, chait_id, 5, "Завершаем транзакцию...")
+                async with session() as session:
+                    local_object = await session.merge(my_transaction)
+                    session.add(local_object)
+                    await session.commit()
+                    await session.close()
+                    await loader(message, chait_id, 6, "Записываем данные в базу...")
+                    await loader(message, chait_id, 7, "Записываем данные в базу...")
+                    return my_transaction
+            else:
+                await message.answer("Ошибка транзакции")
 
         else:
             return "Недостаточно средств"

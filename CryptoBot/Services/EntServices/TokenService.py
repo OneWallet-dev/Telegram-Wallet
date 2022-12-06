@@ -33,7 +33,7 @@ class TokenService:
                             return result(address_obj, None)
 
     @staticmethod
-    async def get_token(token_name: str, token_network: str):
+    async def get_token(token_name: str, token_network: str) -> Token:
         session_connect = await create_session()
         async with session_connect() as session:
             query = select(Token).filter(Token.token_name == token_name, Token.network == token_network)

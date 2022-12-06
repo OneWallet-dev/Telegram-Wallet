@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy import Column, String, BigInteger, ForeignKey, Integer
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -39,3 +41,5 @@ class Address(Base):
             else:
                 break
         return freezed_fee
+
+

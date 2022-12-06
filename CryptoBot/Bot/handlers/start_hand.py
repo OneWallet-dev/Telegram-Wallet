@@ -13,12 +13,16 @@ from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.p_key_getter import getPkey_by_address_id
 from Dao.DB_Postgres.session import create_session
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Services.EntServices.AddressService import AddressService
+from Services.EntServices.OwnerService import OwnerService
+from Services.EntServices.TokenService import TokenService
+
 
 router = Router()
 
@@ -28,6 +32,7 @@ router = Router()
 @router.message(Command("start"))
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
+    print(1)
     await MManager.garbage_store(state, message.message_id)
     await MManager.purge_chat(bot, message_id=message.message_id, chat_id=message.chat.id)
     if await NotAuthFilter()(message):
@@ -75,7 +80,8 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
                          username="wdwdwdwd")
     # owner.wallets["tron"] = Wallet(blockchain="tron")
     address: Address = Address(address="token_address")
-    address.transactions["newTrans"] = Transaction(id=25, token_contract_id="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+    address.transactions["newTrans"] = Transaction(id=25,
+                                                   token_contract_id="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
                                                    from_wallet=address.address)
     owner.wallets["tron123"] = Wallet(blockchain="tron123")
     token: Token = Token(contract_Id="token_contract", token_name="token_name")
@@ -96,7 +102,17 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    print(await getPkey_by_address_id("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea"))
+
+    u_id = await DataRedis.find_user(message.from_user.id)
+
+    tron_address = await OwnerService.get_chain_address(u_id, 'tron')
+    print(tron_address.address)
+
+    token = "USDT"
+    network = "TRC-20"
+    token = await TokenService.get_token(token, network)
+    print(token.contract_Id)
+
 
 
 @router.message(Command("try"))

@@ -15,6 +15,7 @@ class Transaction(Base):
     amount = Column(Float)
     from_address = Column(String, ForeignKey('addresses.address', onupdate="CASCADE", ondelete="CASCADE"))
     to_address = Column(String)
+    network = Column(String)
     datetime = Column(DateTime, default=datetime.datetime.now())
     status:str = Column(String)
     service_fee: float = Column(Float)

@@ -1,5 +1,3 @@
-import random
-
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 

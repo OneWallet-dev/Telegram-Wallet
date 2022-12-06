@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.keyboards.transaction_keys import m_transaction, trans_token_kb
+from Bot.handlers.Transaction_metods.transfer_hand import start_transfer
+from Bot.keyboards.transaction_keys import m_transaction
 from Bot.states.trans_states import TransactionStates, Trs_transfer
 from Bot.utilts.mmanager import MManager
 
@@ -32,11 +33,10 @@ async def trs_exchange(message: Message, state: FSMContext, bot: Bot, session: A
 
 
 @router.message(F.text == "⤴️ Перевести")
-async def trs_transfer(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+async def trs_transfer(message: Message, state: FSMContext, bot: Bot):
     await message.delete()
     await state.set_state(Trs_transfer.new_transfer)
-    token_list = ["USDT"]
-    await message.answer("Выберите токен, который вы хотите перевести", reply_markup=trans_token_kb(token_list))
+    await start_transfer(message, state, bot)
 
 
 @router.message(F.text == "📝 История")
