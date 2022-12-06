@@ -4,14 +4,16 @@ from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from AllLogs.bot_logger import main_logger
 from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.keyboards.main_keys import confirmation_button, back_button
 from Bot.states.main_states import RegistrationState
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
 from Dao.models.Owner import Owner
+from Services.CryptoMakers.address_gen import Wallet_web3
+from Services.EntServices.OwnerService import OwnerService
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
@@ -43,23 +45,36 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
     await state.set_state(RegistrationState.check)
     await state.update_data(password=message.text)
     text = await MManager.sticker_text(state)
-    password_string = f"<code>{message.text}</code>"
+    password_string = f" <tg-spoiler>{message.text}</tg-spoiler>"
+    keyboard = None
+
     if "Для продолжения пришлите пароль:" in text:
-        text = text.replace("Для продолжения пришлите пароль:", f"Выбранный вами пароль: {password_string}")
+        text = text.replace("Для продолжения пришлите пароль:", f"Выбранный вами пароль: {password_string}\n"
+                                                                f"Введите его еще раз:")
+    elif re.search(fr"(?<=<tg-spoiler>)({message.text})(?=</tg-spoiler>)", text):
+        text = text.replace("Введите его еще раз:", "\nТеперь подтвердите пароль, нажав на кнопку.\n\n"
+                                                    "<b>ВНИМАНИЕ! ЭТО УДАЛИТ ВСЕ СООБЩЕНИЯ, СОДЕРЖАЩИЕ ПАРОЛЬ</b>")
+        keyboard = confirmation_button()
     else:
         text = re.sub(r"(?<=Выбранный вами пароль:).*", password_string, text)
-    text += f"\n\nЕсли все верно, подтвердите его, нажав на кнопку под этим сообщением." \
-            f"Если вы хотите выбрать другой пароль, то просто пришлите новое сообщение.\n\n" \
-            f"ВНИМАНИЕ: ПОСЛЕ ПОДТВЕРЖДЕНИЯ ВСЕ СООБЩЕНИЯ, СОДЕРЖАЩИЕ ПАРОЛЬ, БУДУТ УДАЛЕНЫ!"
+        if "еще раз" not in text:
+            text += f"\n\nВведите его еще раз:"
+
     await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
-                                keyboard=confirmation_button())
+                                keyboard=keyboard)
 
 
 @router.callback_query(F.data == "confirm_thing", StateFilter(RegistrationState.check))
 @MManager.garbage_manage(clean=True)
 async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
     password = (await state.get_data()).get("password")
-    u_id = await Owner.register(password=password)
+    u_id = await OwnerService.register(password=password)
+    main_logger.infolog.info(f"New user {u_id} [{callback.from_user.id} {callback.from_user.username}]")
+
+    generator = Wallet_web3()
+    await generator.generate_all_wallets(u_id)
+    main_logger.infolog.info(f"Wallets generated for user {u_id}")
+
     await callback.answer("Пароль успешно установлен")
     await DataRedis.authorize(callback.from_user.id, u_id)
     await MManager.clean(state, bot, callback.message.chat.id)

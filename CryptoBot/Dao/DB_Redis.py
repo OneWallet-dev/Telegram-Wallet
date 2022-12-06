@@ -58,6 +58,15 @@ class DataRedis(RedRedis):
         await cls.set_data(f"Users: {telegram_user_id}: {cls.auth_key}", uid, ttl=6000)
 
     @classmethod
+    async def auth_cooldown(cls, telegram_user_id: int, add: bool = False):
+        tries = await cls.get_data(f"Users: {telegram_user_id}: auth_tries")
+        tries = int(tries) if tries else 0
+        if add:
+            tries += 1
+            await cls.set_data(f"Users: {telegram_user_id}: auth_tries", tries, ttl=600)
+        return tries
+
+    @classmethod
     async def find_user(cls, telegram_user_id: int):
         return await cls.get_data(f"Users: {telegram_user_id}: {cls.auth_key}")
 

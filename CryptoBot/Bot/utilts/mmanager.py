@@ -33,7 +33,7 @@ class MManager:
     @classmethod
     async def sticker_store(cls, state: FSMContext, sticker_message: Message):
         await state.update_data({cls._stickerkey: {"id": sticker_message.message_id,
-                                                   "text": sticker_message.text}})
+                                                   "text": sticker_message.html_text}})
 
     @classmethod
     async def sticker_text(cls, state: FSMContext) -> str:

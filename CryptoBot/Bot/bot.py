@@ -2,13 +2,13 @@ from aiogram import Dispatcher
 from aiogram.client.session import aiohttp
 from aiogram.fsm.storage.redis import RedisStorage
 
-from AllLogs.bot_logger import BotLogger
+from AllLogs.bot_logger import main_logger
 from Bot.handlers import start_hand
 from Bot.handlers.service_handlers import return_hand, AML_check_hand
 from Bot.handlers.Transaction_metods import transfer_hand
 from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand, wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware
-from Bot.middleware.db import DbSession
+from Bot.middleware.alchemy_session_middle import DbSession
 from Dao.DB_Postgres.session import create_session
 from Dao.DB_Redis import RedRedis
 from bata import Data
@@ -16,8 +16,9 @@ from bata import Data
 storage = RedisStorage.from_url(RedRedis.states_base_url())
 dp = Dispatcher(storage=storage)
 
+
 async def bot_start():
-    BotLogger()
+    main_logger.infolog.info('Logger is ready!')
 
     bot = Data.main_bot
     bot_info = await bot.get_me()

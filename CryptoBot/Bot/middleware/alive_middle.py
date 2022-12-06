@@ -15,7 +15,7 @@ class AliveMiddleware(BaseMiddleware):
                        event: Message | CallbackQuery,
                        data: Dict[str, Any]
                        ):
-        user_id = event.from_user.id if isinstance(event, Message) else event.message.from_user.id
+        user_id = event.from_user.id
         was_alive = await self.redis.update_user_life(user_id)
 
         if not was_alive:

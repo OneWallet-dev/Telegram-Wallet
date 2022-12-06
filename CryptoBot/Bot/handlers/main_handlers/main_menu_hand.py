@@ -34,7 +34,7 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
 
 @router.message(F.text == "💹 Мой кошелек")
 async def menu_wallet_start(message: Message, bot: Bot, state: FSMContext, session: AsyncSession):
-    await my_wallet_start(event=message, state=state, bot=bot, session=session)
+    await my_wallet_start(event=message, state=state, bot=bot)
 
 
 @router.message(F.text == "👁‍🗨 AML Check")

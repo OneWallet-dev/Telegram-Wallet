@@ -1,6 +1,6 @@
 import asyncio
 from contextlib import suppress
-from logging import warning
+from logging import warning, info
 
 from aiogram import Router, F, Bot
 from aiogram.exceptions import TelegramBadRequest
@@ -9,6 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, BufferedInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from AllLogs.bot_logger import main_logger
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
@@ -31,24 +32,10 @@ router = Router()
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 
-async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot):
     message = event if isinstance(event, Message) else event.message
     user_id = event.from_user.id
-
-    u_id = await DataRedis.find_user(message.from_user.id)
-    owner: Owner = await session.get(Owner, u_id)
-    base_wallets = {"tron", "ethereum", "bitcoin"}
-    if not {"tron", "ethereum", "bitcoin"}.issubset(set(owner.wallets)):
-        if base_wallets.intersection(set(owner.wallets)):
-            warning(f"The user {owner.id} {owner.username} does not have all wallets!")
-            text = 'Похоже, что у вас присутствуют не все базовые кошельки. Пожалуйста, обратитесь в поддержку.'
-        else:
-            generator = Wallet_web3()
-            await generator.generate_all_wallets(u_id)
-    else:
-        pass
     text = await all_wallets_text(user_id)
-
     state_str = await state.get_state()
     if 'MainState' not in state_str:
         await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
@@ -112,17 +99,23 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 
 @router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.add_token))
-async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
-    token = data.get('token')
+    token_name = data.get('token')
     network = callback.data.replace("new_n_", "")
 
-    base_text = f"Токен: <code>{token}</code>\n" \
+    base_text = f"Токен: <code>{token_name}</code>\n" \
                 f"В сети:  <code>{network}</code>\n"
-    if network in base_tokens.get(token).get("network"):
+    if network in base_tokens.get(token_name).get("network"):
         try:
             u_id = await DataRedis.find_user(callback.from_user.id)
-            await OwnerService.add_currency(u_id, token=token, network=network)
+            address: Address = await OwnerService.get_chain_address(u_id=u_id,
+                                                                    blockchain=base_tokens.get(
+                                                                        token_name).get("blockchain"))
+            token: Token = await TokenService.get_token(token_name, network)
+            if not token:
+                token = await TokenService.form_base_token(token_name)
+            await AddressService.add_currency(address=address, token=token)
         except DuplicateToken:
             await callback.answer('❌')
             text = "❌  ❌  ❌\n" \
@@ -143,7 +136,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, s
 
 @router.callback_query(F.data == "back", StateFilter(WalletStates.delete_token))
 @router.callback_query(F.data == "delete_token", StateFilter(WalletStates.main))
-async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
 
     u_id = await DataRedis.find_user(callback.from_user.id)
@@ -164,7 +157,6 @@ async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot, ses
 
 @router.callback_query(F.data.startswith("del_t"), StateFilter(WalletStates.delete_token))
 async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await callback.answer()
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
     u_id = await DataRedis.find_user(callback.from_user.id)
     bal_data = await TokenService.find_address_token(u_id, token_name=token, token_network=network)
@@ -177,28 +169,26 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
                f"но вы не сможете их отслеживать, пока не добавите его снова."
     else:
         text = "Средств не обнаружено, запись токена может быть безопасно удалена."
-    await state.update_data(contract_Id=token_obj.contract_Id, address=address.address)
+    await callback.answer()
+    await state.update_data(contract_Id=token_obj.contract_Id, address=address.address, token_name=str(token_obj))
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id,
                                 reply_markup=confirm_delete_kb())
 
 
 @router.callback_query(F.data.startswith("сonfirm_delete"), StateFilter(WalletStates.delete_token))
-async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
-    await callback.answer()
+async def delete_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
     contract_id = data.get('contract_Id')
     address = data.get('address')
-    address_obj: Address = await session.get(Address, address)
     text = "Непредвиденная ошибка"
-    for token in address_obj.tokens:
-        if token.contract_Id == contract_id:
-            address_obj.tokens.remove(token)
-            session.add(address_obj)
-            await session.commit()
-            text = f"Вы больше не отслеживаете токен {str(token)}"
-            break
-        text = f"Произошла ошибка: токен с заданным контрактом не был обнаружен на данном адресе."
+    try:
+        await AddressService.remove_currency(address, contract_id)
+    except Exception as ex:
+        print(ex)
+    else:
+        text = f"Вы больше не отслеживаете токен {str(data.get('token_name'))}"
+    await callback.answer()
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id, message_id=callback.message.message_id,
                                 reply_markup=refresh_button())
 

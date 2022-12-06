@@ -13,3 +13,14 @@ class NotAuthFilter(Filter):
             return True
         else:
             return False
+
+
+class AuthTimeout(Filter):
+
+    async def __call__(self, event: Message | CallbackQuery) -> bool:
+        user_id = event.from_user.id
+        tries = await DataRedis.auth_cooldown(user_id)
+        if tries >= 5:
+            return True
+        else:
+            return False
