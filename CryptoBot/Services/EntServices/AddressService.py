@@ -19,8 +19,8 @@ from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 class AddressService:
 
     @staticmethod
-    async def get_balances(address: str, specific: list[
-                                                       Token] | None = None):  # TODO полностью переделать, получать из фабрики, вызывать только getBalance
+    async def get_balances(address: str, specific: list[Token] | None = None):
+        # TODO полностью переделать, получать из фабрики, вызывать только getBalance
         session_connect = await create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
