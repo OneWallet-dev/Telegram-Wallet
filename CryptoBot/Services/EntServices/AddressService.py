@@ -1,8 +1,12 @@
+from contextlib import suppress
+
 from aiogram.types import Message
+from sqlalchemy.exc import IntegrityError
 
-
+from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
+
 from Dao.DB_Postgres.session import create_session
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -12,11 +16,11 @@ from Dao.models.Wallet import Wallet
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
 
-
 class AddressService:
 
     @staticmethod
-    async def get_balances(address: str, specific: list[Token] | None = None): # TODO полностью переделать, получать из фабрики, вызывать только getBalance
+    async def get_balances(address: str, specific: list[
+                                                       Token] | None = None):  # TODO полностью переделать, получать из фабрики, вызывать только getBalance
         session_connect = await create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
@@ -93,3 +97,35 @@ class AddressService:
 
         else:
             return "Недостаточно средств"
+
+    @staticmethod
+    async def add_currency(address: str | Address, token: Token):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            if isinstance(address, str):
+                address: Address = await session.get(Address, address)
+
+
+            token_exists: Token = await session.get(Token, token.contract_Id)
+            if token_exists:
+                token = token_exists
+
+            if token not in address.tokens:
+                address.tokens.append(token)
+                session.add(address)
+                with suppress(IntegrityError):
+                    await session.commit()
+            else:
+                raise DuplicateToken
+
+    @staticmethod
+    async def remove_currency(address: str, contract_id: str):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            address_obj: Address = await session.get(Address, address)
+            token_obj: Token = await session.get(Token, contract_id)
+            for ad_token in address_obj.tokens:
+                if token_obj == ad_token:
+                    address_obj.tokens.remove(ad_token)
+                    session.add(address_obj)
+                    await session.commit()
