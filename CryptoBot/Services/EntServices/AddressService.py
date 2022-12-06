@@ -109,3 +109,15 @@ class AddressService:
 
         else:
             return "Недостаточно средств"
+
+    @staticmethod
+    async def remove_currency(address: str, contract_id: str):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            address_obj: Address = await session.get(Address, address)
+            token_obj: Token = await session.get(Token, contract_id)
+            for ad_token in address_obj.tokens:
+                if token_obj == ad_token:
+                    address_obj.tokens.remove(ad_token)
+                    session.add(address_obj)
+                    await session.commit()

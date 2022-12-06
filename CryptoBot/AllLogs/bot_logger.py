@@ -16,4 +16,6 @@ class BotLogger:
         self.infolog.addHandler(logging.FileHandler(filename=f"AllLogs/bot_logs/{today_for_log}.log", mode='a'))
         self.infolog.addHandler(logging.StreamHandler())
 
-        self.infolog.info('Logger is ready!')
+
+
+main_logger = BotLogger()

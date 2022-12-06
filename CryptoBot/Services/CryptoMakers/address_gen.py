@@ -54,7 +54,7 @@ class Wallet_web3:
             session.add(owner)
             await session.commit()
             try:
-                wallets['tron'] = list(owner.wallets.get("Tron").addresses.keys())[0]
+                wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
                 wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
                 wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
             except Exception as e:

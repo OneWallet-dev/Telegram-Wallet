@@ -38,12 +38,12 @@ class OwnerService:
         return all_tokens
 
     @staticmethod
-    async def add_currency(u_id: str, token: str, network: str):
+    async def add_currency(u_id: str, token: str, network: str, path_index: int = 0):
         session_connect = await create_session()
         async with session_connect() as session:
             token_ref = base_tokens.get(token)
 
-            address = await OwnerService.get_chain_address(u_id, token_ref['blockchain'])
+            address = await OwnerService.get_chain_address(u_id, token_ref['blockchain'], path_index)
             if DEBUG_MODE==True:
                 contract_string = 'testnet_contract_address'
             if DEBUG_MODE == False:

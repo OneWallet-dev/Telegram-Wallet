@@ -42,8 +42,8 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
     token_and_address = await TokenService.find_address_token(token_name=token_name,
                                                               token_network=token_network,
                                                               u_id=u_id)
-    token = token_and_address.get('token')
-    address: Address = token_and_address.get('address')
+    token = token_and_address.token
+    address: Address = token_and_address.address
 
     balance = (await AddressService.get_balances(address=address.address, specific=[token]))[token.token_name]
     transactions = [str(address.transactions[transaction]) for transaction in address.transactions]
