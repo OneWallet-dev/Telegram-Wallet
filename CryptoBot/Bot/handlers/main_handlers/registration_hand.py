@@ -45,16 +45,23 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
     await state.set_state(RegistrationState.check)
     await state.update_data(password=message.text)
     text = await MManager.sticker_text(state)
-    password_string = f"<code>{message.text}</code>"
+    password_string = f" <tg-spoiler>{message.text}</tg-spoiler>"
+    keyboard = None
+
     if "Для продолжения пришлите пароль:" in text:
-        text = text.replace("Для продолжения пришлите пароль:", f"Выбранный вами пароль: {password_string}")
+        text = text.replace("Для продолжения пришлите пароль:", f"Выбранный вами пароль: {password_string}\n"
+                                                                f"Введите его еще раз:")
+    elif re.search(fr"(?<=<tg-spoiler>)({message.text})(?=</tg-spoiler>)", text):
+        text = text.replace("Введите его еще раз:", "\nТеперь подтвердите пароль, нажав на кнопку.\n\n"
+                                                    "<b>ВНИМАНИЕ! ЭТО УДАЛИТ ВСЕ СООБЩЕНИЯ, СОДЕРЖАЩИЕ ПАРОЛЬ</b>")
+        keyboard = confirmation_button()
     else:
         text = re.sub(r"(?<=Выбранный вами пароль:).*", password_string, text)
-    text += f"\n\nЕсли все верно, подтвердите его, нажав на кнопку под этим сообщением." \
-            f"Если вы хотите выбрать другой пароль, то просто пришлите новое сообщение.\n\n" \
-            f"ВНИМАНИЕ: ПОСЛЕ ПОДТВЕРЖДЕНИЯ ВСЕ СООБЩЕНИЯ, СОДЕРЖАЩИЕ ПАРОЛЬ, БУДУТ УДАЛЕНЫ!"
+        if "еще раз" not in text:
+            text += f"\n\nВведите его еще раз:"
+
     await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
-                                keyboard=confirmation_button())
+                                keyboard=keyboard)
 
 
 @router.callback_query(F.data == "confirm_thing", StateFilter(RegistrationState.check))
@@ -66,7 +73,7 @@ async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     generator = Wallet_web3()
     await generator.generate_all_wallets(u_id)
-    main_logger.infolog.info(f"Wallets generated: {u_id}")
+    main_logger.infolog.info(f"Wallets generated for user {u_id}")
 
     await callback.answer("Пароль успешно установлен")
     await DataRedis.authorize(callback.from_user.id, u_id)
