@@ -1,7 +1,12 @@
 from contextlib import suppress
+from string import ascii_letters, digits
 
+from Crypto.Random import random
+from cryptography.hazmat.primitives import hashes
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
@@ -15,6 +20,47 @@ from Services.EntServices.TokenService import TokenService
 
 
 class OwnerService:
+
+    @staticmethod
+    async def register(password: str | None = None):
+        """ For new users """
+        session_connect = await create_session()
+        async with session_connect() as session:
+            password = OwnerService._password_encode(password)
+            uid = await OwnerService._form_uid()
+            try:
+                stmt = insert(Owner).values(id=uid, password=password)
+                do_nothing = stmt.on_conflict_do_nothing(index_elements=['id'])
+                await session.execute(do_nothing)
+                await session.commit()
+                return uid
+            except IntegrityError:
+                await session.rollback()
+                raise
+
+    @staticmethod
+    async def _form_uid():
+        session_connect = await create_session()
+        async with session_connect() as session:
+            reform = True
+            while reform:
+                string = ascii_letters + digits
+                result = ''.join((random.choice(string) for _ in range(7))).upper()
+                reform = True if await session.get(Owner, result) else False
+        return result
+
+    @staticmethod
+    def _password_encode(text: str):
+        digest = hashes.Hash(hashes.SHA256())
+        digest.update(bytes(text, "UTF-8"))
+        result = digest.finalize()
+        return str(result)
+
+    @staticmethod
+    async def password_check(session: AsyncSession, uid: str, password: str):
+        owner: Owner = await session.get(Owner, uid)
+        phash = OwnerService._password_encode(password)
+        return True if owner.password == phash else False
 
     @staticmethod
     async def get_wallets(user_id: int):
@@ -36,30 +82,6 @@ class OwnerService:
                     address_obj = wallet_obj.addresses[address]
                     all_tokens = all_tokens + address_obj.tokens
         return all_tokens
-
-    @staticmethod
-    async def add_currency(u_id: str, token: str, network: str, path_index: int = 0):
-        session_connect = await create_session()
-        async with session_connect() as session:
-            token_ref = base_tokens.get(token)
-
-            address = await OwnerService.get_chain_address(u_id, token_ref['blockchain'], path_index)
-            if DEBUG_MODE==True:
-                contract_string = 'testnet_contract_address'
-            if DEBUG_MODE == False:
-                contract_string = 'contract_address'
-            token_obj = await TokenService.get_token(token, network)
-            if not token_obj:
-                token_obj = Token(token_name=token,
-                                  contract_Id=base_tokens[token][contract_string],
-                                  network=network)
-            if token_obj not in address.tokens:
-                address.tokens.append(token_obj)
-                session.add(address)
-                with suppress(IntegrityError):
-                    await session.commit()
-            else:
-                raise DuplicateToken
 
     @staticmethod
     async def get_chain_address(u_id: str, blockchain: str, path_index: int = 0):

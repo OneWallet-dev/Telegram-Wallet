@@ -4,7 +4,6 @@ from aiogram import Router, F, Bot
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from AllLogs.bot_logger import main_logger
 from Bot.handlers.main_handlers.main_menu_hand import main_menu
@@ -14,6 +13,7 @@ from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
 from Dao.models.Owner import Owner
 from Services.CryptoMakers.address_gen import Wallet_web3
+from Services.EntServices.OwnerService import OwnerService
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
@@ -61,7 +61,7 @@ async def password_confirmation(message: Message, bot: Bot, state: FSMContext):
 @MManager.garbage_manage(clean=True)
 async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
     password = (await state.get_data()).get("password")
-    u_id = await Owner.register(password=password)
+    u_id = await OwnerService.register(password=password)
     main_logger.infolog.info(f"New user {u_id} [{callback.from_user.id} {callback.from_user.username}]")
 
     generator = Wallet_web3()

@@ -101,15 +101,21 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
 @router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.add_token))
 async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
-    token = data.get('token')
+    token_name = data.get('token')
     network = callback.data.replace("new_n_", "")
 
-    base_text = f"Токен: <code>{token}</code>\n" \
+    base_text = f"Токен: <code>{token_name}</code>\n" \
                 f"В сети:  <code>{network}</code>\n"
-    if network in base_tokens.get(token).get("network"):
+    if network in base_tokens.get(token_name).get("network"):
         try:
             u_id = await DataRedis.find_user(callback.from_user.id)
-            await OwnerService.add_currency(u_id, token=token, network=network)
+            address: Address = await OwnerService.get_chain_address(u_id=u_id,
+                                                                    blockchain=base_tokens.get(
+                                                                        token_name).get("blockchain"))
+            token: Token = await TokenService.get_token(token_name, network)
+            if not token:
+                token = await TokenService.form_base_token(token_name)
+            await AddressService.add_currency(address=address, token=token)
         except DuplicateToken:
             await callback.answer('❌')
             text = "❌  ❌  ❌\n" \
@@ -151,7 +157,6 @@ async def delete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router.callback_query(F.data.startswith("del_t"), StateFilter(WalletStates.delete_token))
 async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await callback.answer()
     token, network = callback.data.replace('del_t_', "").replace('[', "").replace(']', "").split(" ")
     u_id = await DataRedis.find_user(callback.from_user.id)
     bal_data = await TokenService.find_address_token(u_id, token_name=token, token_network=network)
@@ -164,6 +169,7 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
                f"но вы не сможете их отслеживать, пока не добавите его снова."
     else:
         text = "Средств не обнаружено, запись токена может быть безопасно удалена."
+    await callback.answer()
     await state.update_data(contract_Id=token_obj.contract_Id, address=address.address, token_name=str(token_obj))
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id,

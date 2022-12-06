@@ -19,6 +19,7 @@ from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Services.EntServices.AddressService import AddressService
+from Services.EntServices.TokenService import TokenService
 
 router = Router()
 
@@ -96,7 +97,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 @router.message(Command("test"))
 @MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    print(await getPkey_by_address_id("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea"))
+    print(await TokenService.get_token("USDT", "TRC-20"))
 
 
 @router.message(Command("try"))

@@ -1,8 +1,13 @@
+from contextlib import suppress
+
 from aiogram.types import Message
+from sqlalchemy.exc import IntegrityError
 
-
+from Bot.exeptions.wallet_ex import DuplicateToken
+from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
+from Bot.utilts.settings import DEBUG_MODE
 from Services.CryptoMakers import Maker
 from Services.CryptoMakers.Tron.Tron_TRC10_Maker import Tron_TRC10_Maker
 from Services.CryptoMakers.Tron.Tron_TRC20_Maker import Tron_TRC20_Maker
@@ -22,14 +27,16 @@ class Transaction_maker_Factory:
         if network == "TRC-20":
             return Tron_TRC20_Maker()
         if network == "TRC-10":
-            return  Tron_TRC10_Maker()
+            return Tron_TRC10_Maker()
         if token_name == "trx":
-            return  Tron_TRC10_Maker()
+            return Tron_TRC10_Maker()
+
 
 class AddressService:
 
     @staticmethod
-    async def get_balances(address: str, specific: list[Token] | None = None): # TODO полностью переделать, получать из фабрики, вызывать только getBalance
+    async def get_balances(address: str, specific: list[
+                                                       Token] | None = None):  # TODO полностью переделать, получать из фабрики, вызывать только getBalance
         session_connect = await create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
@@ -109,6 +116,26 @@ class AddressService:
 
         else:
             return "Недостаточно средств"
+
+    @staticmethod
+    async def add_currency(address: str | Address, token: Token):
+        session_connect = await create_session()
+        async with session_connect() as session:
+            if isinstance(address, str):
+                address: Address = await session.get(Address, address)
+
+
+            token_exists: Token = await session.get(Token, token.contract_Id)
+            if token_exists:
+                token = token_exists
+
+            if token not in address.tokens:
+                address.tokens.append(token)
+                session.add(address)
+                with suppress(IntegrityError):
+                    await session.commit()
+            else:
+                raise DuplicateToken
 
     @staticmethod
     async def remove_currency(address: str, contract_id: str):
