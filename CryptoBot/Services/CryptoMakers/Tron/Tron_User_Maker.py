@@ -9,7 +9,7 @@ class Tron_TRC_Maker(Tron_Maker):
 
     async def get_balance(self, address: str, contract: str = None, token_id: int = None):
         if await self.is_valid_address(address) is False:
-            raise ValueError("BadAddress")
+            return float(0)
 
         async with self.get_client() as client:
             if contract:
