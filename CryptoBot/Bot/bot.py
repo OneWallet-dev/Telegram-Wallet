@@ -4,12 +4,13 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from AllLogs.bot_logger import main_logger
 from Bot.handlers import start_hand
+from Bot.handlers.admin_handlers import main_admin_hand
 from Bot.handlers.service_handlers import return_hand, AML_check_hand
 from Bot.handlers.Transaction_metods import transfer_hand
 from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand, wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.alchemy_session_middle import DbSession
-from Dao.DB_Postgres.session import create_session, AlchemyMaster, Base
+from Dao.DB_Postgres.session import AlchemyMaster, Base
 from Dao.DB_Redis import RedRedis
 from Dao.models.bot_models.bot_base import BotBase
 from bata import Data
@@ -40,6 +41,7 @@ async def bot_start():
     dp.message.middleware(AliveMiddleware())
 
     dp.include_router(start_hand.router)
+    dp.include_router(main_admin_hand.router)
     dp.include_router(registration_hand.router)
     dp.include_router(auth_hand.router)
 

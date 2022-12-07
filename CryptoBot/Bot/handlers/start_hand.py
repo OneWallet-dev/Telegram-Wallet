@@ -5,6 +5,7 @@ from aiogram.types import Message
 from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from Bot.filters.admin_filter import IsAdmin
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.main_handlers.main_menu_hand import main_menu
@@ -19,7 +20,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Dao.models.bot_models import ContentUnit
+from Dao.models.bot_models import ContentUnit, Admin
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
@@ -33,7 +34,6 @@ router = Router()
 @router.message(Command("start"))
 @MManager.garbage_manage()
 async def commands_start(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    print(1)
     await MManager.garbage_store(state, message.message_id)
     await MManager.purge_chat(bot, message_id=message.message_id, chat_id=message.chat.id)
     if await NotAuthFilter()(message):
@@ -102,8 +102,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    a: ContentUnit = await session.get(ContentUnit, 'asdf')
-    print(a.text)
+    await Admin(telegram_id=5429649862).demote()
 
 
 @router.message(Command("try"))

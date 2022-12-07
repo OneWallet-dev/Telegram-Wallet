@@ -1,4 +1,6 @@
 import os
+import inspect as pyth_inspect
+
 
 import sqlalchemy
 from sqlalchemy import MetaData, schema, inspect
@@ -42,6 +44,17 @@ class AlchemyMaster:
         assert cls.engine, 'No engine is defined!'
         async_session = sessionmaker(cls.engine, expire_on_commit=False, class_=AsyncSession)
         return async_session
+
+    @classmethod
+    def alchemy_session(cls, function):
+        async def wrap(*args, **kwargs):
+            session_connect = await AlchemyMaster.create_session()
+            async with session_connect() as session:
+                kwargs['alchemy_session'] = session
+                prepared_kwargs = {k: v for k, v in kwargs.items() if k in pyth_inspect.getfullargspec(function).args}
+                return await function(*args, **prepared_kwargs)
+
+        return wrap
 
 
 async def create_session():

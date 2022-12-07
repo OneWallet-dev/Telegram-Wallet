@@ -51,6 +51,7 @@ class MManager:
         with suppress(TelegramBadRequest):
             await bot.delete_message(chat_id, mid)
 
+
     @classmethod
     def garbage_manage(cls, *, store: bool = True, clean: bool = False):
         def garbage_decor(some_handler):

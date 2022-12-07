@@ -4,7 +4,7 @@ from Dao.models.bot_models.bot_base import BotBase
 
 
 class ContentUnit(BotBase):
-    __tablename__ = "bot_content"
+    __tablename__ = "content"
 
     tag = Column(String, primary_key=True)
     text = Column(String)

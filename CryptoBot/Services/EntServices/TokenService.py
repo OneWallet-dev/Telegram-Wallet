@@ -53,7 +53,7 @@ class TokenService:
         token_dict = base_tokens.get(name)
         network = token_dict.get("network")[0]
         if DEBUG_MODE == True:
-            contract_string = 'testnet_contract_address'
+            contract_string = token_dict.get('testnet_contract_address')
         else:
-            contract_string = 'contract_address'
+            contract_string = token_dict.get('contract_address')
         return Token(contract_Id=contract_string, token_name=name, network=network)
