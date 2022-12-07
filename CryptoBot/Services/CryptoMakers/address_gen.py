@@ -6,7 +6,7 @@ from hdwallet.utils import generate_mnemonic
 from typing import Union
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
@@ -18,7 +18,7 @@ class Wallet_web3:
         self.strength = strength
 
     async def generate_all_wallets(self, u_id: str, passphrase: str | None = None):
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             wallets = dict()
             tron_wallet = await self._generate_address(TronMainnet, passphrase=passphrase)

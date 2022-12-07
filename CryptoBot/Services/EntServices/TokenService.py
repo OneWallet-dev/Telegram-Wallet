@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.settings import DEBUG_MODE
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 
@@ -19,7 +19,7 @@ class TokenService:
         Returns object with parameters "adress" (Address object) and "token" (Token object)
         """
         result = namedtuple("adress_token", "address token")
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             owner: Owner = await session.get(Owner, u_id)
             wallets = owner.wallets
@@ -36,7 +36,7 @@ class TokenService:
 
     @staticmethod
     async def get_token(token_name: str, token_network: str) -> Token:
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             query = select(Token).filter(Token.token_name == token_name, Token.network == token_network)
             result = (await session.execute(query)).first()

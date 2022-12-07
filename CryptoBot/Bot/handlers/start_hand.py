@@ -12,13 +12,14 @@ from Bot.keyboards.main_keys import main_menu_kb
 from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.p_key_getter import getPkey_by_address_id
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Dao.models.bot_models import ContentUnit
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
@@ -100,26 +101,16 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 
 @router.message(Command("test"))
-@MManager.garbage_manage(store=True, clean=True)
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-
-    u_id = await DataRedis.find_user(message.from_user.id)
-
-    tron_address = await OwnerService.get_chain_address(u_id, 'tron')
-    print(tron_address.address)
-
-    token = "USDT"
-    network = "TRC-20"
-    token = await TokenService.get_token(token, network)
-    print(token.contract_Id)
-
+    a: ContentUnit = await session.get(ContentUnit, 'asdf')
+    print(a.text)
 
 
 @router.message(Command("try"))
 @MManager.garbage_manage(store=True, clean=True)
 async def asd(message: Message, state: FSMContext, bot: Bot):
     # query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
-    session = await create_session()
+    session = await AlchemyMaster.create_session()
     async with session() as session:
         owner: Owner = await session.get(Owner, str(message.from_user.id))
         wallet = owner.wallets.get("tron")

@@ -7,7 +7,7 @@ from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
 
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
@@ -21,7 +21,7 @@ class AddressService:
     @staticmethod
     async def get_balances(address: str, specific: list[Token] | None = None):
         # TODO полностью переделать, получать из фабрики, вызывать только getBalance
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
             balances = dict()
@@ -100,7 +100,7 @@ class AddressService:
 
     @staticmethod
     async def add_currency(address: str | Address, token: Token):
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             if isinstance(address, str):
                 address: Address = await session.get(Address, address)
@@ -120,7 +120,7 @@ class AddressService:
 
     @staticmethod
     async def remove_currency(address: str, contract_id: str):
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
             token_obj: Token = await session.get(Token, contract_id)

@@ -9,8 +9,9 @@ from Bot.handlers.Transaction_metods import transfer_hand
 from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand, wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.alchemy_session_middle import DbSession
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster, Base
 from Dao.DB_Redis import RedRedis
+from Dao.models.bot_models.bot_base import BotBase
 from bata import Data
 
 storage = RedisStorage.from_url(RedRedis.states_base_url())
@@ -27,7 +28,13 @@ async def bot_start():
           f"|- {bot_info.full_name} -|- @{bot_info.username} -|\n"
           f"What a time to be alive!\n")
 
-    session_db = await create_session()
+    AlchemyMaster.prepare_engine(pg_username=Data.postgres_user,
+                                 pg_password=Data.postgres_password,
+                                 pg_host=Data.postgres_host)
+    await AlchemyMaster.create_tables(declarative_bases=(Base, BotBase),
+                                      schemas=('public', 'bot'))
+    session_db = await AlchemyMaster.create_session()
+
     dp.message.middleware(DbSession(session_db))
     dp.callback_query.middleware(DbSession(session_db))
     dp.message.middleware(AliveMiddleware())

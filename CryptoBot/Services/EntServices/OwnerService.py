@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.settings import DEBUG_MODE
-from Dao.DB_Postgres.session import create_session
+from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
@@ -24,7 +24,7 @@ class OwnerService:
     @staticmethod
     async def register(password: str | None = None):
         """ For new users """
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             password = OwnerService._password_encode(password)
             uid = await OwnerService._form_uid()
@@ -40,7 +40,7 @@ class OwnerService:
 
     @staticmethod
     async def _form_uid():
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             reform = True
             while reform:
@@ -64,7 +64,7 @@ class OwnerService:
 
     @staticmethod
     async def get_wallets(user_id: int):
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             owner: Owner = await session.get(Owner, str(user_id))
             return owner.wallets
@@ -72,7 +72,7 @@ class OwnerService:
     @staticmethod
     async def get_tokens(u_id: str):
         all_tokens = list()
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             owner: Owner = await session.get(Owner, u_id)
             wallets = owner.wallets
@@ -85,7 +85,7 @@ class OwnerService:
 
     @staticmethod
     async def get_chain_address(u_id: str, blockchain: str, path_index: int = 0):
-        session_connect = await create_session()
+        session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             address: Address = (await session.execute(
                 select(Address).where(
