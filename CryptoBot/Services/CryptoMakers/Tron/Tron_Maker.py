@@ -23,6 +23,7 @@ class Tron_Maker(Maker):
         self.txn_resp = dict()
         self.energy = 15000
         self.bandwitch = 1000
+        self.trx_min_balance = 10
         if DEBUG_MODE:
             self.network = "nile"
         else:
@@ -121,7 +122,7 @@ class Tron_Maker(Maker):
             self.txn_resp["status"] = "ERROR"
             self.txn_resp["message"] = "Unfreeze failed"
 
-    async def activate_account(self, transaction: Transaction):
+    async def activate_account(self, transaction: Transaction, amount: float = 1):
         async with self.get_client() as client:
             txb = (
                 client.trx.transfer(self._main_adds, transaction.from_address, int(1 * 1_000_000))

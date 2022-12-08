@@ -1,3 +1,4 @@
+from Bot.utilts.settings import STAKE_MODE
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Tron.Tron_Maker import Tron_Maker
@@ -79,20 +80,28 @@ class Tron_TRC_Maker(Tron_Maker):
 
         elif txn_info.get("status") == "BANDWITH_ERROR":
             self.txn_resp["status"] = "BandwitchError"
-            account_resource = await self.account_resource(transaction)
-            ENERGY = account_resource.get("ENERGY")
-            BANDWITCH = account_resource.get("BANDWITCH")
+            if STAKE_MODE is True:
+                account_resource = await self.account_resource(transaction)
+                ENERGY = account_resource.get("ENERGY")
+                BANDWITCH = account_resource.get("BANDWITCH")
 
-            if ENERGY < self.energy:
-                print("На балансе недостаточно ENERGY, выполняется процесс пополнения ENERGY")
-                self.txn_resp["message"] = "Freezing energy in progress"
-                freeze_energy = self.energy - ENERGY
-                tn = await self.freeze(amount=50, receiver=transaction.from_address, resource="ENERGY")
-            if BANDWITCH < self.bandwitch:
-                freeze_bandwitch = self.bandwitch - BANDWITCH
-                self.txn_resp["message"] = "Freezing bandwitch in progress"
-                print("На балансе недостаточно BANDWITCH, выполняется процесс пополнения BANDWITCH")
-                tn = await self.freeze(amount=50, receiver=transaction.from_address, resource="BANDWIDTH")
+                if ENERGY < self.energy:
+                    print("На балансе недостаточно ENERGY, выполняется процесс пополнения ENERGY")
+                    self.txn_resp["message"] = "Freezing energy in progress"
+                    freeze_energy = self.energy - ENERGY
+                    tn = await self.freeze(amount=50, receiver=transaction.from_address, resource="ENERGY")
+                if BANDWITCH < self.bandwitch:
+                    freeze_bandwitch = self.bandwitch - BANDWITCH
+                    self.txn_resp["message"] = "Freezing bandwitch in progress"
+                    print("На балансе недостаточно BANDWITCH, выполняется процесс пополнения BANDWITCH")
+                    tn = await self.freeze(amount=50, receiver=transaction.from_address, resource="BANDWIDTH")
+                else:
+                    pass
             else:
-                pass
+                balance = await self.get_balance(address=transaction.from_address)
+                print(balance)
+                if float(balance) < float(self.trx_min_balance):
+                    add_balance = float(self.trx_min_balance) - float(balance)
+                    print(f"Перевод {add_balance} TRX на кошелек <{transaction.from_address}>")
+                    await self.activate_account(transaction, add_balance)
         await self.transfer(transaction, fee_limit)
