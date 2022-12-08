@@ -76,6 +76,7 @@ class AddressService:
         transaction_maker = Tron_TRC_Maker()
         transaction_dict = await transaction_maker.transfer(my_transaction)
         transaction_dict = transaction_dict.txn_resp
+        print("TANSFER", transaction_dict)
         if transaction_dict.get("status") == "SUCCESS":
             if transaction_dict.get("result") != "FAILED":
                 my_transaction.tnx_id = transaction_dict.get("txn").get("id")
