@@ -82,7 +82,7 @@ class AddressService:
                 my_transaction.service_fee = service_fee
                 my_transaction.status = transaction_dict.get("status")
                 await loader(message, chait_id, 5, "Совершаем транзакцию...")
-                session = await create_session()
+                session = await AlchemyMaster.create_session()
                 await loader(message, chait_id, 5, "Завершаем транзакцию...")
                 async with session() as session:
                     local_object = await session.merge(my_transaction)
