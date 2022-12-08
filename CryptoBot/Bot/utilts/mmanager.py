@@ -6,7 +6,10 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message, \
-    Update
+    Update, CallbackQuery, InputMedia
+
+from Bot.utilts.ContentService import ContentService
+from Dao.models.bot_models import ContentUnit
 
 
 # TODO: Все же раскидать на два разных класса
@@ -31,6 +34,24 @@ class MManager:
             await MManager.sticker_store(state, n_msg)
 
     @classmethod
+    async def content_surf(cls,
+                           event: Message | CallbackQuery,
+                           state: FSMContext,
+                           bot: Bot,
+                           content_unit: ContentUnit,
+                           keyboard: InlineKeyboardMarkup):
+        sticker_data: dict = (await state.get_data()).get(cls._stickerkey)
+        chat_id = event.chat.id if isinstance(event, Message) else event.message.chat.id
+        msg_id = sticker_data.get("id")
+        if isinstance(event, CallbackQuery):
+            n_msg = await ContentService.edit(content=content_unit, bot=bot, chat_id=chat_id,
+                                              keyboard=keyboard, target_msg_id=msg_id)
+        else:
+            n_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id, keyboard=keyboard)
+            await bot.delete_message(chat_id, msg_id)
+        await MManager.sticker_store(state, n_msg)
+
+    @classmethod
     async def sticker_store(cls, state: FSMContext, sticker_message: Message):
         await state.update_data({cls._stickerkey: {"id": sticker_message.message_id,
                                                    "text": sticker_message.html_text}})
@@ -50,7 +71,6 @@ class MManager:
         mid = (await state.get_data()).get(cls._stickerkey).get("id")
         with suppress(TelegramBadRequest):
             await bot.delete_message(chat_id, mid)
-
 
     @classmethod
     def garbage_manage(cls, *, store: bool = True, clean: bool = False):

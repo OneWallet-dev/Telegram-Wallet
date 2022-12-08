@@ -102,7 +102,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    await Admin(telegram_id=5429649862).demote()
+    await ContentUnit.get_all_tags()
 
 
 @router.message(Command("try"))
@@ -122,14 +122,3 @@ async def asd(message: Message, state: FSMContext, bot: Bot):
                                                              to_address="THMxwS8Rq21jVtySrjipD5rU5h32XDj51V")
 
         print(transaction)
-
-
-@router.message(Command("pic"))
-async def pic_kostul(message: Message, state: FSMContext, bot: Bot):
-    await state.set_state(MainState.kostul)
-
-
-@router.message(F.photo)
-async def pic_kostul2(message: Message, state: FSMContext, bot: Bot):
-    photo_id = message.photo[-1].file_id
-    print(photo_id)
