@@ -17,7 +17,7 @@ class Transaction(Base):
     to_address = Column(String)
     network = Column(String)
     datetime = Column(DateTime, default=datetime.datetime.now())
-    status:str = Column(String)
+    status: str = Column(String)
     service_fee: float = Column(Float)
     network_fee: float = Column(Float)
     address = relationship("Address", lazy="joined", back_populates="transactions")
