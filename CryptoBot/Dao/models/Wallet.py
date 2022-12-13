@@ -12,14 +12,13 @@ class Wallet(Base):
     __tablename__ = "wallets"
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-    mnemonic = StringEncryptedType(String, Data.secret_key, AesEngine)
+    mnemonic = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     blockchain = Column(String)
     owner_id = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
-                                          ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
+                      ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
     addresses = relationship(
         "Address",
         collection_class=attribute_mapped_collection("address"),
         cascade="all, delete-orphan", lazy="joined"
     )
     owner = relationship("Owner", lazy="joined", back_populates="wallets")
-
