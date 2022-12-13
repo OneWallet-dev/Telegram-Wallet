@@ -13,18 +13,21 @@ class Tron_TRC_Maker(Tron_Maker):
             return float(0)
 
         async with self.get_client() as client:
-            if contract:
-                contract = await client.get_contract(contract)
-                return float(await contract.functions.balanceOf(address) / 1_000_000)
+            try:
+                if contract:
+                    contract = await client.get_contract(contract)
+                    return float(await contract.functions.balanceOf(address) / 1_000_000)
 
-            elif token_id:
-                return float(client.get_account_asset_balance(address))
+                elif token_id:
+                    return float(client.get_account_asset_balance(address))
 
-            elif contract is None and token_id is None:
-                return float(await client.get_account_balance(address))
+                elif contract is None and token_id is None:
+                    return float(await client.get_account_balance(address))
 
-            else:
-                raise ValueError("Could not find address")
+                else:
+                    raise ValueError("Could not find address")
+            except AddressNotFound:
+                return float(0)
 
     async def transfer(
             self,
