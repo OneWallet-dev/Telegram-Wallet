@@ -6,6 +6,10 @@ from web3.net import AsyncNet
 from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
 from ethtoken.abi import EIP20_ABI
 
+from Bot.utilts.settings import DEBUG_MODE
+from Dao.models.Transaction import Transaction
+from Services.CryptoMakers.Maker import Maker
+
 mnemonic = "rather movie picnic soft wreck sign dial mango laugh matrix opera below"
 wallet_1 = {"address": "0x6f9c2F6f96481848BC39419B53719EAD68FE9F4b",
             "private_key": "0x04e2bfb6457223596d62a1857e65cf745cbfb80eadaaf9d7f967f8ba77f90863"}
@@ -13,16 +17,21 @@ wallet_2 = {"address": "0xb1E2e0166AC14769d0688FE4f29eb28f74eD90ea",
             "private_key": "0x2a312af84096ef7184e8e08a8ac0018186911e6038e6fa796b7d83feb200c317"}
 
 
-class ETH_wallet:
+class ETH_wallet(Maker):
 
-    def __init__(self, network: str = "goerli"):
+    def __init__(self):
         self.api_key = "854dcd46b0bc46579d3dba0fbfac496c"
         self.w3 = None
         self.signature = None
         self.txn_resp = dict()
-        self.network = network
         self.__add_fee = 500_000
         self.__BASE = "https://{}.infura.io/v3/"
+
+        if DEBUG_MODE:
+            self.network = "goerli"
+        else:
+            self.network = "mainnet"
+
         self.__get_api_base()
         self.__get_w3()
 
@@ -68,35 +77,29 @@ class ETH_wallet:
         balance = await self.w3.eth.get_balance(address)
         return self.w3.fromWei(balance, "ether")
 
-    async def build_txn(self, from_address: str,
-                        to_address: str,
-                        amount: float,
-                        nonce,
-                        token: str = "ether",
-                        contract: str = None
-                        ) -> dict[str, int | str]:
+    async def build_txn(self, transaction: Transaction, nonce) -> dict[str, int | str]:
 
         gas_price = await self.get_gas_price()
 
-        if contract is None:
+        if transaction.token_contract_id is None:
             txn = {
                 'chainId': await self.w3.eth.chain_id,
-                'from': from_address,
-                'to': to_address,
-                'value': int(Web3.toWei(amount, token)),
+                'from': transaction.from_address,
+                'to': transaction.to_address,
+                'value': int(Web3.toWei(transaction.amount, "ether")),
                 'nonce': nonce,
                 'gasPrice': gas_price,
                 'gas': gas_price + self.__add_fee,
             }
             return txn
         else:
-            unicorns = self.w3.eth.contract(address=contract, abi=EIP20_ABI)
-            nonce = await self.w3.eth.get_transaction_count(from_address, 'pending')
+            unicorns = self.w3.eth.contract(address=transaction.token_contract_id, abi=EIP20_ABI)
+            nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
 
             gas_price = await self.get_gas_price()
             unicorn_txn = unicorns.functions.transfer(
-                to_address=to_address,
-                amount=amount,
+                to_address=transaction.to_address,
+                amount=transaction.amount,
             ).buildTransaction({
                 'chainId': 1,
                 'gas': gas_price + self.__add_fee,
@@ -105,49 +108,30 @@ class ETH_wallet:
             })
             return unicorn_txn
 
-    async def transfer(self, from_address: str,
-                       to_address: str,
-                       amount: float,
-                       private_key: str,
-                       contract: str = None
-                       ):
-        nonce = await self.w3.eth.get_transaction_count(from_address, 'pending')
-        if contract is None:
-            transaction = await self.build_txn(from_address, to_address, amount, nonce)
+    async def transfer(self, transaction: Transaction):
+        nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
+        address = transaction.address
+        if transaction.token_contract_id is None:
             try:
                 try:
-                    signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
+                    txn = await self.build_txn(transaction, nonce)
+                    signed_txn = self.w3.eth.account.sign_transaction(txn, address.private_key)
                     txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
                 except ValueError:
                     nonce += math.ceil(round(nonce / 8, 3))
-
-                    signed_txn = self.w3.eth.account.sign_transaction(transaction, private_key)
+                    txn = await self.build_txn(transaction, nonce)
+                    signed_txn = self.w3.eth.account.sign_transaction(txn, address.private_key)
                     txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-
+                print("Transfer", txn_hash)
+                self.txn_resp["status"] = "SUCCESS"
+                self.txn_resp["message"] = "Transfer success"
+                self.txn_resp["txn"] = await txn_hash.hex()
                 return txn_hash.hex()
             except ValueError:
                 return {'Error': 801, 'message': 'Little gas'}
 
         else:
-            transaction = await self.build_txn(from_address, to_address, amount, nonce, contract)
-
-            signed_txn = self.w3.eth.account.sign_transaction(self.build_txn, private_key=private_key)
-            txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-            return txn_hash.hex()
-
-
-
-
-
-async def main():
-    eth = ETH_wallet(network="goerli")
-    #tr_id = await eth.transfer(from_address=wallet_1.get("address"),
-    #                           to_address=wallet_2.get("address"),
-    #                           amount=0.0000001,
-    #                           private_key=wallet_1.get("private_key"))
-
-    #print(f"Transfer: ", tr_id)
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
+            print("ERC-20 Токены не готовы")
+            #signed_txn = self.w3.eth.account.sign_transaction(self.build_txn, private_key=private_key)
+            #txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            #return txn_hash.hex()
