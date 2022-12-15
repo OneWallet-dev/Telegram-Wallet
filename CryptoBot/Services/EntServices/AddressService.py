@@ -33,7 +33,7 @@ class AddressService:
                     elif token.network == 'TRC-20':
                         balance = await twallet.get_balance(address, token.contract_Id)
                     elif token.network == 'TRC-10':
-                        balance = await twallet.get_balance(address=address, token_id=token.contract_Id)
+                        balance = await twallet.get_balance(address=address, token_id=int(token.contract_Id))
                     balances.update({token.token_name: balance})
         return balances
 
@@ -105,7 +105,6 @@ class AddressService:
         async with session_connect() as session:
             if isinstance(address, str):
                 address: Address = await session.get(Address, address)
-
 
             token_exists: Token = await session.get(Token, token.contract_Id)
             if token_exists:

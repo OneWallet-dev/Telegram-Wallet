@@ -12,6 +12,7 @@ from Bot.states.main_states import MainState
 from Bot.states.trans_states import TransactionStates
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
+from Dao.models.bot_models import ContentUnit
 
 router = Router()
 
@@ -19,17 +20,14 @@ router = Router()
 async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
     message = update if isinstance(update, Message) else update.message
     await MManager.clean(state, bot, message.chat.id)
-    await state.clear()
     await state.set_state(MainState.welcome_state)
     bot_name = (await bot.get_me()).full_name
     u_id = await DataRedis.find_user(update.from_user.id)
-    text = f'<b>👤 <code>{u_id}</code>, добро пожаловать в криптовалютный бот {bot_name}!</b>\n\nЧем я могу вам помочь?'
-    try:
-        await message.answer_photo(
-            "AgACAgIAAxkBAAICdGOKCDV-1-wERkVoojLvwO0ocCVdAALVwTEbxw5RSH90t1FwCJMUAQADAgADeAADKwQ",
-            caption=text, reply_markup=main_menu_kb())
-    except TelegramBadRequest:
-        await message.answer(text, reply_markup=main_menu_kb())
+
+    content: ContentUnit = await ContentUnit(tag="main_menu").get()
+    content.text = content.text.format(bot_name=bot_name, u_id=u_id)
+    placeholder = "Это главное меню бота."
+    await MManager.content_surf(message, state, bot, content, keyboard=main_menu_kb(), placeholder_text=placeholder)
 
 
 @router.message(F.text == "💹 Мой кошелек")

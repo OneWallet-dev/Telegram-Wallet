@@ -63,10 +63,12 @@ class OwnerService:
         return True if owner.password == phash else False
 
     @staticmethod
-    async def get_wallets(user_id: int):
+    async def get_wallets(u_id: str):
         session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
-            owner: Owner = await session.get(Owner, str(user_id))
+            print(u_id)
+            owner: Owner = await session.get(Owner, u_id)
+            print(owner)
             return owner.wallets
 
     @staticmethod
