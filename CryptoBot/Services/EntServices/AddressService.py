@@ -13,7 +13,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Services.CryptoMakers.ETH.Eth_Maker import ETH_Maker
+from Services.CryptoMakers.ETH.Eth_Maker import ETH_maker
 from Services.CryptoMakers.Maker import Maker
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
