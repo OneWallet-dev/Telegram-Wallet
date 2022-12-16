@@ -4,7 +4,6 @@ from web3 import Web3, AsyncHTTPProvider
 from web3.eth import AsyncEth
 from web3.net import AsyncNet
 from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
-from ethtoken.abi import EIP20_ABI
 
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.models.Transaction import Transaction
@@ -93,7 +92,7 @@ class ETH_wallet(Maker):
             }
             return txn
         else:
-            unicorns = self.w3.eth.contract(address=transaction.token_contract_id, abi=EIP20_ABI)
+            unicorns = self.w3.eth.contract(address=transaction.token_contract_id)
             nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
 
             gas_price = await self.get_gas_price()
@@ -101,7 +100,7 @@ class ETH_wallet(Maker):
                 to_address=transaction.to_address,
                 amount=transaction.amount,
             ).buildTransaction({
-                'chainId': 1,
+                'chainId': await self.w3.eth.chain_id,
                 'gas': gas_price + self.__add_fee,
                 'gasPrice': gas_price,
                 'nonce': nonce,

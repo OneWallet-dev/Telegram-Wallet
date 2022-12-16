@@ -21,6 +21,7 @@ from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Dao.models.bot_models import ContentUnit, Admin
+from Services.CryptoMakers.ETH.Eth_Maker import ETH_wallet
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
@@ -102,7 +103,11 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    await ContentUnit.get_all_tags()
+    eth_wallet = ETH_wallet()
+    transaction = Transaction()
+    transaction.from_address = "0x6f9c2F6f96481848BC39419B53719EAD68FE9F4b"
+    transaction.to_address = ""
+    eth_wallet.transfer()
 
 
 @router.message(Command("try"))
