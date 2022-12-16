@@ -9,7 +9,6 @@ class Maker:
     async def transfer(
             self,
             transaction: Transaction,
-            fee_limit: float = None
     ) -> dict or None:
         pass
 

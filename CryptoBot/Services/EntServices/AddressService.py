@@ -13,8 +13,20 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.CryptoMakers.ETH.Eth_Maker import ETH_Maker
+from Services.CryptoMakers.Maker import Maker
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
+
+
+class Maker_Factory:
+    def get_maker(self,token: Token) -> Maker:
+        global maker
+        if token.network == "TRC-20":
+            maker = Tron_TRC_Maker()
+        if token.network == "ERC-20":
+            maker = ETH_Maker()
+        return maker
 
 class AddressService:
 
