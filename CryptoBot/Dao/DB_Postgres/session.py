@@ -16,7 +16,7 @@ class AlchemyMaster:
     @classmethod
     def prepare_engine(cls, pg_username: str, pg_password: str, pg_host: str, pg_database: str = 'postgres'):
         cls.engine = create_async_engine(
-            f"postgresql+asyncpg://{pg_username}:{pg_password}@{pg_host}/{pg_database}"
+            f"postgresql+asyncpg://{pg_username}:{pg_password}@{pg_host}:5454/{pg_database}"
         )
 
     @classmethod
@@ -59,7 +59,7 @@ class AlchemyMaster:
 
 async def create_session():
     engine = create_async_engine(
-        f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}/postgres"
+        f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:5454/postgres"
     )
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

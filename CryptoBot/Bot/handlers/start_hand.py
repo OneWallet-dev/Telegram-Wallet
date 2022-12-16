@@ -1,31 +1,23 @@
-from aiogram import Router, Bot, F
+from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.filters.admin_filter import IsAdmin
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.keyboards.main_keys import main_menu_kb
-from Bot.states.main_states import MainState
+from Bot.utilts.USDT_Calculator import USDT_Calculator, clac
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.p_key_getter import getPkey_by_address_id
-from Dao.DB_Postgres.session import create_session, AlchemyMaster
-from Dao.DB_Redis import DataRedis
+from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Dao.models.bot_models import ContentUnit, Admin
-from Services.CryptoMakers.ETH.Eth_Maker import ETH_wallet
 from Services.EntServices.AddressService import AddressService
-from Services.EntServices.OwnerService import OwnerService
-from Services.EntServices.TokenService import TokenService
-
 
 router = Router()
 
@@ -103,12 +95,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    eth_wallet = ETH_wallet()
-    transaction = Transaction()
-    transaction.from_address = "0x6f9c2F6f96481848BC39419B53719EAD68FE9F4b"
-    transaction.to_address = ""
-    eth_wallet.transfer()
-
+    await clac()
 
 @router.message(Command("try"))
 @MManager.garbage_manage(store=True, clean=True)

@@ -20,7 +20,8 @@ from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
 
 class Maker_Factory:
-    def get_maker(self,token: Token) -> Maker:
+    @staticmethod
+    def get_maker(token: Token) -> Maker:
         global maker
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
@@ -85,7 +86,7 @@ class AddressService:
         await loader(message, chait_id, 3, "Формируем транзакци...")
         await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
         await loader(message, chait_id, 4, "Совершаем транзакцию...")
-        transaction_maker = Tron_TRC_Maker()
+        transaction_maker = Maker_Factory.get_maker(token)
         transaction_dict = await transaction_maker.transfer(my_transaction)
         transaction_dict = transaction_dict.txn_resp
         print("TANSFER", transaction_dict)
