@@ -16,7 +16,7 @@ wallet_2 = {"address": "0xb1E2e0166AC14769d0688FE4f29eb28f74eD90ea",
             "private_key": "0x2a312af84096ef7184e8e08a8ac0018186911e6038e6fa796b7d83feb200c317"}
 
 
-class ETH_wallet(Maker):
+class ETH_Maker(Maker):
 
     def __init__(self):
         self.api_key = "854dcd46b0bc46579d3dba0fbfac496c"
