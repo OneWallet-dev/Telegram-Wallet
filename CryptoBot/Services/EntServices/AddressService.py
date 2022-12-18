@@ -1,13 +1,15 @@
+import asyncio
 from contextlib import suppress
 
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
 
-from Dao.DB_Postgres.session import create_session, AlchemyMaster
+from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
@@ -16,7 +18,7 @@ from Dao.models.Wallet import Wallet
 from Services.CryptoMakers.ETH.Eth_Maker import ETH_maker
 from Services.CryptoMakers.Maker import Maker
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
-
+from bata import Data
 
 
 class Maker_Factory:
@@ -26,8 +28,9 @@ class Maker_Factory:
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
         if token.network == "ERC-20":
-            maker = ETH_Maker()
+            maker = ETH_maker()
         return maker
+
 
 class AddressService:
 
@@ -119,7 +122,6 @@ class AddressService:
             if isinstance(address, str):
                 address: Address = await session.get(Address, address)
 
-
             token_exists: Token = await session.get(Token, token.contract_Id)
             if token_exists:
                 token = token_exists
@@ -143,3 +145,6 @@ class AddressService:
                     address_obj.tokens.remove(ad_token)
                     session.add(address_obj)
                     await session.commit()
+
+
+

@@ -18,11 +18,10 @@ Polygon_USDT = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"
 
 class ETH_maker(Maker):
 
-    def __init__(self, network):
+    def __init__(self): #TODO Здесь зачем network?  Не надо нарушать контрактов. У классасов
         self.api_key = os.getenv('eth_API')
         self.w3 = None
         self.txn_resp = dict()
-        self.network = network
         self.__gas_limit = 500_000
         self.__BASE = "https://{}.infura.io/v3/"
         self.__get_api_base()

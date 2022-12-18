@@ -9,7 +9,7 @@ from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
 from Bot.handlers.main_handlers.main_menu_hand import main_menu
 from Bot.keyboards.main_keys import main_menu_kb
-from Bot.utilts.USDT_Calculator import USDT_Calculator, clac
+# from Bot.utilts.USDT_Calculator import USDT_Calculator
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
@@ -18,6 +18,7 @@ from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Services.EntServices.AddressService import AddressService
+from bata import Data
 
 router = Router()
 
@@ -93,24 +94,34 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     await session.close()
 
 
+# async def asd():
+#     session = await AlchemyMaster.create_session()
+#     async with session() as session:
+#         address_obj = await session.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
+
+
 @router.message(Command("test"))
-async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-    await clac()
+async def command_test(message: Message):
+    session = await AlchemyMaster.create_session()
+    async with session() as session:
+        print(Data.secret_key)
+        address_obj = await session.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
+        print(type(address_obj))
+        print(address_obj.address)
+        print(address_obj.private_key)
+
 
 @router.message(Command("try"))
 @MManager.garbage_manage(store=True, clean=True)
-async def asd(message: Message, state: FSMContext, bot: Bot):
+async def asd(message: Message, session: AsyncSession, state: FSMContext, bot: Bot):
+    owner: Owner = await session.get(Owner, str(message.from_user.id))
     # query = """ INSERT INTO address_tokens VALUES ('token_address','TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t') """
-    session = await AlchemyMaster.create_session()
-    async with session() as session:
-        owner: Owner = await session.get(Owner, str(message.from_user.id))
-        wallet = owner.wallets.get("tron")
-        address = wallet.addresses.get("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea")
-        token_list = address.tokens
-        print(f'token - {token_list[0].token_name}')
-        transaction = await AddressService.createTransaction(address=address,
-                                                             amount=50,
-                                                             token=token_list[0],
-                                                             to_address="THMxwS8Rq21jVtySrjipD5rU5h32XDj51V")
-
-        print(transaction)
+    wallet = owner.wallets.get("tron")
+    address = wallet.addresses.get("TTwG26XCBQZvu3Xdi8BXtsqKGGLQFdTnea")
+    token_list = address.tokens
+    print(f'token - {token_list[0].token_name}')
+    transaction = await AddressService.createTransaction(address=address,
+                                                         amount=50,
+                                                         token=token_list[0],
+                                                         to_address="THMxwS8Rq21jVtySrjipD5rU5h32XDj51V")
+    print(transaction)
