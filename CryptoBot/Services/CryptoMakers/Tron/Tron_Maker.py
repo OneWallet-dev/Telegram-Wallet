@@ -151,7 +151,7 @@ class Tron_Maker(Maker):
         ENDPOINT = "transaction"
         __url = f"{self.TRON_SCAN_API_URL}/{ENDPOINT}?sort=-timestamp&count=true&address={address.address}"
         response = await _http_client.get(__url)
-        _http_client.
+        # _http_client.
         response_json = response.json()
         total = response_json["total"]
         transaction_list = response_json["data"]
