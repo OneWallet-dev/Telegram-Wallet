@@ -24,12 +24,12 @@ from bata import Data
 
 class Maker_Factory:
     @staticmethod
-    def get_maker(token: Token) -> Maker:
+    def get_maker(token: Token, network = None) -> Maker:
         global maker
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
         if token.network == "ERC-20":
-            maker = ETH_maker()
+            maker = ETH_maker(network)
         return maker
 
 
@@ -165,6 +165,5 @@ class AddressService:
                     print(f"{float_balance}       {el['tokenName']}")
                     print(address.address)
 
-    print("OVER")
 
 
