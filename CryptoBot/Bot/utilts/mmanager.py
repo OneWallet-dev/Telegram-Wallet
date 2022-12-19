@@ -15,7 +15,8 @@ from Dao.models.bot_models import ContentUnit
 
 # TODO: Все же раскидать на два разных класса
 class MManager:
-    _garbagekey = 'garbage'
+    _important_garbage_key = 'important_garbage'
+    _garbagekey = 'tech_garbage'
     _stickerkey = 'sticker'
 
     @classmethod
@@ -55,10 +56,11 @@ class MManager:
             sended_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id,
                                                    keyboard=keyboard,
                                                    placeholder_text=placeholder_text)
+            del_message_id = event.message_id if isinstance(event, Message) else event.message.message_id
+            await bot.delete_message(chat_id, del_message_id)
             if old_msg_id:
                 with suppress(TelegramBadRequest):
                     await bot.delete_message(chat_id, old_msg_id)
-                    await bot.delete_message(chat_id, event.message_id)
         if sended_msg:
             await MManager.sticker_store(state, sended_msg)
 
@@ -123,14 +125,17 @@ class MManager:
         return garbage_decor
 
     @classmethod
-    async def garbage_store(cls, state: FSMContext, tech_msg_id: str | int):
-        msg_list = list(set((await state.get_data()).get(cls._garbagekey, [])))
+    async def garbage_store(cls, state: FSMContext, tech_msg_id: str | int, *, important: bool = False):
+        key = cls._garbagekey if not important else cls._important_garbage_key
+        msg_list = list(set((await state.get_data()).get(key, [])))
         msg_list.append(tech_msg_id)
         await state.update_data({cls._garbagekey: msg_list})
 
     @classmethod
-    async def clean(cls, state: FSMContext, bot: Bot, chat_id: str | int):
+    async def clean(cls, state: FSMContext, bot: Bot, chat_id: str | int, *, deep: bool = False):
         msg_list = (await state.get_data()).get(cls._garbagekey, [])
+        if deep:
+            msg_list += (await state.get_data()).get(cls._important_garbage_key, [])
         corutines = [bot.delete_message(chat_id, message_id) for message_id in msg_list[::-1]]
         try:
             await asyncio.gather(*corutines, return_exceptions=True)

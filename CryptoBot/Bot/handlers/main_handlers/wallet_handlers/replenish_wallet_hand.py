@@ -20,6 +20,7 @@ router = Router()
 
 @router.callback_query(F.data == 'back', StateFilter(WalletStates.replenish_network))
 @router.callback_query(F.data == "replenish", StateFilter(WalletStates))
+@MManager.garbage_manage(store=False, clean=True)
 async def replenish_choose_currency(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.replenish_token)
     content: ContentUnit = await ContentUnit(tag="repl_choose_currency").get()
@@ -30,6 +31,7 @@ async def replenish_choose_currency(callback: CallbackQuery, state: FSMContext, 
 
 @router.callback_query(F.data == 'back', StateFilter(WalletStates.choose_address))
 @router.callback_query(F.data.startswith("new_t"), StateFilter(WalletStates.replenish_token))
+@MManager.garbage_manage(store=False, clean=True)
 async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
     if callback.data == 'back':
         data = await state.get_data()
@@ -44,12 +46,18 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                 placeholder_text=f"Выберите сеть:")
 
 
+@router.callback_query(F.data.startswith("my_adresses"), StateFilter(WalletStates.choose_address))
 @router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.replenish_network))
+@MManager.garbage_manage(store=False, clean=True)
 async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.choose_address)
     data = await state.get_data()
     token_name = data.get('token')
-    network = callback.data.replace("new_n_", "")
+    if callback.data == 'my_adresses':
+        network_name = data.get('network')
+    else:
+        network_name = callback.data.replace("new_n_", "")
+        await state.update_data(network=network_name)
 
     content: ContentUnit = await ContentUnit(tag="replenish_info").get()
     info_text = "Выбранная валюта: <code>{token_name}</code>\n" \
@@ -57,14 +65,14 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
                 "Минимальная сумма пополнения: {USDT_min}\n" \
                 "Комиссия: {USDT_comission}\n" \
                 "Необходимое количество подтверждений: {USDT_approvals}"
-    info_text = info_text.format(token_name=token_name, network=network,
+    info_text = info_text.format(token_name=token_name, network=network_name,
                                  USDT_min=2, USDT_comission=0, USDT_approvals=20)
     if content.text:
         content.text = content.text.format(info_text=info_text)
     msg = await ContentService.send(content, bot, chat_id=callback.message.chat.id, placeholder_text=info_text)
     await MManager.garbage_store(state, msg.message_id)
 
-    chain = [i for i in blockchains if network in blockchains[i]['networks']][0]
+    chain = [i for i in blockchains if network_name in blockchains[i]['networks']][0]
     u_id = await DataRedis.find_user(callback.from_user.id)
     addresses = await OwnerService.get_all_chain_addresses(u_id, chain)
 
@@ -85,6 +93,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 
 @router.callback_query(StateFilter(WalletStates.choose_address))
+@MManager.garbage_manage(store=False, clean=True)
 async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     address_nmbr = callback.data
     data = await state.get_data()

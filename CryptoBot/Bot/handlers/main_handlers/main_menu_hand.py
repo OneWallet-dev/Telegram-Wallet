@@ -26,7 +26,7 @@ async def title_entry_point(update: Message | CallbackQuery, state: FSMContext, 
     placeholder = "Заглавное сообщение бота."
     msg = await ContentService.send(content, bot, chat_id=message.chat.id,
                                     keyboard=main_menu_kb(), placeholder_text=placeholder)
-    await MManager.garbage_store(state, msg.message_id)
+    await MManager.garbage_store(state, msg.message_id, important=True)
 
 
 async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
