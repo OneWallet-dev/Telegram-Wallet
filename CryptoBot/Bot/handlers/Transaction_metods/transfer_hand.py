@@ -1,4 +1,4 @@
-from aiogram import Router, Bot
+from aiogram import Router, Bot, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token, \
     kb_confirm_transfer, trans_token_kb, m_transaction
 from Bot.states.trans_states import Trs_transfer, TransactionStates
-from Bot.utilts.currency_helper import blockchains
+from Bot.states.wallet_states import WalletStates
+from Bot.utilts.currency_helper import blockchains, base_tokens
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Redis import DataRedis
@@ -28,9 +29,11 @@ token_list = ["USDT"]
 network_list = ["TRC-20"]
 
 
+@router.callback_query(F.data == "send", StateFilter(WalletStates))
 async def start_transfer(message: Message, state: FSMContext, bot: Bot):
+    await state.set_state(Trs_transfer.new_transfer)
     await bot.send_message(message.from_user.id, "Выберите токен, который вы хотите перевести",
-                           reply_markup=trans_token_kb(token_list))
+                           reply_markup=trans_token_kb(list(base_tokens.keys())))
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
@@ -51,7 +54,7 @@ async def token(callback: CallbackQuery, state: FSMContext):
 
     text = text + "\n\n\n\n<b>В какой сети вы хотите перевести токен?</b>"
 
-    message = await callback.message.answer(text, reply_markup=trans_network_kb(network_list))
+    message = await callback.message.answer(text, reply_markup=trans_network_kb(base_tokens[token_name]['network']))
     await state.update_data(message_id=message.message_id)
 
 

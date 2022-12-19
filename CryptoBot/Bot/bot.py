@@ -14,6 +14,7 @@ from Bot.middleware.alchemy_session_middle import DbSession
 from Dao.DB_Postgres.session import AlchemyMaster, Base
 from Dao.DB_Redis import RedRedis
 from Dao.models.bot_models.bot_base import BotBase
+from Services.EntServices.TokenService import TokenService
 from bata import Data
 
 storage = RedisStorage.from_url(RedRedis.states_base_url())
@@ -51,11 +52,11 @@ async def bot_start():
 
     dp.include_router(main_wallet_hand.router)
     dp.include_router(transaction_menu_hand.router)
-    dp.include_router(transfer_hand.router)
+    # dp.include_router(transfer_hand.router)
 
     dp.include_router(AML_check_hand.router)
 
-    # wallets
+    await TokenService.fill_base()
 
     session = aiohttp.ClientSession()
     await session.close()

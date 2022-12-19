@@ -1,8 +1,10 @@
 from collections import namedtuple
+from contextlib import suppress
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
-from Bot.utilts.currency_helper import base_tokens
+from Bot.utilts.currency_helper import base_tokens, blockchains
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Address import Address
@@ -58,3 +60,32 @@ class TokenService:
         else:
             contract_string = token_dict.get('contract_address')
         return Token(contract_Id=contract_string, token_name=name, network=network)
+
+    @staticmethod
+    async def fill_base():
+        session_connect = await AlchemyMaster.create_session()
+        async with session_connect() as session:
+            for raw_token in base_tokens:
+                token = await TokenService.form_base_token(raw_token)
+                tokens = await TokenService.all_tokens()
+                if token not in tokens:
+                    session.add(token)
+            with suppress(IntegrityError):
+                await session.commit()
+
+    @staticmethod
+    async def all_tokens():
+        session_connect = await AlchemyMaster.create_session()
+        async with session_connect() as session:
+            return [token[0] for token in list((await session.execute(select(Token))).unique())]
+
+
+    @staticmethod
+    async def tokens_for_network(network: str):
+        session_connect = await AlchemyMaster.create_session()
+        async with session_connect() as session:
+            tokens = [token[0] for token in list(
+                (await session.execute(select(Token).filter(Token.network == network))).unique()
+            )]
+            print(tokens)
+        return tokens

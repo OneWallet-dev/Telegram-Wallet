@@ -24,7 +24,7 @@ from bata import Data
 
 class Maker_Factory:
     @staticmethod
-    def get_maker(token: Token, network = None) -> Maker:
+    def get_maker(token: Token, network=None) -> Maker:
         global maker
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
@@ -148,11 +148,11 @@ class AddressService:
                     await session.commit()
 
     @staticmethod
-    async def get_address_transactions(address: Address)->dict[str, Transaction]:
+    async def get_address_transactions(address: Address) -> dict[str, Transaction]:
         session = await AlchemyMaster.create_session()
         counter = 0
         resp = requests.get(
-                f"https://apilist.tronscanapi.com/api/accountv2?address={address.address}&source=search&word=TQzqehsVt7UENiBXBWwHUwDF9GPWvhxyvA&session-id=590c839e-f6a8-458e-953c-2e183eb8e884&order=0")
+            f"https://apilist.tronscanapi.com/api/accountv2?address={address.address}&source=search&word=TQzqehsVt7UENiBXBWwHUwDF9GPWvhxyvA&session-id=590c839e-f6a8-458e-953c-2e183eb8e884&order=0")
         json_dict = resp.json()
         transactions_in: int = json_dict["transactions_in"]
         transactions: int = json_dict["transactions"]
@@ -164,6 +164,3 @@ class AddressService:
                     float_balance = float(el["balance"]) * 1_000_000
                     print(f"{float_balance}       {el['tokenName']}")
                     print(address.address)
-
-
-

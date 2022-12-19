@@ -11,7 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from AllLogs.bot_logger import main_logger
 from Bot.exeptions.wallet_ex import DuplicateToken
-from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, send_wallet_hand
+from Bot.handlers.Transaction_metods import transfer_hand
+from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, send_wallet_hand, tran_history_wallet_hand
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
 from Bot.states.main_states import MainState
@@ -32,7 +33,8 @@ from Services.CryptoMakers.address_gen import Wallet_web3
 
 router = Router()
 router.include_router(replenish_wallet_hand.router)
-router.include_router(send_wallet_hand.router)
+router.include_router(transfer_hand.router)
+router.include_router(tran_history_wallet_hand.router)
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 

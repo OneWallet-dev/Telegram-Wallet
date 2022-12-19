@@ -14,6 +14,7 @@ from Dao.DB_Redis import DataRedis
 from Dao.models.Owner import Owner
 from Services.CryptoMakers.address_gen import Wallet_web3
 from Services.EntServices.OwnerService import OwnerService
+from Services.EntServices.TokenService import TokenService
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
@@ -81,4 +82,5 @@ async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.message.answer(f'Вам присвоен уникальный ID:<code> {u_id} </code>\n'
                                   f'Запомните, а лучше запишите его: '
                                   f'вход в аккаунт производится <u>только</u> с помощью него.')
+    await state.clear()
     await title_entry_point(callback, state, bot)

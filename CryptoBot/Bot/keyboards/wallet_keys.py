@@ -11,11 +11,10 @@ def main_wallet_keys():
     mark.row((InlineKeyboardButton(text=f"Пополнить", callback_data="replenish")))
     mark.row((InlineKeyboardButton(text=f"Отправить", callback_data="send")))
     mark.row((InlineKeyboardButton(text=f"Обменять", callback_data="exchange")))
-    mark.row((InlineKeyboardButton(text=f"История операций", callback_data="history")))
+    mark.row((InlineKeyboardButton(text=f"История операций", callback_data="full_history")))
     # mark.row((InlineKeyboardButton(text=f"Обновить кошелек", callback_data="refresh_wallet_edit")))
     mark.adjust(2, 1, 1)
     return mark.as_markup(resize_keyboard=True)
-
 
 def add_token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
@@ -110,20 +109,11 @@ def send_money_kb(token_list: list[str]):
     return mark.as_markup(resize_keyboard=True)
 
 
-def send_money_confirm_kb(confirm_push: int):
+def trans_history_start():
     mark = InlineKeyboardBuilder()
-    text = "Подтвердить"
-    data = 'more_conf'
-    if confirm_push == 1:
-        data = 'send_confirmed'
-        text += " 🟩"
-    elif confirm_push == 2:
-        text = "🟩 " + text + " 🟩"
-    elif confirm_push == 3:
-        text = "✅ ОПЕРАЦИЯ ПОДТВЕРЖДЕНА ✅"
-        data = 'send_sucсess'
-    elif confirm_push == 66:
-        text = "❌ ОШИБКА В ОПЕРАЦИИ ❌"
-        data = 'send_error'
-    mark.row((InlineKeyboardButton(text=text, callback_data=data)))
+    mark.row((InlineKeyboardButton(text=f"История пополнений", callback_data="replenish_history")))
+    mark.row((InlineKeyboardButton(text=f"История отправок", callback_data="send_history")))
+    mark.row((InlineKeyboardButton(text=f"История переводов по UID", callback_data="UID_history")))
+    mark.row((InlineKeyboardButton(text=f"Назад", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
+

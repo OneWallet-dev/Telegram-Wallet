@@ -129,7 +129,8 @@ class MManager:
         key = cls._garbagekey if not important else cls._important_garbage_key
         msg_list = list(set((await state.get_data()).get(key, [])))
         msg_list.append(tech_msg_id)
-        await state.update_data({cls._garbagekey: msg_list})
+        await state.update_data({key: msg_list})
+        data = await state.get_data()
 
     @classmethod
     async def clean(cls, state: FSMContext, bot: Bot, chat_id: str | int, *, deep: bool = False):

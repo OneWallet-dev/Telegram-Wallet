@@ -6,10 +6,12 @@ from hdwallet.utils import generate_mnemonic
 from typing import Union
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from Bot.utilts.currency_helper import blockchains
 from Dao.DB_Postgres.session import create_session, AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
+from Services.EntServices.TokenService import TokenService
 
 
 class Wallet_web3:
@@ -30,29 +32,41 @@ class Wallet_web3:
 
             new_wallets = dict()
 
-            owner: Owner = await session.get(Owner, u_id)
             tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
                                            private_key=tron_wallet.get("address_0").get("private_key"))
+            networks = blockchains['tron'].get('networks')
+            for net in networks:
+                tronaddress.tokens.extend(await TokenService.tokens_for_network(net))
+                tronaddress = await session.merge(tronaddress)
             tronwallet = Wallet(blockchain="tron", mnemonic=tron_mnemomic)
             tronwallet.addresses.update({tron_wallet.get("address_0").get("address"): tronaddress})
             new_wallets["tron"] = tronwallet
 
             ethaddress: Address = Address(address=eth_wallet.get("address_0").get("address"),
                                           private_key=eth_wallet.get("address_0").get("private_key"))
+            networks = blockchains['ethereum'].get('networks')
+            for net in networks:
+                ethaddress.tokens.extend(await TokenService.tokens_for_network(net))
+                ethaddress = await session.merge(ethaddress)
             ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth_mnemomic)
             ethnwallet.addresses.update({eth_wallet.get("address_0").get("address"): ethaddress})
             new_wallets["ethereum"] = ethnwallet
 
             bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
                                           private_key=bitcoin_wallet.get("address_0").get("private_key"))
+            networks = blockchains['bitcoin'].get('networks')
+            for net in networks:
+                bitaddress.tokens.extend(await TokenService.tokens_for_network(net))
+                bitaddress = await session.merge(bitaddress)
             bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
             bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
             new_wallets["bitcoin"] = bitwallet
 
+            owner: Owner = await session.get(Owner, u_id)
             owner.wallets.update(new_wallets)
-
             session.add(owner)
             await session.commit()
+
             try:
                 wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
                 wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
