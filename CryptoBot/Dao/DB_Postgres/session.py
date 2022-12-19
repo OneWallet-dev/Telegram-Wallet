@@ -16,7 +16,7 @@ class AlchemyMaster:
     @classmethod
     def prepare_engine(cls, pg_username: str, pg_password: str, pg_host: str, pg_database: str = 'postgres'):
         cls.engine = create_async_engine(
-            f"postgresql+asyncpg://{pg_username}:{pg_password}@{pg_host}:5432/{pg_database}"
+            f"postgresql+asyncpg://{pg_username}:{pg_password}@{pg_host}/{pg_database}"
         )
 
     @classmethod

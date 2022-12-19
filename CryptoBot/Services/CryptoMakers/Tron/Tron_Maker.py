@@ -1,4 +1,6 @@
 import os
+
+import requests
 from tronpy.keys import PrivateKey
 from httpx import AsyncClient, Timeout
 from tronpy.defaults import CONF_NILE
@@ -7,6 +9,7 @@ from tronpy.exceptions import BadAddress
 from tronpy.providers import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
+from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker
 
@@ -24,6 +27,7 @@ class Tron_Maker(Maker):
         self.energy = 15000
         self.bandwitch = 1000
         self.trx_min_balance = 10
+        self.TRON_SCAN_API_URL = "https://apilist.tronscanapi.com/api"
         if DEBUG_MODE:
             self.network = "nile"
         else:
@@ -140,3 +144,22 @@ class Tron_Maker(Maker):
                 self.txn_resp["message"] = "Activate account failed"
                 print("MAIN ACCOUNT ERROR:", e)
             return self
+
+    async def request_transaction_history_from_tron_api(self, address: Address):
+        counter = 0
+        _http_client = AsyncClient(timeout=Timeout(timeout=30, connect=5, read=5))
+        ENDPOINT = "transaction"
+        __url = f"{self.TRON_SCAN_API_URL}/{ENDPOINT}?sort=-timestamp&count=true&address={address.address}"
+        response = await _http_client.get(__url)
+        # _http_client.
+        response_json = response.json()
+        total = response_json["total"]
+        transaction_list = response_json["data"]
+        transaction_object_list = list()
+        print(len(transaction_list))
+        for tr in transaction_list:
+            my_trans = Transaction()
+            my_trans.tnx_id = tr["hash"]
+            counter+=1
+            print(counter)
+

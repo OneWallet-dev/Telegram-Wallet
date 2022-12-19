@@ -1,24 +1,12 @@
 import datetime
-from contextlib import suppress
-from string import ascii_letters, digits
 
-from Crypto.Random import random
-from aiogram.types import User
-from cryptography.hazmat.primitives import hashes
-from sqlalchemy import Column, String, DateTime, select
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-from Bot.exeptions.wallet_ex import DuplicateToken
-from Bot.utilts.currency_helper import base_tokens
-from Dao.DB_Postgres.session import create_session, Base
-from Dao.models.Address import Address
-from Dao.models.Token import Token
+from Dao.DB_Postgres.session import Base
 from Dao.models.Wallet import Wallet
 from bata import Data
 

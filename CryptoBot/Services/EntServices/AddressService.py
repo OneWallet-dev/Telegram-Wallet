@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import suppress
 
+import requests
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -146,5 +147,24 @@ class AddressService:
                     session.add(address_obj)
                     await session.commit()
 
+    @staticmethod
+    async def get_address_transactions(address: Address)->dict[str, Transaction]:
+        session = await AlchemyMaster.create_session()
+        counter = 0
+        resp = requests.get(
+                f"https://apilist.tronscanapi.com/api/accountv2?address={address.address}&source=search&word=TQzqehsVt7UENiBXBWwHUwDF9GPWvhxyvA&session-id=590c839e-f6a8-458e-953c-2e183eb8e884&order=0")
+        json_dict = resp.json()
+        transactions_in: int = json_dict["transactions_in"]
+        transactions: int = json_dict["transactions"]
+        # add
+        if not transactions_in == "0":
+            with_price_tokens = json_dict["withPriceTokens"]
+            for el in with_price_tokens:
+                if el["tokenName"] == "USDT" and float(el["balance"]) > 0:
+                    float_balance = float(el["balance"]) * 1_000_000
+                    print(f"{float_balance}       {el['tokenName']}")
+                    print(address.address)
+
+    print("OVER")
 
 
