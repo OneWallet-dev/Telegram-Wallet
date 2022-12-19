@@ -4,6 +4,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InlineKeyboardMarkup, InputMedia
 
+from Bot.utilts.settings import content_warn
 from Dao.models.bot_models import ContentUnit
 
 
@@ -13,10 +14,11 @@ class ContentService:
     async def send(content: ContentUnit,
                    bot: Bot,
                    chat_id: int,
-                   keyboard: InlineKeyboardMarkup,
+                   keyboard: InlineKeyboardMarkup | None = None,
                    placeholder_text: str | None = None):
         n_msg = None
         if content.media_id:
+            content.text = placeholder_text if not content.text else content.text
             try:
                 if content.media_type == 'video':
                     n_msg = await bot.send_video(chat_id=chat_id,
@@ -38,9 +40,9 @@ class ContentService:
                                            chat_id=chat_id,
                                            reply_markup=keyboard)
         else:
-            text = f"<i>Bad content:</i>\n<code>{content.tag}</code>\n\n"
-            if placeholder_text:
-                text += placeholder_text
+            text = placeholder_text if placeholder_text else str()
+            if not text or content_warn:
+                text = f"<i>Bad content:</i>\n<code>{content.tag}</code>\n\n" + text
             n_msg = await bot.send_message(text=text,
                                            chat_id=chat_id,
                                            reply_markup=keyboard)

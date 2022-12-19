@@ -2,7 +2,11 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class WalletStates(StatesGroup):
+    replenish_network = State()
+    replenish_token = State()
     main = State()
+    replenish = State()
+    choose_address = State()
     add_token = State()
     delete_token = State()
     inspect_token = State()

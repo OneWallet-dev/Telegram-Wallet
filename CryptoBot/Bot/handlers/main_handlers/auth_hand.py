@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter, AuthTimeout
-from Bot.handlers.main_handlers.main_menu_hand import main_menu
+from Bot.handlers.main_handlers.main_menu_hand import main_menu, title_entry_point
 from Bot.keyboards.main_keys import auth_kb, back_button
 from Bot.states.main_states import AuthState, RegistrationState
 from Bot.utilts.mmanager import MManager
@@ -95,7 +95,7 @@ async def password_checking(message: Message, state: FSMContext, session: AsyncS
                                 placeholder_text=no_content_text)
     if content_tag == "auth_succ":
         await asyncio.sleep(1)
-        await main_menu(message, state, bot)
+        await title_entry_point(message, state, bot)
 
 @router.message(StateFilter(AuthState.pass_wait), AuthTimeout())
 async def timeouted(message: Message, bot: Bot):

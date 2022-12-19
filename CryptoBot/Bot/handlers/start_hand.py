@@ -10,7 +10,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 from Bot.filters.admin_filter import IsAdmin
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
-from Bot.handlers.main_handlers.main_menu_hand import main_menu
+from Bot.handlers.main_handlers.main_menu_hand import main_menu, title_entry_point
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.states.main_states import MainState
 from Bot.utilts.mmanager import MManager
@@ -41,7 +41,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     if await NotAuthFilter()(message):
         await you_need_tb_authenticated(message, state, bot)
     else:
-        await main_menu(message, state, bot)
+        await title_entry_point(message, state, bot)
 
 
 @router.message(Command("generate"))
@@ -104,35 +104,8 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def command_test(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
-
-    query = select(Owner)
-    b = await session.execute(query)
-    print(b.unique())
-    engine = AesEngine()
-    engine._set_padding_mechanism(None)
-    engine._update_key(Data.secret_key)
-    session_connect = await AlchemyMaster.create_session()
-    for i in b:
-        print(i[0].id)
-    # async with session_connect() as session:
-    #     for i in b.unique():
-    #         owner: Owner = i[0]
-    #         owner.id = engine.encrypt(owner.id)
-    #         owner.password = engine.encrypt(owner.password)
-    #         await session.merge(owner)
-    #     await session.commit()
-    # async with session_connect() as session:
-    #     query = select(Wallet)
-    #     b = await session.execute(query)
-    #     for i in b.unique():
-    #         wallet: Wallet = i[0]
-    #         wallet.mnemonic = engine.encrypt(wallet.mnemonic)
-    #         for address in wallet.addresses:
-    #             addr = wallet.addresses[address]
-    #             addr.private_key = engine.encrypt(addr.private_key)
-    #         session.add(wallet)
-    #     await session.commit()
-
+    u_id = await DataRedis.find_user(message.from_user.id)
+    await OwnerService.get_all_chain_addresses(u_id, 'tron')
 
 
 @router.message(Command("try"))

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from AllLogs.bot_logger import main_logger
 from Bot.exeptions.wallet_ex import DuplicateToken
+from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
 from Bot.states.main_states import MainState
@@ -30,15 +31,17 @@ from Services.EntServices.TokenService import TokenService
 from Services.CryptoMakers.address_gen import Wallet_web3
 
 router = Router()
+router.include_router(replenish_wallet_hand.router)
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 
+@router.message(F.text == "Кошелек")
 @router.callback_query(F.data.startswith('refresh_wallet'))
 async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot):
     user_id = event.from_user.id
     u_id = await DataRedis.find_user(user_id)
     w_text = await all_wallets_text(u_id)
-    content: ContentUnit = await ContentUnit(tag="main_menu").get()
+    content: ContentUnit = await ContentUnit(tag="wallet_text").get()
     content.text = content.text.format(wallet_text=w_text, UID=u_id)
     await MManager.content_surf(event=event, state=state, bot=bot, content_unit=content,
                                 keyboard=main_wallet_keys(),
@@ -63,11 +66,11 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
 
 @router.callback_query(F.data.startswith('back_to_wall'))
 async def wallet_backing(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await MManager.clean(state, bot, callback.message.chat.id)
     await state.set_state(WalletStates.main)
     text = await DataRedis.get_cached_text(callback.from_user.id, 'wallet')
     if not text:
-        text = await all_wallets_text(callback.from_user.id)
+        u_id = await DataRedis.find_user(callback.from_user.id)
+        text = await all_wallets_text(u_id)
         await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id, reply_markup=main_wallet_keys())

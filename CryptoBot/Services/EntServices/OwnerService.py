@@ -66,9 +66,7 @@ class OwnerService:
     async def get_wallets(u_id: str):
         session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
-            print(u_id)
             owner: Owner = await session.get(Owner, u_id)
-            print(owner)
             return owner.wallets
 
     @staticmethod
@@ -95,3 +93,16 @@ class OwnerService:
                         Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
                                 ).first()[0]
             return address
+
+    @staticmethod
+    async def get_all_chain_addresses(u_id: str, blockchain: str):
+        session_connect = await AlchemyMaster.create_session()
+        addresses_list = list()
+        async with session_connect() as session:
+            addresses = (await session.execute(
+                select(Address).where(Address.wallet_id == select(Wallet.id).where(
+                    Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
+                       ).unique()
+            for address in addresses:
+                addresses_list.append(address[0].address)
+            return addresses_list

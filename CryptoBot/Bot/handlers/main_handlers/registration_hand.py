@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from AllLogs.bot_logger import main_logger
-from Bot.handlers.main_handlers.main_menu_hand import main_menu
+from Bot.handlers.main_handlers.main_menu_hand import main_menu, title_entry_point
 from Bot.keyboards.main_keys import confirmation_button, back_button
 from Bot.states.main_states import RegistrationState
 from Bot.utilts.mmanager import MManager
@@ -81,4 +81,4 @@ async def registration(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.message.answer(f'Вам присвоен уникальный ID:<code> {u_id} </code>\n'
                                   f'Запомните, а лучше запишите его: '
                                   f'вход в аккаунт производится <u>только</u> с помощью него.')
-    await main_menu(callback, state, bot)
+    await title_entry_point(callback, state, bot)

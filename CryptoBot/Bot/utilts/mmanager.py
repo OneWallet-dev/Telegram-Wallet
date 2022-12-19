@@ -54,7 +54,9 @@ class MManager:
             n_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id, keyboard=keyboard,
                                               placeholder_text=placeholder_text)
             if msg_id:
-                await bot.delete_message(chat_id, msg_id)
+                with suppress(TelegramBadRequest):
+                    await bot.delete_message(chat_id, msg_id)
+                    await bot.delete_message(chat_id, event.message_id)
         await MManager.sticker_store(state, n_msg)
 
     @classmethod
