@@ -59,7 +59,7 @@ class AlchemyMaster:
 
 async def create_session():
     engine = create_async_engine(
-        f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}:5454/postgres"
+        f"postgresql+asyncpg://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}/postgres"
         # f"postgresql+asyncpg://postgres:PASSHERE@16.170.165.75:5454/postgres"
     )
     async with engine.begin() as conn:

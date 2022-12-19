@@ -1,3 +1,2 @@
-
 DEBUG_MODE = False
 STAKE_MODE = False
