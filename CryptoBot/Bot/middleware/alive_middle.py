@@ -21,5 +21,5 @@ class AliveMiddleware(BaseMiddleware):
         if not was_alive:
             state: FSMContext = data.get("state")
             await state.clear()
-
+    
         return await handler(event, data)

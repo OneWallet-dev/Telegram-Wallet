@@ -1,19 +1,35 @@
+import asyncio
 from contextlib import suppress
 
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.handlers.service_handlers.loader_hand import loader
 
-from Dao.DB_Postgres.session import create_session, AlchemyMaster
+from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.CryptoMakers.ETH.Eth_Maker import ETH_maker
+from Services.CryptoMakers.Maker import Maker
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
+from bata import Data
+
+
+class Maker_Factory:
+    @staticmethod
+    def get_maker(token: Token) -> Maker:
+        global maker
+        if token.network == "TRC-20":
+            maker = Tron_TRC_Maker()
+        if token.network == "ERC-20":
+            maker = ETH_maker()
+        return maker
 
 
 class AddressService:
@@ -73,7 +89,7 @@ class AddressService:
         await loader(message, chait_id, 3, "Формируем транзакци...")
         await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
         await loader(message, chait_id, 4, "Совершаем транзакцию...")
-        transaction_maker = Tron_TRC_Maker()
+        transaction_maker = Maker_Factory.get_maker(token)
         transaction_dict = await transaction_maker.transfer(my_transaction)
         transaction_dict = transaction_dict.txn_resp
         print("TANSFER", transaction_dict)
@@ -129,3 +145,6 @@ class AddressService:
                     address_obj.tokens.remove(ad_token)
                     session.add(address_obj)
                     await session.commit()
+
+
+
