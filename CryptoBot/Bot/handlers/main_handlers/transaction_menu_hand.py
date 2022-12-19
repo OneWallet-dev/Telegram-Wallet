@@ -33,6 +33,7 @@ async def trs_exchange(message: Message, state: FSMContext, bot: Bot, session: A
 
 
 @router.message(F.text == "⤴️ Перевести")
+@router.callback_query(lambda call: "new_t_" in call.data)
 async def trs_transfer(message: Message, state: FSMContext, bot: Bot):
     await message.delete()
     await state.set_state(Trs_transfer.new_transfer)
