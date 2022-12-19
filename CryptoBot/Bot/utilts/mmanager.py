@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message, \
     Update, CallbackQuery, InputMedia
 
+from AllLogs.bot_logger import main_logger
 from Bot.utilts.ContentService import ContentService
 from Dao.models.bot_models import ContentUnit
 
@@ -39,16 +40,23 @@ class MManager:
                            state: FSMContext,
                            bot: Bot,
                            content_unit: ContentUnit,
-                           keyboard: InlineKeyboardMarkup):
-        sticker_data: dict = (await state.get_data()).get(cls._stickerkey)
+                           keyboard: InlineKeyboardMarkup | None = None,
+                           placeholder_text: str | None = None):
+        sticker_data: dict = (await state.get_data()).get(cls._stickerkey, dict())
         chat_id = event.chat.id if isinstance(event, Message) else event.message.chat.id
         msg_id = sticker_data.get("id")
-        if isinstance(event, CallbackQuery):
+
+        if isinstance(event, CallbackQuery) and msg_id:
             n_msg = await ContentService.edit(content=content_unit, bot=bot, chat_id=chat_id,
-                                              keyboard=keyboard, target_msg_id=msg_id)
+                                              keyboard=keyboard, target_msg_id=msg_id,
+                                              placeholder_text=placeholder_text)
         else:
-            n_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id, keyboard=keyboard)
-            await bot.delete_message(chat_id, msg_id)
+            n_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id, keyboard=keyboard,
+                                              placeholder_text=placeholder_text)
+            if msg_id:
+                with suppress(TelegramBadRequest):
+                    await bot.delete_message(chat_id, msg_id)
+                    await bot.delete_message(chat_id, event.message_id)
         await MManager.sticker_store(state, n_msg)
 
     @classmethod

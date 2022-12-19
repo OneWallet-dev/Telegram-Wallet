@@ -1,35 +1,43 @@
 from aiogram import Router, Bot, F
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.handlers.main_handlers.transaction_menu_hand import transaction_start
-from Bot.handlers.main_handlers.wallet_hand import my_wallet_start
+from Bot.handlers.main_handlers.wallet_handlers.main_wallet_hand import my_wallet_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
 from Bot.states.trans_states import TransactionStates
+from Bot.utilts.ContentService import ContentService
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
+from Dao.models.bot_models import ContentUnit
 
 router = Router()
 
 
-async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
+async def title_entry_point(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
     message = update if isinstance(update, Message) else update.message
     await MManager.clean(state, bot, message.chat.id)
-    await state.clear()
     await state.set_state(MainState.welcome_state)
-    bot_name = (await bot.get_me()).full_name
+
+    content: ContentUnit = await ContentUnit(tag="title_message").get()
+    placeholder = "Заглавное сообщение бота."
+    msg = await ContentService.send(content, bot, chat_id=message.chat.id,
+                                    keyboard=main_menu_kb(), placeholder_text=placeholder)
+    await MManager.garbage_store(state, msg.message_id)
+
+
+async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot):
+    message = update if isinstance(update, Message) else update.message
+    await state.set_state(MainState.welcome_state)
     u_id = await DataRedis.find_user(update.from_user.id)
-    text = f'<b>👤 <code>{u_id}</code>, добро пожаловать в криптовалютный бот {bot_name}!</b>\n\nЧем я могу вам помочь?'
-    try:
-        await message.answer_photo(
-            "AgACAgIAAxkBAAICdGOKCDV-1-wERkVoojLvwO0ocCVdAALVwTEbxw5RSH90t1FwCJMUAQADAgADeAADKwQ",
-            caption=text, reply_markup=main_menu_kb())
-    except TelegramBadRequest:
-        await message.answer(text, reply_markup=main_menu_kb())
+
+    content: ContentUnit = await ContentUnit(tag="main_menu").get()
+    content.text = content.text.format(u_id=u_id)
+    placeholder = "Это главное меню бота."
+    await MManager.content_surf(message, state, bot, content, keyboard=main_menu_kb(), placeholder_text=placeholder)
 
 
 @router.message(F.text == "💹 Мой кошелек")

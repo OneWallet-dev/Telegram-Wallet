@@ -5,11 +5,9 @@ from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
 
 
-async def all_wallets_text(user_id: int):
-    u_id = await DataRedis.find_user(user_id)
+async def all_wallets_text(u_id: str):
     user_tokens = await OwnerService.get_tokens(u_id)
-    text = f'UID: <code>{u_id}</code> 👤\n'
-    text += f'<b>Кошелек:</b>\n\n'
+    text = ""
     if user_tokens:
         user_wallets = await OwnerService.get_wallets(u_id)
         text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'

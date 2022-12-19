@@ -3,6 +3,7 @@ import itertools
 from sqlalchemy import String, Column, select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from AllLogs.bot_logger import main_logger
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.bot_models.bot_base import BotBase
 
@@ -32,6 +33,9 @@ class ContentUnit(BotBase):
     async def get(self, alchemy_session: AsyncSession):
         assert self.tag, "You need to have tag in ContentUnit to get it!"
         unit: ContentUnit = await alchemy_session.get(ContentUnit, self.tag)
+        if not unit:
+            main_logger.infolog.info(f"There is no content unit at tag {self.tag}, returning empty string.")
+            unit = ContentUnit(tag=self.tag, text=str())
         return unit
 
     @AlchemyMaster.alchemy_session

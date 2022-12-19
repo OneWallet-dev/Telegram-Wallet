@@ -50,7 +50,7 @@ async def content_tag_selected(message: Message, state: FSMContext, bot: Bot):
     content = await ContentUnit(tag=message.text).get()
     await state.update_data(tag_use=message.text)
     if content:
-        garb = await message.answer("Ниже приведено сообщение, найденное по тегу:")
+        garb = await message.answer(f"Ниже приведено сообщение, найденное по тегу {message.text}")
         await MManager.garbage_store(state, garb.message_id)
         await MManager.content_surf(message, state, bot, content, keyboard=content_edit_kb())
     else:
@@ -61,11 +61,12 @@ async def content_tag_selected(message: Message, state: FSMContext, bot: Bot):
 
 @router.callback_query(F.data == "edit", StateFilter(AdminState.content_select))
 async def content_add(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await callback.answer()
+    await bot.edit_message_reply_markup(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
     await state.set_state(AdminState.content_update)
     tag = (await state.get_data()).get("tag_use")
-    await MManager.sticker_surf(state, bot, callback.message.chat.id,
-                                new_text=f"Отправьте сообщение, которое хотели бы видеть по тегу {tag}",
-                                keyboard=admin_back())
+    garb = await callback.message.answer(f"Отправьте сообщение, которое хотели бы видеть по тегу {tag}")
+    await MManager.garbage_store(state, garb.message_id)
 
 
 @router.message(StateFilter(AdminState.content_update))

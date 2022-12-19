@@ -8,12 +8,12 @@ from Dao.models.Token import Token
 
 def main_wallet_keys():
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text=f"☑️ Пополнить кошелек", callback_data="put_money")))
-    mark.row((InlineKeyboardButton(text=f"🆕 Добавить токен", callback_data="add_token")))
-    mark.row((InlineKeyboardButton(text=f"🔽 Удалить токен", callback_data="delete_token")))
-    mark.row((InlineKeyboardButton(text=f"📬 Мои адреса", callback_data="inspect_token")))
-    mark.row((InlineKeyboardButton(text=f"🔄 Обновить кошелек", callback_data="refresh_wallet_edit")))
-    mark.adjust(1, 2, 1)
+    mark.row((InlineKeyboardButton(text=f"Пополнить", callback_data="replenish")))
+    mark.row((InlineKeyboardButton(text=f"Отправить", callback_data="send")))
+    mark.row((InlineKeyboardButton(text=f"Обменять", callback_data="exchange")))
+    mark.row((InlineKeyboardButton(text=f"История операций", callback_data="history")))
+    # mark.row((InlineKeyboardButton(text=f"Обновить кошелек", callback_data="refresh_wallet_edit")))
+    mark.adjust(2, 1, 1)
     return mark.as_markup(resize_keyboard=True)
 
 
@@ -52,6 +52,16 @@ def network_kb(token: str, custom_network_list: list | None = None):
         mark.row((InlineKeyboardButton(text=f"📟 {network}", callback_data=f"new_n_{network}")))
     mark.adjust(2)
     mark.row((InlineKeyboardButton(text=f"↖️ Изменить токен", callback_data="back")))
+    return mark.as_markup(resize_keyboard=True)
+
+
+def addresses_kb(counter: int):
+    mark = InlineKeyboardBuilder()
+    for i in range(1, counter):
+        mark.row((InlineKeyboardButton(text=str(i), callback_data=str(i))))
+    mark.adjust(2)
+    mark.row((InlineKeyboardButton(text=f"Создать еще кошелек", callback_data="new_address")))
+    mark.row((InlineKeyboardButton(text=f"Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
 

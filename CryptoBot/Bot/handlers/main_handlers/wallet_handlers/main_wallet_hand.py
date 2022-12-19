@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from AllLogs.bot_logger import main_logger
 from Bot.exeptions.wallet_ex import DuplicateToken
+from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
 from Bot.states.main_states import MainState
@@ -23,51 +24,53 @@ from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
+from Dao.models.bot_models import ContentUnit
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.OwnerService import OwnerService
 from Services.EntServices.TokenService import TokenService
 from Services.CryptoMakers.address_gen import Wallet_web3
 
 router = Router()
+router.include_router(replenish_wallet_hand.router)
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
 
 
-async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot):
-    message = event if isinstance(event, Message) else event.message
-    user_id = event.from_user.id
-    text = await all_wallets_text(user_id)
-    state_str = await state.get_state()
-    if 'MainState' not in state_str:
-        await MManager.sticker_surf(state=state, bot=bot, chat_id=message.chat.id, new_text=text,
-                                    keyboard=main_wallet_keys())
-    else:
-        msg = await message.answer(text, reply_markup=main_wallet_keys())
-        await MManager.sticker_store(state, msg)
-    await state.set_state(WalletStates.main)
-
-
+@router.message(F.text == "Кошелек")
 @router.callback_query(F.data.startswith('refresh_wallet'))
-async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot):
+    user_id = event.from_user.id
+    u_id = await DataRedis.find_user(user_id)
+    w_text = await all_wallets_text(u_id)
+    content: ContentUnit = await ContentUnit(tag="wallet_text").get()
+    content.text = content.text.format(wallet_text=w_text, UID=u_id)
+    await MManager.content_surf(event=event, state=state, bot=bot, content_unit=content,
+                                keyboard=main_wallet_keys(),
+                                placeholder_text=f"Кошелек пользователя {u_id}")
     await state.set_state(WalletStates.main)
-    text = await all_wallets_text(callback.from_user.id)
-    await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
-    if 'edit' in callback.data:
-        with suppress(TelegramBadRequest):
-            await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
-                                        message_id=callback.message.message_id, reply_markup=main_wallet_keys())
-    elif 'keep' in callback.data:
-        await callback.message.answer(text, reply_markup=main_wallet_keys())
-        await bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id)
-    await callback.answer()
+
+
+# @router.callback_query(F.data.startswith('refresh_wallet'))
+# async def wallet_refresh(callback: CallbackQuery, state: FSMContext, bot: Bot):
+#     await state.set_state(WalletStates.main)
+#     text = await all_wallets_text(callback.from_user.id)
+#     await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
+#     if 'edit' in callback.data:
+#         with suppress(TelegramBadRequest):
+#             await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
+#                                         message_id=callback.message.message_id, reply_markup=main_wallet_keys())
+#     elif 'keep' in callback.data:
+#         await callback.message.answer(text, reply_markup=main_wallet_keys())
+#         await bot.edit_message_reply_markup(callback.message.chat.id, callback.message.message_id)
+#     await callback.answer()
 
 
 @router.callback_query(F.data.startswith('back_to_wall'))
 async def wallet_backing(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await MManager.clean(state, bot, callback.message.chat.id)
     await state.set_state(WalletStates.main)
     text = await DataRedis.get_cached_text(callback.from_user.id, 'wallet')
     if not text:
-        text = await all_wallets_text(callback.from_user.id)
+        u_id = await DataRedis.find_user(callback.from_user.id)
+        text = await all_wallets_text(u_id)
         await DataRedis.cache_text(callback.from_user.id, text, 'wallet')
     await bot.edit_message_text(text=text, chat_id=callback.message.chat.id,
                                 message_id=callback.message.message_id, reply_markup=main_wallet_keys())

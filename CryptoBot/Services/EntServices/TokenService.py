@@ -5,6 +5,7 @@ from sqlalchemy import select
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Postgres.session import create_session, AlchemyMaster
+from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 
