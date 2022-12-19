@@ -5,7 +5,6 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 from Bot.keyboards.transaction_keys import trans_network_kb, change_transfer_token, \
     kb_confirm_transfer, trans_token_kb, m_transaction
 from Bot.states.trans_states import Trs_transfer, TransactionStates
@@ -22,7 +21,6 @@ from Services.EntServices.AddressService import AddressService
 from Services.EntServices.TokenService import TokenService
 from Services.EntServices.OwnerService import OwnerService
 
-
 router = Router()
 router.message.filter(StateFilter(Trs_transfer))
 
@@ -31,7 +29,8 @@ network_list = ["TRC-20"]
 
 
 async def start_transfer(message: Message, state: FSMContext, bot: Bot):
-    await message.answer("Выберите токен, который вы хотите перевести", reply_markup=trans_token_kb(token_list))
+    await bot.send_message(message.from_user.id, "Выберите токен, который вы хотите перевести",
+                           reply_markup=trans_token_kb(token_list))
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
@@ -58,7 +57,6 @@ async def token(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(lambda call: "transferNetwork_" in call.data, StateFilter(Trs_transfer.set_network))
 async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
-
     c_data = callback.data.split('_')
     s_data = await state.get_data()
 
@@ -165,7 +163,6 @@ async def amount(message: Message, state: FSMContext, session: AsyncSession):
     await state.update_data(frozen_fee=frozen_fee)
     await state.update_data(fee=fee)
 
-
     text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
            f"Перевод: {token_name}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
            f"_________________________\nКомиссия: {fee} {token_name}\nСумма: {amount} {token_name}\n\n\n\n✅✅✅"
@@ -214,8 +211,6 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
         await message.answer("ОШИБКА ТРАНЗАКЦИИ", reply_markup=m_transaction())
         await callback.message.answer("Ошибка транзакции")
         await state.set_state(TransactionStates.main)
-
-
 
 
 @router.callback_query(lambda call: "cancel_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
