@@ -8,8 +8,8 @@ from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
 from Dao.models.bot_models import ContentUnit
 
-
 router = Router()
+
 
 @router.callback_query(F.data == "send", StateFilter(WalletStates))
 async def replenish_choose_currency(callback: CallbackQuery, state: FSMContext, bot: Bot):

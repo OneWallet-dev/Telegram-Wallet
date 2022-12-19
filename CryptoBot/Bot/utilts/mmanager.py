@@ -44,20 +44,23 @@ class MManager:
                            placeholder_text: str | None = None):
         sticker_data: dict = (await state.get_data()).get(cls._stickerkey, dict())
         chat_id = event.chat.id if isinstance(event, Message) else event.message.chat.id
-        msg_id = sticker_data.get("id")
+        old_msg_id = sticker_data.get("id")
+        sended_msg = None
 
-        if isinstance(event, CallbackQuery) and msg_id:
-            n_msg = await ContentService.edit(content=content_unit, bot=bot, chat_id=chat_id,
-                                              keyboard=keyboard, target_msg_id=msg_id,
-                                              placeholder_text=placeholder_text)
-        else:
-            n_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id, keyboard=keyboard,
-                                              placeholder_text=placeholder_text)
-            if msg_id:
+        if isinstance(event, CallbackQuery) and old_msg_id:
+            sended_msg = await ContentService.edit(content=content_unit, bot=bot, chat_id=chat_id,
+                                                   keyboard=keyboard, target_msg_id=old_msg_id,
+                                                   placeholder_text=placeholder_text)
+        if isinstance(event, Message) or not old_msg_id or not sended_msg:
+            sended_msg = await ContentService.send(content=content_unit, bot=bot, chat_id=chat_id,
+                                                   keyboard=keyboard,
+                                                   placeholder_text=placeholder_text)
+            if old_msg_id:
                 with suppress(TelegramBadRequest):
-                    await bot.delete_message(chat_id, msg_id)
+                    await bot.delete_message(chat_id, old_msg_id)
                     await bot.delete_message(chat_id, event.message_id)
-        await MManager.sticker_store(state, n_msg)
+        if sended_msg:
+            await MManager.sticker_store(state, sended_msg)
 
     @classmethod
     async def sticker_store(cls, state: FSMContext, sticker_message: Message):
