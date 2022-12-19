@@ -1,3 +1,3 @@
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 STAKE_MODE = False

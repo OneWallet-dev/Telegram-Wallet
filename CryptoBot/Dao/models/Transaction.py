@@ -22,6 +22,9 @@ class Transaction(Base):
     network_fee: float = Column(Float)
     address = relationship("Address", lazy="joined", back_populates="transactions")
 
+    def is_In(self) -> bool:
+        return self.address.address != self.from_address
+
     def __str__(self):
         return f"- Tnx link: {self.tnx_id}\n" \
                f"- {self.amount} from {self.from_address} ==> {self.to_address}\n" \

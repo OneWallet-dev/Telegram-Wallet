@@ -1,3 +1,7 @@
+import asyncio
+import json
+
+import requests
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -17,6 +21,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.CryptoMakers.Tron.Tron_Maker import Tron_Maker
 from Services.EntServices.AddressService import AddressService
 from bata import Data
 
@@ -94,21 +99,16 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
     await session.close()
 
 
-# async def asd():
-#     session = await AlchemyMaster.create_session()
-#     async with session() as session:
-#         address_obj = await session.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
-
-
 @router.message(Command("test"))
-async def command_test(message: Message):
+async def ttt(message: Message):
     session = await AlchemyMaster.create_session()
-    async with session() as session:
-        print(Data.secret_key)
-        address_obj = await session.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
-        print(type(address_obj))
-        print(address_obj.address)
-        print(address_obj.private_key)
+    async with session() as s:
+        address: Address = await s.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
+        maker = Tron_Maker()
+        await maker.request_transaction_history_from_tron_api(address)
+        print(address.private_key)
+        print(address.address)
+        print(await address.public_fun())
 
 
 @router.message(Command("try"))
