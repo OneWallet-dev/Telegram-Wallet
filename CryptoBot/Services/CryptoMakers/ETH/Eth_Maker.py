@@ -18,8 +18,9 @@ Polygon_USDT = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"
 
 class ETH_maker(Maker):
 
-    def __init__(self): #TODO Здесь зачем network?  Не надо нарушать контрактов. У классасов
+    def __init__(self, network): #TODO Здесь зачем network?  Не надо нарушать контрактов. У классасов
         self.api_key = os.getenv('eth_API')
+        self.network = network
         self.w3 = None
         self.txn_resp = dict()
         self.__gas_limit = 500_000
