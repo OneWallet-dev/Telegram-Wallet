@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, BufferedInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.keyboards.wallet_keys import add_token_kb, network_kb, addresses_kb
+from Bot.keyboards.wallet_keys import add_token_kb, network_kb, addresses_kb, wallet_view_kb
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.ContentService import ContentService
 from Bot.utilts.currency_helper import blockchains
@@ -98,7 +98,5 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
     qr = await qr_code(address)
     content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".PNG")
     content.media_type = 'photo'
-    msg = await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
-                                      placeholder_text=info_text)
-
-
+    await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
+                                placeholder_text=info_text, keyboard=wallet_view_kb())
