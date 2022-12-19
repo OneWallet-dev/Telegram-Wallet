@@ -71,6 +71,15 @@ def refresh_button():
     return mark.as_markup(resize_keyboard=True)
 
 
+def wallet_view_kb():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"Мои адреса", callback_data="back_to_wall")))
+    mark.row((InlineKeyboardButton(text=f"История зачислений", callback_data="wallet_history")))
+    mark.row((InlineKeyboardButton(text=f"< Назад", callback_data="back")))
+    mark.row((InlineKeyboardButton(text=f"<<< Назад в меню", callback_data="back_to_menu")))
+    return mark.as_markup(resize_keyboard=True)
+
+
 def confirm_delete_kb():
     mark = InlineKeyboardBuilder()
     mark.add((InlineKeyboardButton(text=f"⭕️ Отменить", callback_data="back_to_wall")))

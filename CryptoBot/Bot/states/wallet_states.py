@@ -2,6 +2,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class WalletStates(StatesGroup):
+    send_start = State()
     replenish_network = State()
     replenish_token = State()
     main = State()
