@@ -11,12 +11,14 @@ from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.currency_helper import blockchains, base_tokens
 from Bot.utilts.fee_strategy import getFeeStrategy
+from Bot.utilts.mmanager import MManager
 from Bot.utilts.settings import DEBUG_MODE
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
+from Dao.models.bot_models import ContentUnit
 
 from Services.EntServices.AddressService import AddressService
 from Services.EntServices.TokenService import TokenService
@@ -32,14 +34,14 @@ network_list = ["TRC-20"]
 @router.callback_query(F.data == "send", StateFilter(WalletStates))
 async def start_transfer(message: Message, state: FSMContext, bot: Bot):
     await state.set_state(Trs_transfer.new_transfer)
-    await bot.send_message(message.from_user.id, "Выберите токен, который вы хотите перевести",
-                           reply_markup=trans_token_kb(list(base_tokens.keys())))
+    content: ContentUnit = await ContentUnit(tag="repl_choose_currency").get()
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
+                                keyboard=trans_token_kb(list(base_tokens.keys())),
+                                placeholder_text="Выберите токен, который вы хотите перевести")
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
-async def token(callback: CallbackQuery, state: FSMContext):
-    await callback.message.delete()
-
+async def token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     c_data = callback.data.split('_')
 
     token_name = c_data[-1]
@@ -54,8 +56,11 @@ async def token(callback: CallbackQuery, state: FSMContext):
 
     text = text + "\n\n\n\n<b>В какой сети вы хотите перевести токен?</b>"
 
-    message = await callback.message.answer(text, reply_markup=trans_network_kb(base_tokens[token_name]['network']))
-    await state.update_data(message_id=message.message_id)
+    content: ContentUnit = await ContentUnit(tag="repl_choose_network").get()
+    content.text.format(transfer_text_1=text)
+    await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
+                                keyboard=trans_network_kb(base_tokens[token_name]['network']),
+                                placeholder_text=text)
 
 
 @router.callback_query(lambda call: "transferNetwork_" in call.data, StateFilter(Trs_transfer.set_network))
@@ -66,12 +71,11 @@ async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
     network = c_data[-1]
     token_name = s_data.get("token_name")
     text = s_data.get("text")
-    message_id = s_data.get("message_id")
 
     token_obj = None
     blockchain = None
 
-    if network in blockchains.get("tron").get("networks") or token_name == "TRX":     #TODO DRY
+    if network in blockchains.get("tron").get("networks") or token_name == "TRX":  # TODO DRY
         token_obj = await TokenService.get_token(token_name, network)
         blockchain = "tron"
     elif network in blockchains.get("ethereum").get("networks"):
@@ -110,10 +114,12 @@ async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
                   "Будьте очень внимательны и не торопитесь❗"
 
     await state.set_state(Trs_transfer.address)
-    await bot.edit_message_text(text,
-                                callback.from_user.id,
-                                message_id,
-                                reply_markup=change_transfer_token())
+
+    content: ContentUnit = await ContentUnit(tag="repl_choose_address").get()
+    content.text.format(info_text=text)
+    await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
+                                keyboard=change_transfer_token(),
+                                placeholder_text=text)
 
 
 @router.message(StateFilter(Trs_transfer.address))
@@ -130,12 +136,16 @@ async def to_address(message: Message, state: FSMContext, bot: Bot):
     await state.update_data(to_address=to_address)
 
     await state.set_state(Trs_transfer.confirm_transfer)
-    await bot.edit_message_text(text, message.from_user.id, message_id, reply_markup=change_transfer_token(),
-                                parse_mode="HTML")
+
+    content: ContentUnit = await ContentUnit(tag="send_choose_amount").get()
+    content.text.format(info_text=text)
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
+                                keyboard=change_transfer_token(),
+                                placeholder_text=text)
 
 
 @router.message(StateFilter(Trs_transfer.confirm_transfer))
-async def amount(message: Message, state: FSMContext, session: AsyncSession):
+async def amount(message: Message, state: FSMContext, session: AsyncSession, bot: Bot):
     await message.delete()
     try:
         amount = float(message.text)
@@ -157,26 +167,29 @@ async def amount(message: Message, state: FSMContext, session: AsyncSession):
     if balance - frozen_fee < amount + fee:
         missing = float(amount + fee) - float(balance)
         await state.set_state(Trs_transfer.confirm_transfer)
-        await message.answer(f"Для перевода вам не хватает: {missing} {token_name}\n\n"
-                             f"Пожалуйста укажите другую сумму или пополните баланс\n\n"
-                             f"Ваш баланс: {balance - frozen_fee} {token_name}\n"
-                             f"Комиссия: {fee} {token_name}")
-        return
+        text = f"Для перевода вам не хватает: {missing} {token_name}\n\n" \
+               f"Пожалуйста укажите другую сумму или пополните баланс\n\n" \
+               f"Ваш баланс: {balance - frozen_fee} {token_name}\n" \
+               f"Комиссия: {fee} {token_name}"
+    else:
+        await state.update_data(amount=amount)
+        await state.update_data(frozen_fee=frozen_fee)
+        await state.update_data(fee=fee)
 
-    await state.update_data(amount=amount)
-    await state.update_data(frozen_fee=frozen_fee)
-    await state.update_data(fee=fee)
+        text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
+               f"Перевод: {token_name}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
+               f"_________________________\nКомиссия: {fee} {token_name}\nСумма: {amount} {token_name}\n\n\n\n✅✅✅"
+        await state.set_state(Trs_transfer.transfer)
 
-    text = f"Внимание! Вы совершаете транзакцию!\n________________________\n" \
-           f"Перевод: {token_name}\nСеть: {network}\nАдрес получателя: {to_address}\n" \
-           f"_________________________\nКомиссия: {fee} {token_name}\nСумма: {amount} {token_name}\n\n\n\n✅✅✅"
-    await state.set_state(Trs_transfer.transfer)
-    await message.answer(text, reply_markup=kb_confirm_transfer())
+    content: ContentUnit = await ContentUnit(tag="send_approve_transfer").get()
+    content.text.format(info_text=text)
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
+                                keyboard=kb_confirm_transfer(),
+                                placeholder_text=text)
 
 
 @router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
 async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
-    await callback.message.delete()
 
     message = await bot.send_message(chat_id=callback.from_user.id, text="Устанавливается связь с блокчейном...")
 
@@ -201,24 +214,30 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
                                                                         callback.from_user.id
                                                                         )
     if transaction.status == "SUCCESS":
-        await state.set_state(TransactionStates.main)
         if DEBUG_MODE:
             link = "https://nile.tronscan.org/#/transaction/"
         else:
             link = "https://tronscan.org/#/transaction/"
         link = hlink('ссылке', link + transaction.tnx_id)
-        await callback.message.answer(
-            f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}", reply_markup=m_transaction())
-
+        text = f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}"
     else:
         print(transaction.status)
-        await message.answer("ОШИБКА ТРАНЗАКЦИИ", reply_markup=m_transaction())
-        await callback.message.answer("Ошибка транзакции")
-        await state.set_state(TransactionStates.main)
+        text = "ОШИБКА ТРАНЗАКЦИИ"
+    await state.set_state(TransactionStates.main)
+
+    content: ContentUnit = await ContentUnit(tag="send_trans_result").get()
+    content.text.format(info_text=text)
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
+                                keyboard=m_transaction(),
+                                placeholder_text=text)
 
 
 @router.callback_query(lambda call: "cancel_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
-async def cancel(callback: CallbackQuery, state: FSMContext):
+async def cancel(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(TransactionStates.main)
     await callback.message.delete()
-    await callback.message.answer("Ваша транзакция отменена", m_transaction())
+    text = "Ваша транзакция отменена"
+    content: ContentUnit = await ContentUnit(tag="send_trans_result").get()
+    await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
+                                keyboard=m_transaction(),
+                                placeholder_text=text)
