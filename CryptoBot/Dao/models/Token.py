@@ -1,10 +1,8 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from Dao.models.Transaction import Transaction
-from Dao.models.models import address_tokens
 from Dao.DB_Postgres.session import Base
+from Dao.models.models import address_tokens
 
 
 class Token(Base):

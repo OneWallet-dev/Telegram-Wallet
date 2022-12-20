@@ -25,11 +25,9 @@ from bata import Data
 class Maker_Factory:
     @staticmethod
     def get_maker(token: Token, network=None) -> Maker:
-        global maker
-        if token.network == "TRC-20":
-            maker = Tron_TRC_Maker()
+        maker = Tron_TRC_Maker()
         if token.network == "ERC-20":
-            maker = ETH_maker(network)
+            maker = ETH_maker("mainnet")
         return maker
 
 
