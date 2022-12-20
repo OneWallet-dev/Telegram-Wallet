@@ -25,18 +25,22 @@ from bata import Data
 class Maker_Factory:
     @staticmethod
     def get_maker(token: Token, network=None) -> Maker:
-        global maker
+        maker = None
+
+        if len(token.contract_Id) <= 3: #TODO: КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ
+            token.contract_Id = None
+
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
         if token.network == "ERC-20":
-            maker = ETH_maker(network)
+            maker = ETH_maker('mainnet')
         return maker
 
 
 class AddressService:
 
     @staticmethod
-    async def get_balances(address: str, specific: list[Token] | None = None):
+    async def get_address_balances(address: str, specific: list[Token] | None = None):
         # TODO полностью переделать, получать из фабрики, вызывать только getBalance
         session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
@@ -44,13 +48,8 @@ class AddressService:
             balances = dict()
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
-                    twallet = Tron_TRC_Maker()
-                    if token.token_name == 'trx':
-                        balance = await twallet.get_balance(address)
-                    elif token.network == 'TRC-20':
-                        balance = await twallet.get_balance(address, token.contract_Id)
-                    elif token.network == 'TRC-10':
-                        balance = await twallet.get_balance(address=address, token_id=int(token.contract_Id))
+                    b_maker = Maker_Factory.get_maker(token)
+                    balance = await b_maker.get_balance(address=address, contract=token.contract_Id)
                     balances.update({token.token_name: balance})
         return balances
 

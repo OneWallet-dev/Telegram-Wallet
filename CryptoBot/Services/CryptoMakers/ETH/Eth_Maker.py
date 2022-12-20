@@ -113,7 +113,7 @@ class ETH_maker(Maker):
         gas_price = await self.get_gas_price()
         print("gas price", self.w3.from_wei(gas_price, "ether"))
 
-        if transaction.token_contract_id is None:
+        if transaction.token_contract_id is None and transaction.token_contract_id != 'eth':
             self.txn_resp["status"] = "Bilded"
             self.txn_resp["message"] = "transaction bilded"
             self.txn_resp["txn"] = None
@@ -151,6 +151,7 @@ class ETH_maker(Maker):
 
     async def transfer(self, transaction: Transaction):
         nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
+
         if transaction.token_contract_id is None:
             trn = await self.build_txn(transaction, nonce)
 

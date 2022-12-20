@@ -14,5 +14,5 @@ class Maker:
 
     async def get_balance(self,
                           contract: str,
-                          address: Address) -> float:
+                          address: str) -> float:
         pass

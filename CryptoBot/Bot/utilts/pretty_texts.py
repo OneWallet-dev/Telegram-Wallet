@@ -18,7 +18,7 @@ async def all_wallets_text(u_id: str):
             addressess = user_wallets[blockchain].addresses
             for address in addressess:
                 adress_obj = addressess.get(address)
-                balances = await AddressService.get_balances(address=address)
+                balances = await AddressService.get_address_balances(address=address)
                 for token in adress_obj.tokens:
                     balance = balances.get(token.token_name, 'Iternal Error!')
                     text += f"{token.token_name}: {balance}\n"
@@ -43,7 +43,7 @@ async def detail_view_text(user_id: int, token_name: str, token_network: str):
     token = token_and_address.token
     address: Address = token_and_address.address
 
-    balance = (await AddressService.get_balances(address=address.address, specific=[token]))[token.token_name]
+    balance = (await AddressService.get_address_balances(address=address.address, specific=[token]))[token.token_name]
     transactions = [str(address.transactions[transaction]) for transaction in address.transactions]
 
     text = f"<b>Токен: {token.token_name}\nСеть: {token.network}\nТекущий баланс: {balance}</b>\n\n"

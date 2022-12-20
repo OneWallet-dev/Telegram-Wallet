@@ -168,7 +168,8 @@ async def delete_token_conf(callback: CallbackQuery, state: FSMContext, bot: Bot
     bal_data = await TokenService.find_address_token(u_id, token_name=token, token_network=network)
     address = bal_data.address
     token_obj = bal_data.token
-    balance = (await AddressService.get_balances(address=address.address, specific=[token_obj]))[token_obj.token_name]
+    balance = (await AddressService.get_address_balances(address=address.address,
+                                                         specific=[token_obj]))[token_obj.token_name]
     if balance > 0:
         text = f"Обнаружены средства: {token_obj.token_name}: {balance}\n" \
                f"Если вы удалите токен, они никуда не пропадут, " \
