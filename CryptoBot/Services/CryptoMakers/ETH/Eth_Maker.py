@@ -86,6 +86,8 @@ class ETH_maker(Maker):
 
     async def get_balance(self, address: str, contract: str = None) -> float:
 
+        contract = None if contract == 'eth' else contract
+
         if contract:
             contract = self.w3.eth.contract(contract, abi=EIP20_ABI)
             token_decimals_obj = contract.functions.decimals()
@@ -112,6 +114,8 @@ class ETH_maker(Maker):
 
         gas_price = await self.get_gas_price()
         print("gas price", self.w3.from_wei(gas_price, "ether"))
+
+        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
 
         if transaction.token_contract_id is None and transaction.token_contract_id != 'eth':
             self.txn_resp["status"] = "Bilded"
@@ -151,6 +155,8 @@ class ETH_maker(Maker):
 
     async def transfer(self, transaction: Transaction):
         nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
+
+        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
 
         if transaction.token_contract_id is None:
             trn = await self.build_txn(transaction, nonce)
