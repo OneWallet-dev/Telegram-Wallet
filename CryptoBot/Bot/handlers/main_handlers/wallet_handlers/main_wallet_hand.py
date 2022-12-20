@@ -16,6 +16,7 @@ from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, se
 from Bot.keyboards.wallet_keys import add_token_kb, network_kb, refresh_button, main_wallet_keys, \
     confirm_delete_kb, delete_token_kb, inspect_token_kb
 from Bot.states.main_states import MainState
+from Bot.states.trans_states import Trs_transfer
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.mmanager import MManager
@@ -35,7 +36,7 @@ router = Router()
 router.include_router(replenish_wallet_hand.router)
 router.include_router(transfer_hand.router)
 router.include_router(tran_history_wallet_hand.router)
-router.message.filter(StateFilter(MainState.welcome_state, WalletStates))
+router.message.filter(StateFilter(MainState.welcome_state, WalletStates, Trs_transfer))
 
 
 @router.message(F.text == "Кошелек")

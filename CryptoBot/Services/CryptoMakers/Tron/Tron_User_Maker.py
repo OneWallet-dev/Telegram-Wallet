@@ -11,14 +11,14 @@ class Tron_TRC_Maker(Tron_Maker):
     async def get_balance(self,
                           contract: str,
                           address: Address):
-        try:    #TODO пиздец просто.  Погугли LSP что такое
+        try:    #TODO Вероятное нарушение принципа LSP
             if await self.is_valid_address(address) is False:
                 return float(0)
         except:
             pass
         async with self.get_client() as client:
             try:
-                if len(contract) > 3:
+                if contract:
                     contract = await client.get_contract(contract)
                     return float(await contract.functions.balanceOf(address) / 1_000_000)
 

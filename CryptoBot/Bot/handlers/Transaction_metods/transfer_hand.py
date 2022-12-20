@@ -113,8 +113,7 @@ async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await bot.edit_message_text(text,
                                 callback.from_user.id,
                                 message_id,
-                                reply_markup=change_transfer_token(),
-                                parse_mode="HTML")
+                                reply_markup=change_transfer_token())
 
 
 @router.message(StateFilter(Trs_transfer.address))
