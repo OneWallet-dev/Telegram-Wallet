@@ -71,12 +71,14 @@ async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
     token_obj = None
     blockchain = None
 
-    if network in blockchains.get("tron").get("networks") or token_name == "TRX":
+    if network in blockchains.get("tron").get("networks") or token_name == "TRX":     #TODO DRY
         token_obj = await TokenService.get_token(token_name, network)
         blockchain = "tron"
     elif network in blockchains.get("ethereum").get("networks"):
+        token_obj = await TokenService.get_token(token_name, network)
         blockchain = "ethereum"
     elif network in blockchains.get("bitcoin").get("networks"):
+        token_obj = await TokenService.get_token(token_name, network)
         blockchain = "bitcoin"
 
     # TODO ПРОВЕРКА АДРЕСА
