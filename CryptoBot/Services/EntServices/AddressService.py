@@ -46,6 +46,7 @@ class AddressService:
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)
             balances = dict()
+
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
