@@ -37,7 +37,7 @@ class Address(Base):
 
     address = Column(String, primary_key=True)
 
-    private_key = Column(String)  # TODO вот здесь заруба...
+    private_key = Column(StringEncryptedType(String, Data.secret_key, AesEngine))  # TODO вот здесь заруба...
     path_index = Column(Integer, default=0)
 
     wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))
