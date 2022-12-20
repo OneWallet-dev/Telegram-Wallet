@@ -13,7 +13,6 @@ async def all_wallets_text(u_id: str):
 
         sum = 'SUM'
         text = f'<b>Криптовалюты ≈ {sum} USDT</b>\n'
-        text += '<b>Балансы:\n</b>'
         text += "<code>——————————————————————</code>\n"
         fee = 0
         for blockchain in user_wallets:
