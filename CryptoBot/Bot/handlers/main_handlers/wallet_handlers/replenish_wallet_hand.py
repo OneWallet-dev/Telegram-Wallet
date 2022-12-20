@@ -104,7 +104,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
                 f'*Нажмите на адрес, чтобы скопировать.'
     if content.text:
         content.text = content.text.format(info_text=info_text)
-    qr = await qr_code(address)
+    qr = await qr_code(address.address)
     content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".PNG")
     content.media_type = 'photo'
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
