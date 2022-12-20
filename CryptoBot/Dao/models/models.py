@@ -9,8 +9,8 @@ from Dao.DB_Postgres.session import Base
 address_tokens = Table(
     "address_tokens",
     Base.metadata,
-    Column("address_id", ForeignKey("addresses.address"), primary_key=True),
-    Column("contract_Id", ForeignKey("tokens.contract_Id"), primary_key=True),
+    Column("address_id", ForeignKey("addresses.address", onupdate="CASCADE", ondelete="CASCADE"), primary_key=True),
+    Column("contract_Id", ForeignKey("tokens.contract_Id", onupdate="CASCADE", ondelete="CASCADE"), primary_key=True),
 )
 
 
