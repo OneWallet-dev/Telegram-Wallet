@@ -11,9 +11,11 @@ class Tron_TRC_Maker(Tron_Maker):
     async def get_balance(self,
                           contract: str,
                           address: Address):
-        if await self.is_valid_address(address) is False:
-            return float(0)
-
+        try:    #TODO пиздец просто.  Погугли LSP что такое
+            if await self.is_valid_address(address) is False:
+                return float(0)
+        except:
+            pass
         async with self.get_client() as client:
             try:
                 if len(contract) > 3:
