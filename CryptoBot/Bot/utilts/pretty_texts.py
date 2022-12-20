@@ -10,7 +10,9 @@ async def all_wallets_text(u_id: str):
     text = ""
     if user_tokens:
         user_wallets = await OwnerService.get_wallets(u_id)
-        text = f'<b>Кошелек пользователя <code>{u_id}</code></b>\n'
+
+        sum = 'SUM'
+        text = f'<b>Криптовалюты ≈ {sum} USDT</b>\n'
         text += '<b>Балансы:\n</b>'
         text += "<code>——————————————————————</code>\n"
         fee = 0
