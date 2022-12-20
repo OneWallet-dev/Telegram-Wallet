@@ -55,7 +55,9 @@ class Tron_TRC_Maker(Tron_Maker):
                 txn_ret = await tx.sign(p_key).broadcast()
                 self.txn_resp["status"] = "SUCCESS"
                 self.txn_resp["message"] = "Transfer success"
-                self.txn_resp["txn"] = await txn_ret.wait()
+                txn = await txn_ret.wait()
+                print(txn.get("id"))
+                self.txn_resp["txn"] = txn.get("id")
             except ValidationError:
                 self.txn_resp["status"] = "ValidationError"
                 self.txn_resp["message"] = "Account not active"

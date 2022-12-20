@@ -85,7 +85,8 @@ class ETH_maker(Maker):
             return False
 
     async def get_balance(self, address: str, contract: str = None) -> float:
-
+        print(address)
+        print(contract)
         contract = None if contract == 'eth' else contract
 
         if contract:
@@ -114,7 +115,7 @@ class ETH_maker(Maker):
 
         gas_price = await self.get_gas_price()
         print("gas price", self.w3.from_wei(gas_price, "ether"))
-
+        print(transaction.token_contract_id)
         transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
 
         if transaction.token_contract_id is None and transaction.token_contract_id != 'eth':
@@ -131,7 +132,6 @@ class ETH_maker(Maker):
                 'gas': self.__gas_limit,
             }
         else:
-
             contract = self.w3.eth.contract(transaction.token_contract_id, abi=EIP20_ABI)
             token_decimals = contract.functions.decimals()
             token_decimals = await token_decimals.call()
@@ -176,6 +176,6 @@ class ETH_maker(Maker):
             self.txn_resp["status"] = "SUCCESS"
             self.txn_resp["message"] = "Transfer success"
             self.txn_resp["txn"] = txn_hash.hex()
-            return txn_hash.hex()
+            return self
         except ValueError:
             print("Баланса недостаточно для совершения транзакции")

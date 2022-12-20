@@ -93,6 +93,7 @@ async def network(callback: CallbackQuery, bot: Bot, state: FSMContext):
     frozen_fee = chain_address.get_address_freezed_fee(token_name)
 
     token = await TokenService.get_token(token_name, network)
+    print("token", token)
     balance_info = await AddressService().get_address_balances(chain_address.address, [token])
     token_balance = balance_info.get(token_name, 0.0)
 

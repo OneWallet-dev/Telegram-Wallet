@@ -137,7 +137,6 @@ class Tron_Maker(Maker):
                 tx = await txb.build()
                 p_key = PrivateKey(bytes.fromhex(self._main_pk_key))
                 txn_ret = await tx.sign(p_key).broadcast()
-                print(await txn_ret.wait())
 
             except Exception as e:
                 self.txn_resp["status"] = "ERROR"
