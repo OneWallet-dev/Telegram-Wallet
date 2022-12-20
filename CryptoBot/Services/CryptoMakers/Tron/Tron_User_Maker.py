@@ -19,7 +19,7 @@ class Tron_TRC_Maker(Tron_Maker):
                     return float(await contract.functions.balanceOf(address) / 1_000_000)
 
                 elif token_id:
-                    return float(client.get_account_asset_balance(address))
+                    return float(await client.get_account_asset_balance(address))
 
                 elif contract is None and token_id is None:
                     return float(await client.get_account_balance(address))

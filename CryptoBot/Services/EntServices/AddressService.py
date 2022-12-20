@@ -42,13 +42,14 @@ class AddressService:
             balances = dict()
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
-                    twallet = Tron_TRC_Maker()
-                    if token.token_name == 'trx':
-                        balance = await twallet.get_balance(address)
-                    elif token.network == 'TRC-20':
-                        balance = await twallet.get_balance(address, token.contract_Id)
-                    elif token.network == 'TRC-10':
-                        balance = await twallet.get_balance(address=address, token_id=int(token.contract_Id))
+                    twallet = Maker_Factory.get_maker(token)
+                    balance =  await twallet.get_balance(token.contract_Id, address_obj)
+                    # if token.token_name == 'trx':
+                    #     balance = await twallet.get_balance(address)
+                    # elif token.network == 'TRC-20':
+                    #     balance = await twallet.get_balance(address, token.contract_Id)
+                    # elif token.network == 'TRC-10':
+                    #     balance = await twallet.get_balance(address=address, token_id=int(token.contract_Id))
                     balances.update({token.token_name: balance})
         return balances
 
