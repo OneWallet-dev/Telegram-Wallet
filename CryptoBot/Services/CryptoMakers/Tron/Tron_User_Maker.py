@@ -8,24 +8,20 @@ from tronpy.exceptions import *
 
 class Tron_TRC_Maker(Tron_Maker):
 
-    async def get_balance(self, address: str, contract: str = None, token_id: int = None):
+    async def get_balance(self,
+                          contract: str,
+                          address: Address):
         if await self.is_valid_address(address) is False:
             return float(0)
 
         async with self.get_client() as client:
             try:
-                if contract:
+                if len(contract) > 3:
                     contract = await client.get_contract(contract)
                     return float(await contract.functions.balanceOf(address) / 1_000_000)
 
-                elif token_id:
-                    return float(await client.get_account_asset_balance(address))
-
-                elif contract is None and token_id is None:
-                    return float(await client.get_account_balance(address))
-
                 else:
-                    raise ValueError("Could not find address")
+                    return float(await client.get_account_balance(address))
             except AddressNotFound:
                 return float(0)
 
@@ -46,7 +42,8 @@ class Tron_TRC_Maker(Tron_Maker):
                 txb = txb.with_owner(transaction.from_address).fee_limit(self._fee_limit)
             elif transaction.network == "TRC-10":
                 txb = (
-                    client.trx.transfer(transaction.from_address, transaction.to_address, int(transaction.amount * 1_000_000))
+                    client.trx.transfer(transaction.from_address, transaction.to_address,
+                                        int(transaction.amount * 1_000_000))
                     .with_owner(transaction.from_address)
                     .fee_limit(self._fee_limit)
                 )
