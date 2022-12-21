@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
 from Dao.DB_Postgres.session import Base
@@ -8,13 +8,21 @@ from Dao.models.models import address_tokens
 class Token(Base):
     __tablename__ = "tokens"
 
-    contract_Id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contract_Id = Column(String, nullable=True)
     token_name = Column(String)
-    network = Column(String)
+    algorithm_name = Column(String, ForeignKey('algorithms.name', onupdate="CASCADE", ondelete="CASCADE"))
+    network_id = Column(Integer, ForeignKey('networks.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     addresses = relationship(
         "Address", secondary=address_tokens, back_populates="tokens", lazy="joined"
     )
+    algorithm = relationship('Algorithm', lazy="joined", back_populates="tokens")
+    network = relationship('Network', lazy="joined", back_populates="tokens")
+
+
+
+
     def __str__(self):
         return f"{self.token_name} [{self.network}]"
 

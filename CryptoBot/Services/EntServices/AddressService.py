@@ -1,10 +1,8 @@
-import asyncio
 from contextlib import suppress
 
 import requests
 from aiogram.types import Message
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
 from Bot.utilts.fee_strategy import getFeeStrategy
@@ -19,7 +17,6 @@ from Dao.models.Wallet import Wallet
 from Services.CryptoMakers.ETH.Eth_Maker import ETH_maker
 from Services.CryptoMakers.Maker import Maker
 from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
-from bata import Data
 
 
 class Maker_Factory:

@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import Column, String, BigInteger, ForeignKey, Integer
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -7,11 +5,11 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
-from Dao.DB_Postgres.session import Base, AlchemyMaster
+from Dao.DB_Postgres.session import Base
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.models import address_tokens
-from bata import Data
+from _config.variables import Data
 
 
 class Address(Base):

@@ -19,7 +19,7 @@ def trans_token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
     t_list = custom_token_list if custom_token_list else base_tokens.keys()
     for token in t_list:
-        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"transferToken_{token}")))
+        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"tToken_{token}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 
@@ -27,7 +27,7 @@ def trans_token_kb(custom_token_list: list | None = None):
 def trans_network_kb(custom_network_list: list | None = None):
     mark = InlineKeyboardBuilder()
     for network in custom_network_list:
-        mark.row((InlineKeyboardButton(text=f"{network}", callback_data=f"transferNetwork_{network}")))
+        mark.row((InlineKeyboardButton(text=f"{network}", callback_data=f"tNetwork_{network}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 

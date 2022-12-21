@@ -1,19 +1,13 @@
-import asyncio
-import json
-
-import requests
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from Bot.filters.auth_filter import NotAuthFilter
 from Bot.handlers.main_handlers.auth_hand import you_need_tb_authenticated
-from Bot.handlers.main_handlers.main_menu_hand import main_menu, title_entry_point
+from Bot.handlers.main_handlers.main_menu_hand import title_entry_point
 from Bot.keyboards.main_keys import main_menu_kb
 # from Bot.utilts.USDT_Calculator import USDT_Calculator
 from Bot.utilts.mmanager import MManager
@@ -23,12 +17,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Services.CryptoMakers.Tron.Tron_Maker import Tron_Maker
 from Services.EntServices.AddressService import AddressService
-from bata import Data
-from Services.EntServices.OwnerService import OwnerService
-from Services.EntServices.TokenService import TokenService
-from bata import Data
 
 router = Router()
 
@@ -108,12 +97,10 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 async def ttt(message: Message):
     session = await AlchemyMaster.create_session()
     async with session() as s:
-        address: Address = await s.get(Address, "TFA3cwnVvj5HgeBGoQfYKjbKyYK6WgA7jQ")
-        maker = Tron_Maker()
-        await maker.request_transaction_history_from_tron_api(address)
-        print(address.private_key)
-        print(address.address)
-        print(await address.public_fun())
+        token = await s.get(Token, 1)
+        print(token.token_name)
+        print(token.network)
+        print(token.network.blockchain)
 
 
 @router.message(Command("try"))

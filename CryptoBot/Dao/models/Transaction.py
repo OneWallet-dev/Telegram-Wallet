@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, BigInteger, Float, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, BigInteger, Float, String, ForeignKey, DateTime, Boolean, Integer
 from sqlalchemy.orm import relationship
 
 from Dao.DB_Postgres.session import Base
@@ -11,7 +11,7 @@ class Transaction(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     tnx_id: str = Column(String)
-    token_contract_id = Column(String, ForeignKey('tokens.contract_Id', onupdate="CASCADE", ondelete="CASCADE"))
+    token_id = Column(Integer, ForeignKey('tokens.id', onupdate="CASCADE", ondelete="CASCADE"))
     amount = Column(Float)
     from_address = Column(String, ForeignKey('addresses.address', onupdate="CASCADE", ondelete="CASCADE"))
     to_address = Column(String)
@@ -21,6 +21,7 @@ class Transaction(Base):
     service_fee: float = Column(Float)
     network_fee: float = Column(Float)
     address = relationship("Address", lazy="joined", back_populates="transactions")
+    token = relationship("Token", lazy="joined")
 
     def is_In(self) -> bool:
         return self.address.address != self.from_address

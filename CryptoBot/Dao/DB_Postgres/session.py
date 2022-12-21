@@ -2,7 +2,6 @@ import os
 import inspect as pyth_inspect
 
 
-import sqlalchemy
 from sqlalchemy import MetaData, schema, inspect
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base

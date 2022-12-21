@@ -1,7 +1,7 @@
 import redis.asyncio as aioredis
 from redis.asyncio.connection import ConnectionPool
 
-from bata import Data
+from _config.variables import Data
 
 
 class RedRedis:

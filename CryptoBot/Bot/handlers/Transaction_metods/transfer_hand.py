@@ -37,7 +37,7 @@ async def start_transfer(message: Message, state: FSMContext, bot: Bot):
     content: ContentUnit = await ContentUnit(tag="repl_choose_currency").get()
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
                                 keyboard=trans_token_kb(list(base_tokens.keys())),
-                                placeholder_text="Выберите токен, который вы хотите перевести")
+                                placeholder_text="Выберите валюту для отправки:")
 
 
 @router.callback_query(lambda call: "transferToken_" in call.data, StateFilter(Trs_transfer.new_transfer))
@@ -54,7 +54,7 @@ async def token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.update_data(token_name=token_name)
     await state.set_state(Trs_transfer.set_network)
 
-    text = text + "\n\n\n\n<b>В какой сети вы хотите перевести токен?</b>"
+    text = text + "\n\n\n\n<b>Выберите сеть:</b>"
 
     content: ContentUnit = await ContentUnit(tag="repl_choose_network").get()
     content.text.format(transfer_text_1=text)

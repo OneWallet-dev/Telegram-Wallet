@@ -5,7 +5,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
 
 from Dao.DB_Postgres.session import Base
-from bata import Data
+from _config.variables import Data
 
 
 class Wallet(Base):

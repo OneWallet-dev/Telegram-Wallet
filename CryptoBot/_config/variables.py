@@ -1,7 +1,4 @@
 import os
-# from dotenv import load_dotenv
-# 
-# load_dotenv()
 from aiogram import Bot
 
 
@@ -16,3 +13,5 @@ class Data:
     postgres_user = os.getenv('POSTGRES_USER')
     main_bot = Bot(main_bot_token, parse_mode="HTML")
     secret_key = os.getenv('SHA_KEY')
+
+
