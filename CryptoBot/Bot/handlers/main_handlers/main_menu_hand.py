@@ -1,14 +1,11 @@
 from aiogram import Router, Bot, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.handlers.main_handlers.transaction_menu_hand import transaction_start
 from Bot.handlers.main_handlers.wallet_handlers.main_wallet_hand import my_wallet_start
 from Bot.keyboards.main_keys import main_menu_kb
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
-from Bot.states.trans_states import TransactionStates
 from Bot.utilts.ContentService import ContentService
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
@@ -40,18 +37,29 @@ async def main_menu(update: Message | CallbackQuery, state: FSMContext, bot: Bot
     await MManager.content_surf(message, state, bot, content, keyboard=main_menu_kb(), placeholder_text=placeholder)
 
 
-@router.message(F.text == "💹 Мой кошелек")
-async def menu_wallet_start(message: Message, bot: Bot, state: FSMContext, session: AsyncSession):
+# Из нижеследующих роутеров перенаправлять в определенный хэндлер для улучшения читаемости
+
+
+@router.message(F.text == "Кошелек")
+async def menu_wallet_start(message: Message, bot: Bot, state: FSMContext):
     await my_wallet_start(event=message, state=state, bot=bot)
 
 
-@router.message(F.text == "👁‍🗨 AML Check")
-async def menu_aml_start(message: Message, bot: Bot, state: FSMContext):
-    stick_msg = await message.answer('AML проверка',
-                                     reply_markup=main_wallet_keys())
+@router.message(F.text == "AML")
+async def menu_aml_start(message: Message):
+    await message.answer('Здесь будет AML проверка', reply_markup=main_wallet_keys())
 
 
-@router.message(F.text == "↔️ Транзакции")
-async def menu_transaction_start(message: Message, bot: Bot, state: FSMContext):
-    await state.set_state(TransactionStates.main)
-    await transaction_start(message, state)
+@router.message(F.text == "P2P")
+async def menu_aml_start(message: Message):
+    await message.answer('Здесь будет Р2Р', reply_markup=main_wallet_keys())
+
+
+@router.message(F.text == "Настройки")
+async def menu_aml_start(message: Message):
+    await message.answer('Тут будут настройки', reply_markup=main_wallet_keys())
+
+
+@router.message(F.text == "Информация")
+async def menu_aml_start(message: Message):
+    await message.answer('Информирую о неготовности меню информации', reply_markup=main_wallet_keys())

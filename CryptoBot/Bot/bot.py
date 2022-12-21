@@ -7,7 +7,7 @@ from Bot.handlers import start_hand
 from Bot.handlers.admin_handlers import main_admin_hand
 from Bot.handlers.service_handlers import return_hand, AML_check_hand
 from Bot.handlers.Transaction_metods import transfer_hand
-from Bot.handlers.main_handlers import transaction_menu_hand, auth_hand, main_menu_hand, registration_hand
+from Bot.handlers.main_handlers import auth_hand, main_menu_hand, registration_hand
 from Bot.handlers.main_handlers.wallet_handlers import main_wallet_hand
 from Bot.middleware.alive_middle import AliveMiddleware
 from Bot.middleware.alchemy_session_middle import DbSession
@@ -51,7 +51,6 @@ async def bot_start():
     dp.include_router(return_hand.router)
 
     dp.include_router(main_wallet_hand.router)
-    dp.include_router(transaction_menu_hand.router)
     # dp.include_router(transfer_hand.router)
 
     dp.include_router(AML_check_hand.router)

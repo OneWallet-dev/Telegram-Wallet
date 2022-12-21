@@ -6,15 +6,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from AllLogs.bot_logger import main_logger
-from Bot.handlers.main_handlers.main_menu_hand import main_menu, title_entry_point
+from Bot.handlers.main_handlers.main_menu_hand import title_entry_point
 from Bot.keyboards.main_keys import confirmation_button, back_button
 from Bot.states.main_states import RegistrationState
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
-from Dao.models.Owner import Owner
 from Services.CryptoMakers.address_gen import Wallet_web3
 from Services.EntServices.OwnerService import OwnerService
-from Services.EntServices.TokenService import TokenService
 
 router = Router()
 router.message.filter(StateFilter(RegistrationState))
