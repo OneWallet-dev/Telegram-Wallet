@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from requests import HTTPError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.filters.auth_filter import NotAuthFilter
@@ -12,12 +13,14 @@ from Bot.keyboards.main_keys import main_menu_kb
 # from Bot.utilts.USDT_Calculator import USDT_Calculator
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Postgres.session import AlchemyMaster
+from Dao.models import Algorithm
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Services.EntServices.AddressService import AddressService
+from Services.EntServices.TokenService import TokenService
 
 router = Router()
 
@@ -95,12 +98,7 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def ttt(message: Message):
-    session = await AlchemyMaster.create_session()
-    async with session() as s:
-        token = await s.get(Token, 1)
-        print(token.token_name)
-        print(token.network)
-        print(token.network.blockchain)
+    token = await TokenService.tokens_for_blockchain('tron')
 
 
 @router.message(Command("try"))

@@ -50,7 +50,11 @@ class AlchemyMaster:
             session_connect = await AlchemyMaster.create_session()
             async with session_connect() as session:
                 kwargs['alchemy_session'] = session
-                prepared_kwargs = {k: v for k, v in kwargs.items() if k in pyth_inspect.getfullargspec(function).args}
+                prepared_kwargs = {
+                    k: v for k, v in kwargs.items()
+                    if k in pyth_inspect.getfullargspec(function).args
+                       or k in pyth_inspect.getfullargspec(function).kwonlyargs
+                }
                 return await function(*args, **prepared_kwargs)
 
         return wrap

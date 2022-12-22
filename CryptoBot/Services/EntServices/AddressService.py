@@ -21,24 +21,32 @@ from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
 
 class Maker_Factory:
     @staticmethod
-    def get_maker(token: Token, network=None) -> Maker:
+    def get_maker(token: Token) -> Maker:
         maker = None
+        if token.network.blockchain == token.algorithm.blockchain:
+            blockchain = token.network.blockchain
+            if blockchain == "tron":
+                maker = Tron_TRC_Maker()
+            elif blockchain == "ethereum":
+                maker = ETH_maker('mainnet')
 
-        if len(token.contract_Id) <= 3: #TODO: КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ
-            token.contract_Id = None
+            if maker:
+                return maker
+        else:
+            raise Exception("Can't get maker for this token!\n"
+                            f"net bc {token.network.blockchain}\n"
+                            f"algo bc {token.algorithm.blockchain}"
+                            f"token name {token.token_name}")
 
-        if token.network == "TRC-20":
-            maker = Tron_TRC_Maker()
-        if token.network == "ERC-20":
-            maker = ETH_maker('mainnet')
-        return maker
+
+
 
 
 class AddressService:
 
     @staticmethod
     async def get_address_balances(address: str, specific: list[Token] | None = None):
-        # TODO полностью переделать, получать из фабрики, вызывать только getBalance
+        # TODO может быть переделать, получать из фабрики, вызывать только getBalance
         session_connect = await AlchemyMaster.create_session()
         async with session_connect() as session:
             address_obj: Address = await session.get(Address, address)

@@ -13,7 +13,7 @@ class Wallet(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
     mnemonic = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
-    blockchain = Column(String)
+    blockchain = Column(String, ForeignKey('blockchains.name', onupdate="CASCADE", ondelete="CASCADE"))
     owner_id = Column(StringEncryptedType(String, Data.secret_key, AesEngine),
                       ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"))
     addresses = relationship(

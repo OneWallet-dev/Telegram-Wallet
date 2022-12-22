@@ -54,12 +54,13 @@ def network_kb(token: str, custom_network_list: list | None = None):
     return mark.as_markup(resize_keyboard=True)
 
 
-def addresses_kb(counter: int):
+def addresses_kb(counter: int, new_button: bool = True):
     mark = InlineKeyboardBuilder()
     for i in range(1, counter):
         mark.row((InlineKeyboardButton(text=str(i), callback_data=str(i))))
     mark.adjust(2)
-    mark.row((InlineKeyboardButton(text=f"Создать еще кошелек", callback_data="new_address")))
+    if new_button:
+        mark.row((InlineKeyboardButton(text=f"Создать еще кошелек", callback_data="new_address")))
     mark.row((InlineKeyboardButton(text=f"Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 

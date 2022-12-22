@@ -21,7 +21,7 @@ class StaticCurrency:
                 }
             }
         },
-        "etherium": {
+        "ethereum": {
             "tokens": {
                 "ETH": {
                     'contract_address': None,

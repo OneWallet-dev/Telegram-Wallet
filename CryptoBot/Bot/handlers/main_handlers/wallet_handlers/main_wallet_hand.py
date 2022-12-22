@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from Bot.handlers.Transaction_metods import transfer_hand
-from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, tran_history_wallet_hand
+from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, tran_history_wallet_hand, send_wallet_hand
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState
 from Bot.states.trans_states import Trs_transfer
@@ -16,12 +16,13 @@ from Dao.models.bot_models import ContentUnit
 
 router = Router()
 router.include_router(replenish_wallet_hand.router)
-router.include_router(transfer_hand.router)
+router.include_router(send_wallet_hand.router)
 router.include_router(tran_history_wallet_hand.router)
 router.message.filter(StateFilter(MainState.welcome_state, WalletStates, Trs_transfer))
 
 
 @router.callback_query(F.data.startswith('refresh_wallet'))
+@MManager.garbage_manage(store=True, clean=True)
 async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot: Bot):
     user_id = event.from_user.id
     u_id = await DataRedis.find_user(user_id)

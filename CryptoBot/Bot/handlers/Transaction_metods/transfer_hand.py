@@ -204,9 +204,11 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
 
     u_id = await DataRedis.find_user(int(callback.from_user.id))
     owner: Owner = await session.get(Owner, u_id)
-    address: Address = AddressService.get_address_for_transaction(owner, blockchain, contract_Id)
-    token = await TokenService.get_token(token_name, network)
 
+
+    address: Address = AddressService.get_address_for_transaction(owner, blockchain, contract_Id)
+
+    token = await TokenService.get_token(token_name, network)
     transaction: Transaction = await AddressService().createTransaction(address,
                                                                         amount,
                                                                         token,

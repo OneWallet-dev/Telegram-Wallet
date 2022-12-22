@@ -3,6 +3,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 from Bot.keyboards.base_keys import rep_back_button
 from Bot.utilts.currency_helper import base_tokens
+from Dao.models import Algorithm
+from Dao.models.Token import Token
+from Services.EntServices.TokenService import TokenService
 
 
 def m_transaction():
@@ -15,19 +18,20 @@ def m_transaction():
     return mark.as_markup(resize_keyboard=True)
 
 
-def trans_token_kb(custom_token_list: list | None = None):
+def trans_token_kb(custom_token_list: list[Token]):
     mark = InlineKeyboardBuilder()
-    t_list = custom_token_list if custom_token_list else base_tokens.keys()
-    for token in t_list:
-        mark.row((InlineKeyboardButton(text=f"{token}", callback_data=f"tToken_{token}")))
+    token_names = [token.token_name for token in custom_token_list]
+    for token_name in token_names:
+        mark.row((InlineKeyboardButton(text=f"{token_name}", callback_data=f"tToken_{token_name}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 
 
-def trans_network_kb(custom_network_list: list | None = None):
+def trans_network_kb(custom_network_list: list[Algorithm] | None = None):
     mark = InlineKeyboardBuilder()
-    for network in custom_network_list:
-        mark.row((InlineKeyboardButton(text=f"{network}", callback_data=f"tNetwork_{network}")))
+    algo_names = [algo.name for algo in custom_network_list]
+    for algo_name in algo_names:
+        mark.row((InlineKeyboardButton(text=f"{algo_name}", callback_data=f"tAlgos_{algo_name}")))
     mark.adjust(2)
     return mark.as_markup(resize_keyboard=True)
 

@@ -34,30 +34,28 @@ class Wallet_web3:
 
             tronaddress: Address = Address(address=tron_wallet.get("address_0").get("address"),
                                            private_key=tron_wallet.get("address_0").get("private_key"))
-            networks = blockchains['tron'].get('networks')
-            for net in networks:
-                tronaddress.tokens.extend(await TokenService.tokens_for_network(net))
-                tronaddress = await session.merge(tronaddress)
+            tron_tokens = await TokenService.tokens_for_blockchain('tron')
+            tronaddress.tokens.extend(tron_tokens)
+            tronaddress = await session.merge(tronaddress)
+
             tronwallet = Wallet(blockchain="tron", mnemonic=tron_mnemomic)
             tronwallet.addresses.update({tron_wallet.get("address_0").get("address"): tronaddress})
             new_wallets["tron"] = tronwallet
 
             ethaddress: Address = Address(address=eth_wallet.get("address_0").get("address"),
                                           private_key=eth_wallet.get("address_0").get("private_key"))
-            networks = blockchains['ethereum'].get('networks')
-            for net in networks:
-                ethaddress.tokens.extend(await TokenService.tokens_for_network(net))
-                ethaddress = await session.merge(ethaddress)
+            eth_tokens = await TokenService.tokens_for_blockchain('ethereum')
+            ethaddress.tokens.extend(eth_tokens)
+            ethaddress = await session.merge(ethaddress)
             ethnwallet = Wallet(blockchain="ethereum", mnemonic=eth_mnemomic)
             ethnwallet.addresses.update({eth_wallet.get("address_0").get("address"): ethaddress})
             new_wallets["ethereum"] = ethnwallet
 
             bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
                                           private_key=bitcoin_wallet.get("address_0").get("private_key"))
-            networks = blockchains['bitcoin'].get('networks')
-            for net in networks:
-                bitaddress.tokens.extend(await TokenService.tokens_for_network(net))
-                bitaddress = await session.merge(bitaddress)
+            eth_tokens = await TokenService.tokens_for_blockchain('bitcoin')
+            bitaddress.tokens.extend(eth_tokens)
+            bitaddress = await session.merge(bitaddress)
             bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
             bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
             new_wallets["bitcoin"] = bitwallet
