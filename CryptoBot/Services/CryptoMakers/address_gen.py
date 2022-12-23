@@ -51,14 +51,14 @@ class Wallet_web3:
             ethnwallet.addresses.update({eth_wallet.get("address_0").get("address"): ethaddress})
             new_wallets["ethereum"] = ethnwallet
 
-            bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
-                                          private_key=bitcoin_wallet.get("address_0").get("private_key"))
-            eth_tokens = await TokenService.tokens_for_blockchain('bitcoin')
-            bitaddress.tokens.extend(eth_tokens)
-            bitaddress = await session.merge(bitaddress)
-            bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
-            bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
-            new_wallets["bitcoin"] = bitwallet
+            # bitaddress: Address = Address(address=bitcoin_wallet.get("address_0").get("address"),
+            #                               private_key=bitcoin_wallet.get("address_0").get("private_key"))
+            # btc_tokens = await TokenService.tokens_for_blockchain('bitcoin')
+            # bitaddress.tokens.extend(btc_tokens)
+            # bitaddress = await session.merge(bitaddress)
+            # bitwallet = Wallet(blockchain="bitcoin", mnemonic=bitcoin_mnemomic)
+            # bitwallet.addresses.update({bitcoin_wallet.get("address_0").get("address"): bitaddress})
+            # new_wallets["bitcoin"] = bitwallet
 
             owner: Owner = await session.get(Owner, u_id)
             owner.wallets.update(new_wallets)
