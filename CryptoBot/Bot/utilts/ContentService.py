@@ -58,12 +58,15 @@ class ContentService:
                    placeholder_text: str | None = None):
         n_msg = None
         if content.media_id:
-            n_msg = await bot.edit_message_media(media=InputMedia(type=content.media_type,
+            try:
+                n_msg = await bot.edit_message_media(media=InputMedia(type=content.media_type,
                                                                   media=content.media_id,
                                                                   caption=content.text),
                                                  chat_id=chat_id,
                                                  message_id=target_msg_id,
                                                  reply_markup=keyboard)
+            except TelegramBadRequest:
+                n_msg = await ContentService.send(content, bot, chat_id, keyboard, placeholder_text)
         else:
             if content.text:
                 text = f"<i>Bad media:</i>\n<code>{content.tag}</code>\n\n" + content.text
