@@ -24,6 +24,7 @@ def trans_token_kb(custom_token_list: list[Token]):
     for token_name in token_names:
         mark.row((InlineKeyboardButton(text=f"{token_name}", callback_data=f"tToken_{token_name}")))
     mark.adjust(2)
+    mark.row((InlineKeyboardButton(text="<< Назад", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
 
 
@@ -33,6 +34,7 @@ def trans_network_kb(custom_network_list: list[Algorithm] | None = None):
     for algo_name in algo_names:
         mark.row((InlineKeyboardButton(text=f"{algo_name}", callback_data=f"tAlgos_{algo_name}")))
     mark.adjust(2)
+    mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
 
@@ -44,7 +46,9 @@ def change_transfer_token():
 
 def kb_confirm_transfer():
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text="Подтвердить перевод", callback_data="confirm_transfer_token")))
-    mark.row((InlineKeyboardButton(text="Отменить перевод", callback_data="cancel_transfer_token")))
+    mark.row((InlineKeyboardButton(text="Подтвердить и отправить", callback_data="confirm_transfer_token")))
+    mark.row((InlineKeyboardButton(text="Изменить сумму", callback_data="change_amount")))
+    mark.row((InlineKeyboardButton(text="Изменить получателя", callback_data="change_target")))
+    mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 

@@ -29,7 +29,9 @@ async def my_wallet_start(event: Message | CallbackQuery, state: FSMContext, bot
     w_text = await all_wallets_text(u_id)
     content: ContentUnit = await ContentUnit(tag="wallet_text").get()
     content.text = content.text.format(wallet_text=w_text, UID=u_id)
-    await MManager.content_surf(event=event, state=state, bot=bot, content_unit=content,
+
+    message = event if isinstance(event, Message) else event.message
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
                                 keyboard=main_wallet_keys(),
                                 placeholder_text=f"Кошелек пользователя {u_id}")
     await state.set_state(WalletStates.main)

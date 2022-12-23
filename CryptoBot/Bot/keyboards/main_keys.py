@@ -21,7 +21,7 @@ def confirmation_button():
 
 def back_button():
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text=f"🔙 Вернуться", callback_data="back")))
+    mark.row((InlineKeyboardButton(text=f"<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
 

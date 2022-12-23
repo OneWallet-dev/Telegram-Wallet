@@ -29,8 +29,7 @@ class Token(Base):
     def __eq__(self, other):
         if not isinstance(other, Token):
             return NotImplemented
-
-        return self.token_name == other.token_name and self.network == other.network and self.contract_Id == other.contract_Id
+        return self.token_name == other.token_name and self.network.name == other.network.name and self.contract_Id == other.contract_Id and self.algorithm_name == other.algorithm_name
 
     async def getBalance(self):
         pass

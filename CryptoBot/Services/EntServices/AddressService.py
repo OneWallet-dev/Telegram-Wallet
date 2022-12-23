@@ -53,9 +53,14 @@ class AddressService:
             balances = dict()
 
             for token in address_obj.tokens:
+                if specific:
+                    for aatoken in specific:
+                        print(aatoken.token_name, aatoken.algorithm_name, aatoken.contract_Id)
+                        print(token.token_name, token.algorithm_name, token.contract_Id)
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
                     balance = await b_maker.get_balance(address=address, contract=token.contract_Id)
+
                     balances.update({token.token_name: balance})
         return balances
 
