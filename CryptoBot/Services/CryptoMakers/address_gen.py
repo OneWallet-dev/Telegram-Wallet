@@ -68,7 +68,7 @@ class Wallet_web3:
             try:
                 wallets['tron'] = list(owner.wallets.get("tron").addresses.keys())[0]
                 wallets['eth'] = list(owner.wallets.get("ethereum").addresses.keys())[0]
-                wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
+                # wallets['bitcoin'] = list(owner.wallets.get("bitcoin").addresses.keys())[0]
             except Exception as e:
                 print("Кошельки не создались", e)
             return new_wallets
