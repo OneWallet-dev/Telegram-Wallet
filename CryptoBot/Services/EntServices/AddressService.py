@@ -30,10 +30,11 @@ class Maker_Factory:
         if len(token.contract_Id) <= 3: #TODO: КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ КОСТЫЛЬ
             token.contract_Id = None
 
+        print(token.contract_Id)
         if token.network == "TRC-20":
             maker = Tron_TRC_Maker()
         if token.network == "ERC-20":
-            maker = ETH_maker('mainnet')
+            maker = ETH_maker('polygon-testnet')
         return maker
 
 
@@ -96,7 +97,7 @@ class AddressService:
         print("TANSFER", transaction_dict)
         if transaction_dict.get("status") == "SUCCESS":
             if transaction_dict.get("result") != "FAILED":
-                my_transaction.tnx_id = transaction_dict.get("txn").get("id")
+                my_transaction.tnx_id = transaction_dict.get("txn")
                 my_transaction.service_fee = service_fee
                 my_transaction.status = transaction_dict.get("status")
                 await loader(message, chait_id, 5, "Совершаем транзакцию...")
