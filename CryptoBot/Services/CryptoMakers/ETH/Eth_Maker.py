@@ -116,9 +116,10 @@ class ETH_maker(Maker):
         gas_price = await self.get_gas_price()
         print("gas price", self.w3.from_wei(gas_price, "ether"))
         print(transaction.token_contract_id)
-        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
 
-        if transaction.token_contract_id is None and transaction.token_contract_id != 'eth':
+        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
+        contract_Id = transaction.token.contract_Id
+        if contract_Id is None:
             self.txn_resp["status"] = "Bilded"
             self.txn_resp["message"] = "transaction bilded"
             self.txn_resp["txn"] = None
@@ -132,7 +133,7 @@ class ETH_maker(Maker):
                 'gas': self.__gas_limit,
             }
         else:
-            contract = self.w3.eth.contract(transaction.token_contract_id, abi=EIP20_ABI)
+            contract = self.w3.eth.contract(contract_Id, abi=EIP20_ABI)
             token_decimals = contract.functions.decimals()
             token_decimals = await token_decimals.call()
 

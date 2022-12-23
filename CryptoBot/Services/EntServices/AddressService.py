@@ -83,7 +83,7 @@ class AddressService:
         await loader(message, chait_id, 1, "Проверяем баланс...")
         service_fee = await getFeeStrategy(address)
 
-        my_transaction = Transaction(token_contract_id=token.contract_Id,
+        my_transaction = Transaction(token=token,
                                      amount=amount,
                                      from_address=address.address,
                                      to_address=to_address,

@@ -36,10 +36,10 @@ class Tron_TRC_Maker(Tron_Maker):
         address = transaction.address
         print("user_pk", address.private_key)
         p_key = PrivateKey(bytes.fromhex(address.private_key))
-
+        contract = transaction.token.contract_Id
         async with self.get_client() as client:
             if transaction.network == "TRC-20" and transaction.token_contract_id:
-                contract_f = await client.get_contract(transaction.token_contract_id)
+                contract_f = await client.get_contract(contract)
                 txb = await contract_f.functions.transfer(transaction.to_address, int(transaction.amount * 1_000_000))
                 txb = txb.with_owner(transaction.from_address).fee_limit(self._fee_limit)
             elif transaction.network == "TRC-10":
