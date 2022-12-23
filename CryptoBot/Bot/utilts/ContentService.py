@@ -41,7 +41,7 @@ class ContentService:
                                            reply_markup=keyboard)
         else:
             text = placeholder_text if placeholder_text else str()
-            if not text or content_warn:
+            if not text and content_warn:
                 text = f"<i>Bad content:</i>\n<code>{content.tag}</code>\n\n" + text
             n_msg = await bot.send_message(text=text,
                                            chat_id=chat_id,
@@ -68,7 +68,7 @@ class ContentService:
                 text = f"<i>Bad media:</i>\n<code>{content.tag}</code>\n\n" + content.text
             else:
                 text = placeholder_text if placeholder_text else str()
-                if not text or content_warn:
+                if not text and content_warn:
                     text = f"<i>Bad content:</i>\n<code>{content.tag}</code>\n\n" + text
             with suppress(TelegramBadRequest):
                 n_msg = await bot.edit_message_text(text=text,
