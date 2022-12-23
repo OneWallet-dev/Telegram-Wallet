@@ -57,7 +57,7 @@ class MManager:
                                                    keyboard=keyboard,
                                                    placeholder_text=placeholder_text)
             del_message_id = event.message_id if isinstance(event, Message) else event.message.message_id
-            await bot.delete_message(chat_id, event.message_id)
+            await bot.delete_message(chat_id, del_message_id)
             if old_msg_id:
                 with suppress(TelegramBadRequest):
                     await bot.delete_message(chat_id, old_msg_id)
