@@ -47,19 +47,19 @@ async def menu_wallet_start(message: Message, bot: Bot, state: FSMContext):
 
 @router.message(F.text == "AML")
 async def menu_aml_start(message: Message):
-    await message.answer('Здесь будет AML проверка', reply_markup=main_wallet_keys())
+    await message.answer('Здесь будет AML проверка')
 
 
 @router.message(F.text == "P2P")
 async def menu_aml_start(message: Message):
-    await message.answer('Здесь будет Р2Р', reply_markup=main_wallet_keys())
+    await message.answer('Здесь будет Р2Р')
 
 
 @router.message(F.text == "Настройки")
 async def menu_aml_start(message: Message):
-    await message.answer('Тут будут настройки', reply_markup=main_wallet_keys())
+    await message.answer('Тут будут настройки')
 
 
 @router.message(F.text == "Информация")
 async def menu_aml_start(message: Message):
-    await message.answer('Информирую о неготовности меню информации', reply_markup=main_wallet_keys())
+    await message.answer('Информирую о неготовности меню информации')
