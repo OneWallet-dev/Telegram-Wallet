@@ -65,7 +65,7 @@ class ContentService:
                                                  reply_markup=keyboard)
         else:
             if content.text:
-                text = f"<i>Bad media:</i>\n<code>{content.tag}</code>\n\n" + content.text
+                text = content.text
             else:
                 text = placeholder_text if placeholder_text else str()
                 if not text and content_warn:
