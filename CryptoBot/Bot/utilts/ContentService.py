@@ -67,6 +67,7 @@ class ContentService:
                                                  reply_markup=keyboard)
             except TelegramBadRequest:
                 n_msg = await ContentService.send(content, bot, chat_id, keyboard, placeholder_text)
+                await bot.delete_message(chat_id, target_msg_id)
         else:
             if content.text:
                 text = f"<i>Bad media:</i>\n<code>{content.tag}</code>\n\n" + content.text
