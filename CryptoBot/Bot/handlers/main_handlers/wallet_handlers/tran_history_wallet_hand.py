@@ -20,3 +20,7 @@ async def tran_history_start(callback: CallbackQuery, state: FSMContext, bot: Bo
                                 keyboard=trans_history_start(),
                                 placeholder_text=placeholder_text)
 
+
+@router.callback_query(F.data == "send_history", StateFilter(WalletStates))
+async def tran_history_send(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    pass
