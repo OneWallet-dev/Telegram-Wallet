@@ -1,7 +1,5 @@
-from tronpy import AsyncTron
-from tronpy.providers import AsyncHTTPProvider
-
 from Dao.models.Address import Address
+from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 
 
@@ -13,6 +11,6 @@ class Maker:
         pass
 
     async def get_balance(self,
-                          contract: str,
-                          address: str) -> float:
+                          token: Token,
+                          address: Address) -> float:
         pass

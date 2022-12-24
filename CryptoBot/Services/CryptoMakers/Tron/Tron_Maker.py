@@ -1,11 +1,10 @@
 import os
 
-import requests
-from tronpy.keys import PrivateKey
 from httpx import AsyncClient, Timeout
-from tronpy.defaults import CONF_NILE
 from tronpy import AsyncTron
+from tronpy.defaults import CONF_NILE
 from tronpy.exceptions import BadAddress
+from tronpy.keys import PrivateKey
 from tronpy.providers import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
@@ -49,7 +48,7 @@ class Tron_Maker(Maker):
     async def account_resource(self, transaction: Transaction):
 
         async with self.get_client() as client:
-            account_resource = await client.get_account_resource(transaction.from_address)
+            account_resource = await client.get_account_resource(transaction.owner_address)
             EnergyUsed = account_resource.get("EnergyUsed", 0)
             EnergyLimit = account_resource.get("EnergyLimit", 0)
             remainde_EnergyUsed = EnergyLimit - EnergyUsed
@@ -129,7 +128,7 @@ class Tron_Maker(Maker):
     async def activate_account(self, transaction: Transaction, amount: float = 1):
         async with self.get_client() as client:
             txb = (
-                client.trx.transfer(self._main_adds, transaction.from_address, int(1 * 1_000_000))
+                client.trx.transfer(self._main_adds, transaction.owner_address, int(1 * 1_000_000))
                 .with_owner(self._main_adds)
                 .fee_limit(self._fee_limit)
             )

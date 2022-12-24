@@ -1,5 +1,4 @@
 from Dao.models.Address import Address
-from Dao.models.Owner import Owner
 
 
 async def getFeeStrategy(address: Address):

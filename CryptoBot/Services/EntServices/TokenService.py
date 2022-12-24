@@ -5,10 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.utilts.currency_helper import base_tokens, blockchains
+from Bot.utilts.currency_helper import base_tokens
 from Bot.utilts.settings import DEBUG_MODE
-from Dao.DB_Postgres.session import create_session, AlchemyMaster
-from Dao.models.Address import Address
+from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Network import Network
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token

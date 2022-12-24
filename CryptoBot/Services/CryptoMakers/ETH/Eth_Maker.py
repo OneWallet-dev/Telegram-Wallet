@@ -1,12 +1,12 @@
 import json
-import math
 import os
 
+import math
 from web3 import Web3, AsyncHTTPProvider
 from web3.eth import AsyncEth
-from web3.net import AsyncNet
-from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
 from web3.exceptions import *
+from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
+from web3.net import AsyncNet
 
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker
@@ -18,7 +18,7 @@ Polygon_USDT = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"
 
 class ETH_maker(Maker):
 
-    def __init__(self, network): #TODO Здесь зачем network?  Не надо нарушать контрактов. У классасов
+    def __init__(self, network): #TODO Здесь не должно быть сети
         self.api_key = os.getenv('eth_API')
         self.network = network
         self.w3 = None
@@ -85,8 +85,6 @@ class ETH_maker(Maker):
             return False
 
     async def get_balance(self, address: str, contract: str = None) -> float:
-        print(address)
-        print(contract)
         contract = None if contract == 'eth' else contract
 
         if contract:
@@ -125,8 +123,8 @@ class ETH_maker(Maker):
             self.txn_resp["txn"] = None
             txn = {
                 'chainId': await self.w3.eth.chain_id,
-                'from': transaction.from_address,
-                'to': transaction.to_address,
+                'from': transaction.owner_address,
+                'to': transaction.foreign_address,
                 'value': int(Web3.to_wei(transaction.amount, "ether")),
                 'nonce': nonce,
                 'gasPrice': gas_price,
@@ -139,13 +137,13 @@ class ETH_maker(Maker):
 
             reformat_amount = int(transaction.amount * 10 ** token_decimals)
 
-            nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
+            nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
             self.txn_resp["status"] = "Bilded"
             self.txn_resp["message"] = "transaction bilded"
             self.txn_resp["txn"] = None
             gas_price = await self.get_gas_price()
             txn = await contract.functions.transfer(
-                transaction.to_address, reformat_amount
+                transaction.foreign_address, reformat_amount
             ).build_transaction({
                 'chainId': await self.w3.eth.chain_id,
                 'gasPrice': gas_price,
@@ -155,7 +153,7 @@ class ETH_maker(Maker):
         return txn
 
     async def transfer(self, transaction: Transaction):
-        nonce = await self.w3.eth.get_transaction_count(transaction.from_address, 'pending')
+        nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
 
         transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
 

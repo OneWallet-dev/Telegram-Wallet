@@ -1,13 +1,11 @@
 from contextlib import suppress
 
 import requests
-from aiogram.types import Message
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.exeptions.wallet_ex import DuplicateToken
-from Bot.utilts.fee_strategy import getFeeStrategy
-from Bot.handlers.service_handlers.loader_hand import loader
-
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
@@ -53,12 +51,9 @@ class AddressService:
             balances = dict()
 
             for token in address_obj.tokens:
-                if specific:
-                    for aatoken in specific:
-                        print(aatoken.token_name, aatoken.algorithm_name, aatoken.contract_Id)
-                        print(token.token_name, token.algorithm_name, token.contract_Id)
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
+                    print('Contract', token.contract_Id)
                     balance = await b_maker.get_balance(address=address, contract=token.contract_Id)
 
                     balances.update({token.token_name: balance})
@@ -71,60 +66,6 @@ class AddressService:
         for address in addresses:
             if contract_id in address.token_list:
                 return address
-
-    @staticmethod
-    async def createTransaction(address: Address,
-                                amount: float,
-                                token: Token,
-                                to_address: str,
-                                message: Message = None,
-                                chait_id: int = None) -> Transaction or str:
-
-        await loader(message, chait_id, 1, "Проверяем баланс...")
-        service_fee = await getFeeStrategy(address)
-
-        my_transaction = Transaction(token=token,
-                                     amount=amount,
-                                     from_address=address.address,
-                                     to_address=to_address,
-                                     network=token.network,
-                                     address=address,
-                                     service_fee=service_fee)
-        await loader(message, chait_id, 1, "Проверяем нагрузку сети...")
-        await loader(message, chait_id, 1, "Вычисляем блоки...")
-        await loader(message, chait_id, 2, "Запрос к блокчейну...")
-        await loader(message, chait_id, 2, "Проверяем количество энергии.")
-        await loader(message, chait_id, 2, "Проверяем количество энергии..")
-        await loader(message, chait_id, 2, "Проверяем количество энергии...")
-        await loader(message, chait_id, 3, "Проверяем количество энергии...")
-        await loader(message, chait_id, 3, "Формируем транзакци...")
-        await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
-        await loader(message, chait_id, 4, "Совершаем транзакцию...")
-        transaction_maker = Maker_Factory.get_maker(token)
-        transaction_dict = await transaction_maker.transfer(my_transaction)
-        transaction_dict = transaction_dict.txn_resp
-        print("TANSFER", transaction_dict)
-        if transaction_dict.get("status") == "SUCCESS":
-            if transaction_dict.get("result") != "FAILED":
-                my_transaction.tnx_id = transaction_dict.get("txn").get("id")
-                my_transaction.service_fee = service_fee
-                my_transaction.status = transaction_dict.get("status")
-                await loader(message, chait_id, 5, "Совершаем транзакцию...")
-                session = await AlchemyMaster.create_session()
-                await loader(message, chait_id, 5, "Завершаем транзакцию...")
-                async with session() as session:
-                    local_object = await session.merge(my_transaction)
-                    session.add(local_object)
-                    await session.commit()
-                    await session.close()
-                    await loader(message, chait_id, 6, "Записываем данные в базу...")
-                    await loader(message, chait_id, 7, "Записываем данные в базу...")
-                    return my_transaction
-            else:
-                await message.answer("Ошибка транзакции")
-
-        else:
-            return "Недостаточно средств"
 
     @staticmethod
     async def add_currency(address: str | Address, token: Token):
@@ -159,6 +100,10 @@ class AddressService:
 
     @staticmethod
     async def get_address_transactions(address: Address) -> dict[str, Transaction]:
+
+        # TODO: Судя по всему, это метод для получения транзакций на адресе через внешний сервис. Он не доделан.
+        # Вероятно предполагается, что здесь будет использоваться фабрика мейкеров и какой-то метод внутри них.
+
         session = await AlchemyMaster.create_session()
         counter = 0
         resp = requests.get(
@@ -174,3 +119,13 @@ class AddressService:
                     float_balance = float(el["balance"]) * 1_000_000
                     print(f"{float_balance}       {el['tokenName']}")
                     print(address.address)
+
+
+    @staticmethod
+    @AlchemyMaster.alchemy_session
+    async def address_local_transactions(address: Address, *, alchemy_session: AsyncSession) -> list[Transaction]:
+        query = select(Transaction).filter(Transaction.address.has(Address.address == address.address,
+                                                                   Address.path_index == address.path_index))
+        result = (await alchemy_session.execute(query)).unique()
+        transaction_list = [raw[0] for raw in list(result)]
+        return transaction_list

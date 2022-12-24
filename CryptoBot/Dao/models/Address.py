@@ -15,24 +15,6 @@ from _config.variables import Data
 class Address(Base):
     __tablename__ = "addresses"
 
-
-    # def __init__(self, *args: Any, **kwargs: Any):
-    #     super().__init__(*args, **kwargs)
-    #     self.private_key_column_args = self.get_private_key_column_args()
-    #
-    #
-    # def get_private_key_column_args(self) -> StringEncryptedType or String:
-    #     q = "select address from addresses " \
-    #         "where private_key like '%=%';"
-    #     session = await AlchemyMaster.create_session()
-    #     async with session() as s:
-    #         result = await s.execute(q)
-    #         if self.address in result.unique().scalars():
-    #             return StringEncryptedType(String, Data.secret_key, AesEngine)
-    #         else:
-    #             return String
-
-
     address = Column(String, primary_key=True)
 
     private_key = Column(StringEncryptedType(String, Data.secret_key, AesEngine))  # TODO вот здесь заруба...
@@ -63,6 +45,13 @@ class Address(Base):
         return freezed_fee
 
 
+    def __eq__(self, other):
+        other: Address
+        return self.address == other.address, self.private_key == other.private_key, self.path_index == other.path_index
+
+
+
+    # Что это?
     def __count_transactions_in_db(self):
         transactions_in = dict(filter(lambda x: x.is_In(), self.transactions.values()))
         wallet = self.wallet
@@ -71,7 +60,7 @@ class Address(Base):
         print(transactions_in)
         return transactions_in  # , transactions_out
 
-
+    # Что это?
     # async def __get_transactions_from_blockchain(self):
     #
     #

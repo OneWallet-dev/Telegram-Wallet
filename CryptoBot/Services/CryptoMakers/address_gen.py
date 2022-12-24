@@ -1,13 +1,12 @@
-from aiogram.types import Message
+from hdwallet import BIP44HDWallet
+from typing import Union
+
 from hdwallet import BIP44HDWallet
 from hdwallet.cryptocurrencies import EthereumMainnet, TronMainnet, BitcoinMainnet
 from hdwallet.derivations import BIP44Derivation
 from hdwallet.utils import generate_mnemonic
-from typing import Union
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from Bot.utilts.currency_helper import blockchains
-from Dao.DB_Postgres.session import create_session, AlchemyMaster
+from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet

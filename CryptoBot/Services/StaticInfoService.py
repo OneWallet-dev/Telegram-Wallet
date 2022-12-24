@@ -1,5 +1,3 @@
-from contextlib import suppress
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 

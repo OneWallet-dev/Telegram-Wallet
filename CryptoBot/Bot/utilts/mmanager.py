@@ -6,9 +6,8 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, Message, \
-    Update, CallbackQuery, InputMedia
+    Update, CallbackQuery
 
-from AllLogs.bot_logger import main_logger
 from Bot.utilts.ContentService import ContentService
 from Dao.models.bot_models import ContentUnit
 

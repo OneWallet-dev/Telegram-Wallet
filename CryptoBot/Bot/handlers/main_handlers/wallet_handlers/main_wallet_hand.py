@@ -3,7 +3,6 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from Bot.handlers.Transaction_metods import transfer_hand
 from Bot.handlers.main_handlers.wallet_handlers import replenish_wallet_hand, tran_history_wallet_hand, send_wallet_hand
 from Bot.keyboards.wallet_keys import main_wallet_keys
 from Bot.states.main_states import MainState

@@ -11,7 +11,7 @@ from Bot.keyboards.wallet_keys import addresses_kb
 from Bot.states.trans_states import Trs_transfer, TransactionStates
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.ContentService import ContentService
-from Bot.utilts.currency_helper import base_tokens
+from Bot.utilts.FunctionalService import perform_sending
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.mmanager import MManager
 from Bot.utilts.settings import DEBUG_MODE
@@ -235,7 +235,10 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     token = await TokenService.get_token(token_name=token_name, token_algorithm=algotirhm_nm, main_net=main_net)
     if not token:
         raise Exception(f"TOKEN {token_name} {algotirhm_nm} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
-    transaction: Transaction = await AddressService().createTransaction(address,
+
+    print(token.contract_Id)
+
+    transaction: Transaction = await perform_sending(address,
                                                                         amount,
                                                                         token,
                                                                         to_address,
