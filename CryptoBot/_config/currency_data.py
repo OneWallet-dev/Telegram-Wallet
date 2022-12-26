@@ -17,7 +17,7 @@ class StaticCurrency:
                     'contract_address': None,
                     "network": {
                         'name': 'nile',
-                        'mainnet': True
+                        'mainnet': False
                     },
                     "algorithm": 'TRC-20'
                 }
