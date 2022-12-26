@@ -24,18 +24,13 @@ class ETH_maker(Maker):
         self.w3 = None
         self.txn_resp = dict()
         self.__gas_limit = 500_000
-        self.__BASE = "https://{}.infura.io/v3/"
-        if DEBUG_MODE:
-            self.network = "goerli"
-        else:
-            self.network = "mainnet"
+        self.__BASE = 'https://{}.infura.io/v3/'
 
-        self.__get_w3()
+    def __get_w3(self, token):
+        base = self.__BASE
+        base = base.format(token.network.name)
+        self.__BASE = base
 
-    def __get_api_base(self, token: Token):
-        self.__BASE = self.__BASE.format(token.network.name)
-
-    def __get_w3(self):
         self.w3 = Web3(
             AsyncHTTPProvider(self.__BASE + self.api_key),
             modules={'eth': (AsyncEth,),
@@ -62,14 +57,14 @@ class ETH_maker(Maker):
 
     async def get_balance(self, token: Token, address: Address) -> float:
 
-        self.__get_api_base(token)  # get base api
+        self.__get_w3(token)  # get base api
 
         contract = None if token.contract_Id == 'eth' else token.contract_Id
 
         if contract:
             contract = self.w3.eth.contract(contract, abi=EIP20_ABI)
             token_decimals_obj = contract.functions.decimals()
-            balance_obj = contract.functions.balanceOf(address)
+            balance_obj = contract.functions.balanceOf(address.address)
 
             decimals = await token_decimals_obj.call()
             balance_of_token = await balance_obj.call()
@@ -77,7 +72,7 @@ class ETH_maker(Maker):
             return balance
 
         elif contract is None:
-            balance = await self.w3.eth.get_balance(address)
+            balance = await self.w3.eth.get_balance(address.address)
             return float(self.w3.from_wei(balance, "ether"))
 
         else:
@@ -131,7 +126,7 @@ class ETH_maker(Maker):
 
     async def transfer(self, transaction: Transaction):
 
-        self.__get_api_base(transaction.token)  # get base api
+        self.__get_w3(transaction.token)  # get base api
 
         nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
 

@@ -19,7 +19,7 @@ class Tron_TRC_Maker(Tron_Maker):
         except:
             pass
 
-        async with self.get_client() as client:
+        async with self.get_client(token=token) as client:
             contract = token.contract_Id
             try:
                 if contract:
@@ -41,7 +41,7 @@ class Tron_TRC_Maker(Tron_Maker):
 
         p_key = PrivateKey(bytes.fromhex(address.private_key))
         contract = transaction.token.contract_Id
-        async with self.get_client() as client:
+        async with self.get_client(token=transaction.token) as client:
             if transaction.network == "TRC-20" and transaction.token_contract_id:
                 contract_f = await client.get_contract(contract)
                 txb = await contract_f.functions.transfer(transaction.foreign_address, int(transaction.amount * 1_000_000))

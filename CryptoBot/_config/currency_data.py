@@ -5,8 +5,8 @@ class StaticCurrency:
             "tokens": {
                 'USDT': {
                     'contract_address': "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
-                    "network" : {
-                        'name': 'tron',
+                    "network": {
+                        'name': 'mainnet',
                         'mainnet': True
                     },
                     "algorithm": 'TRC-20'
@@ -14,7 +14,7 @@ class StaticCurrency:
                 "TRX": {
                     'contract_address': None,
                     "network": {
-                        'name': 'tron',
+                        'name': 'nile',
                         'mainnet': True
                     },
                     "algorithm": 'TRC-20'
@@ -26,7 +26,7 @@ class StaticCurrency:
                 "ETH": {
                     'contract_address': None,
                     "network": {
-                        'name': 'Etherium',
+                        'name': 'mainnet',
                         'mainnet': True
                     },
                     "algorithm": 'ERC-20'

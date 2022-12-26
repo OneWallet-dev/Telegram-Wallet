@@ -26,7 +26,7 @@ class Maker_Factory:
             if blockchain == "tron":
                 maker = Tron_TRC_Maker()
             elif blockchain == "ethereum":
-                maker = ETH_maker('mainnet')
+                maker = ETH_maker()
 
             if maker:
                 return maker
@@ -51,7 +51,7 @@ class AddressService:
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
                     print('Contract', token.contract_Id)
-                    balance = await b_maker.get_balance(address=address, contract=token.contract_Id)
+                    balance = await b_maker.get_balance(token=token, address=address_obj)
 
                     balances.update({token.token_name: balance})
         return balances
