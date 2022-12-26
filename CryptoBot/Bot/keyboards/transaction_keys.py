@@ -18,7 +18,7 @@ def m_transaction():
 def trans_token_kb(custom_token_list: list[Token]):
     mark = InlineKeyboardBuilder()
     token_names = [token.token_name for token in custom_token_list]
-    for token_name in token_names:
+    for token_name in set(token_names):
         mark.row((InlineKeyboardButton(text=f"{token_name}", callback_data=f"tToken_{token_name}")))
     mark.adjust(2)
     mark.row((InlineKeyboardButton(text="<< Назад", callback_data="refresh_wallet")))
