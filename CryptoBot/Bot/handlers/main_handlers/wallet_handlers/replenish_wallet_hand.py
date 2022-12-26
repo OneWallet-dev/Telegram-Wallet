@@ -92,7 +92,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                 keyboard=addresses_kb(counter), placeholder_text=info_text)
 
 
-@router.callback_query(StateFilter(WalletStates.choose_address))
+@router.callback_query(F.data.isdigit(), StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     address_nmbr = callback.data
@@ -106,6 +106,9 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
         content.text = content.text.format(info_text=info_text)
     qr = await qr_code(address.address)
     content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".PNG")
+
+    await state.update_data(chosen_address = address.address)
+
     content.media_type = 'photo'
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text=info_text, keyboard=wallet_view_kb())

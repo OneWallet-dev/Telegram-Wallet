@@ -74,7 +74,7 @@ def refresh_button():
 def wallet_view_kb():
     mark = InlineKeyboardBuilder()
     mark.row((InlineKeyboardButton(text=f"Мои адреса", callback_data="my_adresses")))
-    mark.row((InlineKeyboardButton(text=f"История зачислений", callback_data="wallet_history")))
+    mark.row((InlineKeyboardButton(text=f"История зачислений", callback_data="receiving_address_history")))
     mark.row((InlineKeyboardButton(text=f"< Назад", callback_data="back")))
     mark.row((InlineKeyboardButton(text=f"<<< Назад в меню", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
@@ -111,10 +111,11 @@ def send_money_kb(token_list: list[str]):
 
 
 def trans_history_start():
+
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text=f"История пополнений", callback_data="replenish_history")))
-    mark.row((InlineKeyboardButton(text=f"История отправок", callback_data="send_history")))
-    mark.row((InlineKeyboardButton(text=f"История переводов по UID", callback_data="UID_history")))
+    mark.row((InlineKeyboardButton(text=f"История пополнений", callback_data="receiving_history")))
+    mark.row((InlineKeyboardButton(text=f"История отправок", callback_data="sending_history")))
+    mark.row((InlineKeyboardButton(text=f"История переводов по UID", callback_data="uid_history")))
     mark.row((InlineKeyboardButton(text=f"Назад", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
 
