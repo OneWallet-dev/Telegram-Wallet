@@ -21,16 +21,17 @@ class StaticInfoService:
                 alchemy_session.add(blockchain)
                 await alchemy_session.commit()
                 tokens = sttc_blockchains[blockchain_name].get('tokens')
-                for token_name in tokens:
-                    contract = tokens[token_name]['contract_address']
-                    network_dict = tokens[token_name]['network']
+                for token in tokens:
+
+                    contract = token['contract_address']
+                    network_dict = token['network']
                     network_name = network_dict['name']
                     network_net = network_dict['mainnet']
                     network = Network(name=network_name, blockchain=blockchain_name, mainnet=network_net)
-                    algorithm_name = tokens[token_name]['algorithm']
+                    algorithm_name = token['algorithm']
                     algorithm = Algorithm(name=algorithm_name, blockchain=blockchain_name)
 
-                    token = Token(token_name=token_name, contract_Id=contract, network=network, algorithm=algorithm)
+                    token = Token(token_name=token['name'], contract_Id=contract, network=network, algorithm=algorithm)
                     await alchemy_session.merge(token)
             await alchemy_session.commit()
         except IntegrityError:

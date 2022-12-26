@@ -2,8 +2,9 @@ class StaticCurrency:
 
     blockchains = {
         "tron": {
-            "tokens": {
-                'USDT': {
+            "tokens": [
+                {
+                    'name': 'USDT',
                     'contract_address': "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
                     "network": {
                         'name': 'mainnet',
@@ -11,7 +12,8 @@ class StaticCurrency:
                     },
                     "algorithm": 'TRC-20'
                 },
-                "TRX": {
+                {
+                    'name': "TRX",
                     'contract_address': None,
                     "network": {
                         'name': 'nile',
@@ -19,11 +21,12 @@ class StaticCurrency:
                     },
                     "algorithm": 'TRC-20'
                 }
-            }
+            ]
         },
         "ethereum": {
-            "tokens": {
-                "ETH": {
+            "tokens": [
+                {
+                    'name': "ETH",
                     'contract_address': None,
                     "network": {
                         'name': 'mainnet',
@@ -31,6 +34,6 @@ class StaticCurrency:
                     },
                     "algorithm": 'ERC-20'
                 }
-            }
+            ]
         }
     }
