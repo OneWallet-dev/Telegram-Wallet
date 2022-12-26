@@ -8,56 +8,35 @@ from web3.exceptions import *
 from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
 from web3.net import AsyncNet
 
+from Bot.utilts.settings import DEBUG_MODE
+from Dao.models import Token, Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker
 
-EIP20_ABI = json.loads('[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]')  # noqa: 501
+EIP20_ABI = json.loads(
+    '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]')  # noqa: 501
 
 Polygon_USDT = "0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1"
 
 
 class ETH_maker(Maker):
 
-    def __init__(self, network): #TODO Здесь не должно быть сети
+    def __init__(self):
         self.api_key = os.getenv('eth_API')
-        self.network = network
+        self.network = None
         self.w3 = None
         self.txn_resp = dict()
         self.__gas_limit = 500_000
         self.__BASE = "https://{}.infura.io/v3/"
-        self.__get_api_base()
+        if DEBUG_MODE:
+            self.network = "goerli"
+        else:
+            self.network = "mainnet"
+
         self.__get_w3()
 
-    def __get_api_base(self):
-        # mainnets
-        if self.network == "mainnet":  # main eth
-            self.__BASE = self.__BASE.format("mainnet")
-        elif self.network == "polygon-mainnet":  # main polygon
-            self.__BASE = self.__BASE.format("polygon-mainnet")
-        elif self.network == "near-mainnet":
-            self.__BASE = self.__BASE.format("near-mainnet")
-        elif self.network == "arbitrum-mainnet":
-            self.__BASE = self.__BASE.format("arbitrum-mainnet")
-        elif self.network == "optimism-mainnet":
-            self.__BASE = self.__BASE.format("optimism-mainnet")
-
-        # testnets
-        elif self.network == "testnet":  # main goerli
-            self.__BASE = self.__BASE.format("goerli")
-        elif self.network == "polygon-testnet":
-            self.__BASE = self.__BASE.format("polygon-mumbai")
-        elif self.network == "near-testnet":
-            self.__BASE = self.__BASE.format("near-testnet")
-        elif self.network == "arbitrum-testnet":
-            self.__BASE = self.__BASE.format("arbitrum-goerli")
-        elif self.network == "optimism-testnet":  # optimism goerli
-            self.__BASE = self.__BASE.format("optimism-goerli")
-        else:
-            raise ValueError(
-                "BadNetwork. The network can be: <mainnet/polygon-mainnet/near-mainnet/arbitrum-mainnet/"
-                "optimism-mainnet // testnet/polygon-testnet/near-testnet/arbitrum-testnet/optimism-testnet>"
-            )
-        return self
+    def __get_api_base(self, token: Token):
+        self.__BASE = self.__BASE.format(token.network.name)
 
     def __get_w3(self):
         self.w3 = Web3(
@@ -84,8 +63,11 @@ class ETH_maker(Maker):
             print("транзакция не обнаружена")
             return False
 
-    async def get_balance(self, address: str, contract: str = None) -> float:
-        contract = None if contract == 'eth' else contract
+    async def get_balance(self, token: Token, address: Address) -> float:
+
+        self.__get_api_base(token)  # get base api
+
+        contract = None if token.contract_Id == 'eth' else token.contract_Id
 
         if contract:
             contract = self.w3.eth.contract(contract, abi=EIP20_ABI)
@@ -153,6 +135,9 @@ class ETH_maker(Maker):
         return txn
 
     async def transfer(self, transaction: Transaction):
+
+        self.__get_api_base(transaction.token)  # get base api
+
         nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
 
         transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
