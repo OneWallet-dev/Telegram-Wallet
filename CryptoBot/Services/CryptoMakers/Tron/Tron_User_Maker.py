@@ -2,6 +2,7 @@ from tronpy.exceptions import *
 from tronpy.keys import PrivateKey
 
 from Bot.utilts.settings import STAKE_MODE
+from Dao.models import Token
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Tron.Tron_Maker import Tron_Maker
@@ -10,21 +11,23 @@ from Services.CryptoMakers.Tron.Tron_Maker import Tron_Maker
 class Tron_TRC_Maker(Tron_Maker):
 
     async def get_balance(self,
-                          contract: str,
-                          address: Address):
+                          token: Token,
+                          address: Address) -> float:
         try:    #TODO Вероятное нарушение принципа LSP
             if await self.is_valid_address(address) is False:
                 return float(0)
         except:
             pass
+
         async with self.get_client() as client:
+            contract = token.contract_Id
             try:
                 if contract:
                     contract = await client.get_contract(contract)
-                    return float(await contract.functions.balanceOf(address) / 1_000_000)
+                    return float(await contract.functions.balanceOf(address.address) / 1_000_000)
 
                 else:
-                    return float(await client.get_account_balance(address))
+                    return float(await client.get_account_balance(address.address))
             except AddressNotFound:
                 return float(0)
 
@@ -35,7 +38,7 @@ class Tron_TRC_Maker(Tron_Maker):
 
         txb = None
         address = transaction.address
-        print("user_pk", address.private_key)
+
         p_key = PrivateKey(bytes.fromhex(address.private_key))
         contract = transaction.token.contract_Id
         async with self.get_client() as client:
@@ -57,7 +60,6 @@ class Tron_TRC_Maker(Tron_Maker):
                 self.txn_resp["status"] = "SUCCESS"
                 self.txn_resp["message"] = "Transfer success"
                 txn = await txn_ret.wait()
-                print(txn.get("id"))
                 self.txn_resp["txn"] = txn.get("id")
             except ValidationError:
                 self.txn_resp["status"] = "ValidationError"
@@ -103,10 +105,9 @@ class Tron_TRC_Maker(Tron_Maker):
                 else:
                     pass
             else:
-                balance = await self.get_balance(address=transaction.owner_address)
-                print(balance)
-                if float(balance) < float(self.trx_min_balance):
-                    add_balance = float(self.trx_min_balance) - float(balance)
+                balance = await self.get_balance(address=transaction.address, token=transaction.token)
+                if balance < float(self.trx_min_balance):
+                    add_balance = float(self.trx_min_balance) - balance
                     print(f"Перевод {add_balance} TRX на кошелек <{transaction.owner_address}>")
                     await self.activate_account(transaction, add_balance)
         await self.transfer(transaction, fee_limit)

@@ -8,6 +8,7 @@ from tronpy.keys import PrivateKey
 from tronpy.providers import AsyncHTTPProvider
 
 from Bot.utilts.settings import DEBUG_MODE
+from Dao.models import Token
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker
@@ -18,32 +19,27 @@ class Tron_Maker(Maker):
         self.api_key = os.getenv('tron_API')
         self._main_pk_key = os.getenv('main_private_key')
         self._main_adds = os.getenv('main_address')
-        self.signature = None
         self._user_pk_key = None
         self._user_adds = None
-        self.owner = None
         self.txn_resp = dict()
+
         self.energy = 15000
         self.bandwitch = 1000
         self.trx_min_balance = 10
         self.TRON_SCAN_API_URL = "https://apilist.tronscanapi.com/api"
-        if DEBUG_MODE:
-            self.network = "nile"
-        else:
-            self.network = "mainnet"
         self._fee_limit = 20_000_000
 
-    def get_client(self):
+    def get_client(self, token: Token):
 
-        if self.network == "mainnet":
+        if token.network.name == "mainnet":
             return AsyncTron(provider=AsyncHTTPProvider(api_key=self.api_key, timeout=30))
-        elif self.network == "nile":
+        elif token.network.name == "nile":
             _http_client = AsyncClient(timeout=Timeout(timeout=30, connect=5, read=5))
             provider = AsyncHTTPProvider(CONF_NILE, client=_http_client)
             return AsyncTron(provider=provider)
 
         else:
-            raise ValueError(f"network: <{self.network}>  not supported")
+            raise ValueError(f"network: <{token.network.name}>  not supported")
 
     async def account_resource(self, transaction: Transaction):
 
@@ -74,10 +70,10 @@ class Tron_Maker(Maker):
         except ValueError:
             return False
 
-    async def is_valid_contract(self, contract_address: str) -> str:
+    async def is_valid_contract(self, contract_address: str) -> str | bool:
         """
         :param contract_address:
-        :return: "contract name"
+        :return: "contract name" or False
         """
 
         async with self.get_client() as client:
@@ -128,7 +124,7 @@ class Tron_Maker(Maker):
     async def activate_account(self, transaction: Transaction, amount: float = 1):
         async with self.get_client() as client:
             txb = (
-                client.trx.transfer(self._main_adds, transaction.owner_address, int(1 * 1_000_000))
+                client.trx.transfer(self._main_adds, transaction.owner_address, int(amount * 1_000_000))
                 .with_owner(self._main_adds)
                 .fee_limit(self._fee_limit)
             )
