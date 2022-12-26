@@ -10,6 +10,7 @@ async def getFeeStrategy(token: Token, owner: Owner = None) -> float|str: #TODO 
         if token.algorithm == "TRC-20":
             return 2.0
     else:
-        return 0 # Todo для родных токенов это доля от network_fee
+        return 0
+        # Todo для родных токенов это доля от network_fee
 
 

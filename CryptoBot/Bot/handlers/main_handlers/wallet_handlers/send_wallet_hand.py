@@ -82,6 +82,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     chain_address = await OwnerService().get_chain_address(u_id, blockchain)
 
     fee = await getFeeStrategy(token_obj)
+    print(fee)
     frozen_fee = chain_address.get_address_freezed_fee(token_name)
     balance_info = await AddressService().get_address_balances(chain_address.address, [token_obj])
     token_balance = balance_info.get(token_name, 0.0)
@@ -93,6 +94,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(frozen_fee=frozen_fee)
     await state.update_data(fee=fee)
     await state.update_data(blockchain=blockchain)
+
 
     placeholder_text = f"Выбранная валюта: {token_obj.token_name}\n" \
            f"Выбранная сеть: {token_obj.algorithm.name}\n" \
