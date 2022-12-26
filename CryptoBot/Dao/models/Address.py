@@ -35,13 +35,14 @@ class Address(Base):
 
 
     def get_address_freezed_fee(self,
-                                token_name: str = None) -> float:
+                                token_name: str) -> float:
         freezed_fee: float = 0
         for transaction in self.transactions.values():
-            if transaction.service_fee is not None:
-                freezed_fee = freezed_fee + transaction.service_fee
-            else:
-                break
+            if transaction.token.token_name == token_name:
+                if transaction.service_fee is not None:
+                    freezed_fee = freezed_fee + transaction.service_fee
+                else:
+                    break
         return freezed_fee
 
 
