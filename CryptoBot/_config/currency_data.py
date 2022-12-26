@@ -36,7 +36,7 @@ class StaticCurrency:
                 },
                 {
                     'name': "USDT",
-                    'contract_address': None,
+                    'contract_address': "0xdAC17F958D2ee523a2206206994597C13D831ec7",
                     "network": {
                         'name': 'mainnet',
                         'mainnet': True
