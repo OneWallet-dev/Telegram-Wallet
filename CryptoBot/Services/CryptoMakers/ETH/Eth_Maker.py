@@ -150,6 +150,7 @@ class ETH_maker(Maker):
             self.txn_resp["status"] = "SUCCESS"
             self.txn_resp["message"] = "Transfer success"
             self.txn_resp["txn"] = txn_hash.hex()
+            #TODO CryptoBot/Bot/utilts/FunctionalService.py:45
             return self
         except ValueError:
             print("Баланса недостаточно для совершения транзакции")
