@@ -30,6 +30,11 @@ class ContentService:
                                                  photo=content.media_id,
                                                  caption=content.text,
                                                  reply_markup=keyboard)
+                elif content.media_type == 'animation':
+                    n_msg = await bot.send_animation(chat_id=chat_id,
+                                                 animation=content.media_id,
+                                                 caption=content.text,
+                                                 reply_markup=keyboard)
             except TelegramBadRequest:
                 n_msg = await bot.send_message(text=f"<i>BAD {content.media_type.upper()}</i>!\n"
                                                     f"<code>{content.tag}</code>\n\n" + content.text,

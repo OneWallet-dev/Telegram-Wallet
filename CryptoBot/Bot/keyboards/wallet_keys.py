@@ -73,6 +73,7 @@ def refresh_button():
 
 def wallet_view_kb():
     mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text=f"Показать QR код", callback_data="QRFK")))
     mark.row((InlineKeyboardButton(text=f"Мои адреса", callback_data="my_adresses")))
     mark.row((InlineKeyboardButton(text=f"История зачислений", callback_data="receiving_address_history")))
     mark.row((InlineKeyboardButton(text=f"< Назад", callback_data="back")))
