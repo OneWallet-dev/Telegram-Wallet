@@ -1,3 +1,4 @@
+from Bot.utilts.FunctionalService import debug_filter
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Services.EntServices.AddressService import AddressService
@@ -21,8 +22,9 @@ async def all_wallets_text(u_id: str):
                 adress_obj = addressess.get(address)
                 balances = await AddressService.get_address_balances(address=address)
                 for token in adress_obj.tokens:
-                    balance = balances.get(token.token_name, 'Iternal Error!')
-                    text += f"{token.token_name}: {balance}\n"
+                    if debug_filter(token):
+                        balance = balances.get(token.token_name, 'Iternal Error!')
+                        text += f"{token.token_name}: {balance}\n"
                 fee += adress_obj.get_address_freezed_fee()
 
         text += "<code>——————————————————————</code>\n"
