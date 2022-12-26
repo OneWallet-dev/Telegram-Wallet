@@ -50,17 +50,24 @@ class TransactionService:
 
     @staticmethod
     @AlchemyMaster.alchemy_session
-    async def get_user_transactions(u_id: str, transaction_type: str | None = None,
+    async def get_user_transactions(u_id: str, transaction_type: str | None = None, address: str | None = None,
                                     *, alchemy_session: AsyncSession):
         if transaction_type:
             TransactionService.__type_check(transaction_type)
 
         if transaction_type:
             query = select(Transaction).filter(Transaction.type == transaction_type,
-                                           Transaction.address.has(Address.wallet.has(Wallet.owner_id == u_id)))
+                                           Transaction.address.has(
+                                               Address.wallet.has(Wallet.owner_id == u_id))
+                                               ).order_by(Transaction.datetime.asc())
         else:
-            query = select(Transaction).filter(Transaction.address.has(Address.wallet.has(Wallet.owner_id == u_id)))
+            query = select(Transaction).filter(
+                Transaction.address.has(Address.wallet.has(Wallet.owner_id == u_id))
+            ).order_by(
+                Transaction.datetime.asc())
 
+        if address:
+            query = query.filter(Transaction.address.has(Address.address == address))
 
         raw_result = (await alchemy_session.execute(query)).unique()
         transaction_list = [transaction for raw in raw_result for transaction in raw]

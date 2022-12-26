@@ -236,7 +236,6 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     if not token:
         raise Exception(f"TOKEN {token_name} {algotirhm_nm} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
 
-    print(token.contract_Id)
 
     transaction: Transaction = await perform_sending(address,
                                                                         amount,
