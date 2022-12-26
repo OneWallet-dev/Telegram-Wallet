@@ -15,6 +15,7 @@ from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.bot_models import ContentUnit
 from Services.EntServices.OwnerService import OwnerService
+from Services.EntServices.TokenService import TokenService
 
 router = Router()
 
@@ -25,8 +26,9 @@ router = Router()
 async def replenish_choose_currency(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.replenish_token)
     content: ContentUnit = await ContentUnit(tag="repl_choose_currency").get()
+    all_tokens_list = await TokenService.all_tokens()
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
-                                keyboard=add_token_kb(),
+                                keyboard=add_token_kb(all_tokens_list),
                                 placeholder_text=f"Выберите валюту:")
 
 
@@ -42,8 +44,9 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
         await state.update_data(token=token)
     await state.set_state(WalletStates.replenish_network)
     content: ContentUnit = await ContentUnit(tag="repl_choose_network").get()
+    algos = await TokenService.alorithms_for_token_name(token_name=token)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
-                                keyboard=network_kb(token=token),
+                                keyboard=network_kb(custom_network_list=algos),
                                 placeholder_text=f"Выберите сеть:")
 
 

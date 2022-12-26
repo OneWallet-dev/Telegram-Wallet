@@ -18,11 +18,11 @@ def main_wallet_keys():
 
 def add_token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
-    t_list = custom_token_list if custom_token_list else base_tokens.keys()
-    for token in t_list:
-        mark.row((InlineKeyboardButton(text=f"🔘 {token}", callback_data=f"new_t_{token}")))
+    token_names = [token.token_name for token in custom_token_list]
+    for token_name in token_names:
+        mark.row((InlineKeyboardButton(text=f"{token_name}", callback_data=f"new_t_{token_name}")))
     mark.adjust(2)
-    mark.row((InlineKeyboardButton(text=f"↖️ Вернуться", callback_data="back_to_wall")))
+    mark.row((InlineKeyboardButton(text="<< Назад", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
 
 
@@ -44,13 +44,13 @@ def inspect_token_kb(token_list: list[Token]):
     return mark.as_markup(resize_keyboard=True)
 
 
-def network_kb(token: str, custom_network_list: list | None = None):
+def network_kb(custom_network_list: list | None = None):
     mark = InlineKeyboardBuilder()
-    n_list = custom_network_list if custom_network_list else base_tokens.get(token).get("network")
-    for network in n_list:
-        mark.row((InlineKeyboardButton(text=f"📟 {network}", callback_data=f"new_n_{network}")))
+    algo_names = [algo.name for algo in custom_network_list]
+    for algo_name in algo_names:
+        mark.row((InlineKeyboardButton(text=f"{algo_name}", callback_data=f"new_n_{algo_name}")))
     mark.adjust(2)
-    mark.row((InlineKeyboardButton(text=f"↖️ Изменить токен", callback_data="back")))
+    mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
 
