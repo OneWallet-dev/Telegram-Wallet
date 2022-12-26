@@ -33,6 +33,15 @@ class StaticCurrency:
                         'mainnet': True
                     },
                     "algorithm": 'ERC-20'
+                },
+                {
+                    'name': "USDT",
+                    'contract_address': None,
+                    "network": {
+                        'name': 'mainnet',
+                        'mainnet': True
+                    },
+                    "algorithm": 'ERC-20'
                 }
             ]
         }
