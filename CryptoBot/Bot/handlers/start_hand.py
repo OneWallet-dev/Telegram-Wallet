@@ -11,11 +11,13 @@ from Bot.handlers.main_handlers.main_menu_hand import title_entry_point
 from Bot.keyboards.main_keys import main_menu_kb
 # from Bot.utilts.USDT_Calculator import USDT_Calculator
 from Bot.utilts.mmanager import MManager
+from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Services.EntServices.TransactionService import TransactionService
 
 router = Router()
 
@@ -93,11 +95,10 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 
 @router.message(Command("test"))
 async def ttt(message: Message, session: AsyncSession):
-
-    token = await session.get(Token, 1)
-    token2 = await session.get(Token, 2)
-
-    print(token.token_name, token2.token_name)
+    user_id = message.from_user.id
+    u_id = await DataRedis.find_user(user_id)
+    trans_list = await TransactionService.get_user_transactions(u_id, transaction_type='sending')
+    print(trans_list)
 
 
 @router.message(Command("try"))

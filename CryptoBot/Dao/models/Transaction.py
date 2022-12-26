@@ -34,4 +34,3 @@ class Transaction(Base):
         return f"- Tnx link: {self.tnx_id}\n" \
                f"- {self.amount} from {self.owner_address} ==> {self.foreign_address}\n" \
                f"- Status: {self.status}\n\n"
-

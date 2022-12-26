@@ -18,8 +18,8 @@ async def perform_sending(address: Address,
                           chait_id: int = None) -> Transaction or str:
 
     await loader(message, chait_id, 1, "Проверяем баланс...")
-    service_fee = await getFeeStrategy(address)
 
+    service_fee = await getFeeStrategy(address)
     my_transaction = await TransactionService.create_transaction(token=token,
                                                            owner_address=address.address,
                                                            foreign_address=to_address,

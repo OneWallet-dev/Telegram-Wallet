@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from Bot.keyboards.wallet_keys import trans_history_start
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
+from Dao.DB_Redis import DataRedis
 from Dao.models.bot_models import ContentUnit
 
 router = Router()
@@ -23,4 +24,6 @@ async def tran_history_start(callback: CallbackQuery, state: FSMContext, bot: Bo
 
 @router.callback_query(F.data == "send_history", StateFilter(WalletStates))
 async def tran_history_send(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    pass
+    await state.set_state(WalletStates.transaction_history_send)
+    u_id = await DataRedis.find_user(callback.from_user.id)
+

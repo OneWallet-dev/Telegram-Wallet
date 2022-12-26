@@ -37,9 +37,6 @@ class Maker_Factory:
                             f"token name {token.token_name}")
 
 
-
-
-
 class AddressService:
 
     @staticmethod
