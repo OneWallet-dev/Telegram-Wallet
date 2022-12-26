@@ -60,7 +60,7 @@ class Tron_TRC_Maker(Tron_Maker):
                 self.txn_resp["status"] = "SUCCESS"
                 self.txn_resp["message"] = "Transfer success"
                 txn = await txn_ret.wait()
-                self.txn_resp["txn"] = txn.get("id")
+                self.txn_resp["txn"] = txn.get("id") #TODO CryptoBot/Bot/utilts/FunctionalService.py:45
             except ValidationError:
                 self.txn_resp["status"] = "ValidationError"
                 self.txn_resp["message"] = "Account not active"

@@ -20,8 +20,8 @@ async def perform_sending(address: Address,
 
     await loader(message, chait_id, 1, "Проверяем баланс...")
 
-    service_fee = await getFeeStrategy(address)
-    my_transaction = await TransactionService.create_transaction(token=token,
+    service_fee = await getFeeStrategy(token)
+    my_transaction: Transaction = await TransactionService.create_transaction(token=token,
                                                            owner_address=address.address,
                                                            foreign_address=to_address,
                                                            amount=amount,
@@ -41,11 +41,22 @@ async def perform_sending(address: Address,
     transaction_maker = Maker_Factory.get_maker(token)
     transaction_dict = await transaction_maker.transfer(my_transaction)
     transaction_dict = transaction_dict.txn_resp
+    try:
+        network_fee = transaction_dict["network_fee"] #TODO Здесь важно получать в словаре network_fee: float  - сумма выплаченого газа в токене адреса
+    except:
+        network_fee  = 0
+
     print("TANSFER", transaction_dict)
     if transaction_dict.get("status") == "SUCCESS":
-        if transaction_dict.get("result") != "FAILED":
+        if transaction_dict.get("result") != "FAILED": #TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
+
             my_transaction.tnx_id = transaction_dict.get("txn").get("id")
-            my_transaction.service_fee = service_fee
+            if service_fee < 1:
+                my_transaction.service_fee = network_fee*service_fee
+            else:
+                my_transaction.service_fee = service_fee
+
+
             my_transaction.status = transaction_dict.get("status")
             await loader(message, chait_id, 5, "Совершаем транзакцию...")
             session = await AlchemyMaster.create_session()

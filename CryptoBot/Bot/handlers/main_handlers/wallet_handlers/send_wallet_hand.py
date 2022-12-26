@@ -81,7 +81,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     u_id = await DataRedis.find_user(int(callback.from_user.id))
     chain_address = await OwnerService().get_chain_address(u_id, blockchain)
 
-    fee = await getFeeStrategy(chain_address)
+    fee = await getFeeStrategy(token_obj)
     frozen_fee = chain_address.get_address_freezed_fee(token_name)
     balance_info = await AddressService().get_address_balances(chain_address.address, [token_obj])
     token_balance = balance_info.get(token_name, 0.0)
