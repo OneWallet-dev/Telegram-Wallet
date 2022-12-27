@@ -40,8 +40,8 @@ class EthMaker(Maker):
         if token and address:
             self.token = token
             self.address = address
-        else:
-            raise AttributeError("Address or token not set")
+
+        self.__get_w3()
 
     def __get_w3(self):
         base = self.__BASE
@@ -74,10 +74,10 @@ class EthMaker(Maker):
             return False
 
     async def get_balance(self) -> float:
-
-        self.__get_w3()  # get base api
-
+        print(self.token.contract_Id)
+        print(self.token.network.name)
         contract = None if self.token.contract_Id == 'eth' else self.token.contract_Id
+        print(self.address.address)
 
         if contract:
             contract = self.w3.eth.contract(contract, abi=EIP20_ABI)
@@ -145,8 +145,6 @@ class EthMaker(Maker):
 
     async def transfer(self):
 
-        self.__get_w3()  # get base api
-
         nonce = await self.w3.eth.get_transaction_count(self.transaction.address.address, 'pending')
 
         self.transaction.token.contract_Id = None\
@@ -155,7 +153,7 @@ class EthMaker(Maker):
         trn = await self.build_txn(nonce)
 
         try:
-            address = self.transaction.address.address
+            address = self.transaction.address
             try:
                 signed_txn = self.w3.eth.account.sign_transaction(trn, address.private_key)
                 txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
