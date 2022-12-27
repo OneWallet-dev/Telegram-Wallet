@@ -13,6 +13,15 @@ class StaticCurrency:
                     "algorithm": 'TRC-20'
                 },
                 {
+                    'name': 'USDT',
+                    'contract_address': "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj",
+                    "network": {
+                        'name': 'nile',
+                        'mainnet': False
+                    },
+                    "algorithm": 'TRC-20'
+                },
+                {
                     'name': "TRX",
                     'contract_address': None,
                     "network": {

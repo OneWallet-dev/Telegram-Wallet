@@ -43,12 +43,14 @@ async def perform_sending(address: Address,
     transaction_dict = transaction_dict.txn_resp
     try:
         network_fee = transaction_dict["network_fee"] #TODO Здесь важно получать в словаре network_fee: float  - сумма выплаченого газа в токене адреса
+                                                      #TODO *Макс - я бы рад, но пока у нас нет такой возможности так как инфа о транзе не выдвет результат, я покапаюсь
     except:
         network_fee  = 0
 
     print("TANSFER", transaction_dict)
     if transaction_dict.get("status") == "SUCCESS":
         if transaction_dict.get("result") != "FAILED": #TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
+                                                       #TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
 
             my_transaction.tnx_id = transaction_dict.get("txn").get("id")
             if service_fee < 1:
