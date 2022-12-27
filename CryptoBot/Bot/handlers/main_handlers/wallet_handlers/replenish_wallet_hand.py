@@ -52,7 +52,6 @@ async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 @router.callback_query(F.data.startswith("my_adresses"), StateFilter(WalletStates.choose_address))
 @router.callback_query(F.data.startswith("new_n"), StateFilter(WalletStates.replenish_network))
-@MManager.garbage_manage(store=False, clean=True)
 async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.choose_address)
     data = await state.get_data()
@@ -64,23 +63,24 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
         await state.update_data(network=network_name)
 
     content: ContentUnit = await ContentUnit(tag="replenish_info").get()
-    info_text = "Выбранная валюта: <code>{token_name}</code>\n" \
+    placeholder_text = "Выбранная валюта: <code>{token_name}</code>\n" \
                 "Выбранная сеть: <code>{network}</code>\n" \
-                "Минимальная сумма пополнения: {USDT_min}\n" \
-                "Комиссия: {USDT_comission}\n" \
-                "Необходимое количество подтверждений: {USDT_approvals}"
-    info_text = info_text.format(token_name=token_name, network=network_name,
-                                 USDT_min=2, USDT_comission=0, USDT_approvals=20)
+                "Минимальная сумма пополнения: {repl_min}\n" \
+                "Комиссия: {comission}\n" \
+                "Необходимое количество подтверждений: {approvals}"
+    placeholder_text = placeholder_text.format(token_name=token_name, network=network_name,
+                                 repl_min=2, comission=0, approvals=20)
     if content.text:
-        content.text = content.text.format(info_text=info_text)
-    msg = await ContentService.send(content, bot, chat_id=callback.message.chat.id, placeholder_text=info_text)
+        content.text = content.text.format(token_name=token_name, network=network_name,
+                                 repl_min=2, comission=0, approvals=20)
+    msg = await ContentService.send(content, bot, chat_id=callback.message.chat.id, placeholder_text=placeholder_text)
     await MManager.garbage_store(state, msg.message_id)
 
     chain = [i for i in blockchains if network_name in blockchains[i]['networks']][0]
     u_id = await DataRedis.find_user(callback.from_user.id)
     addresses = await OwnerService.get_all_chain_addresses(u_id, chain)
 
-    content: ContentUnit = await ContentUnit(tag="replenish_address").get()
+    content: ContentUnit = await ContentUnit(tag="replenish_addresses").get()
     info_text = "Доступные адреса:\n\n"
 
     counter = 1
@@ -96,10 +96,11 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                 keyboard=addresses_kb(counter), placeholder_text=info_text)
 
 
-@router.callback_query(F.data == 'back', StateFilter(WalletStates.choose_address))
+@router.callback_query(F.data == 'back', StateFilter(WalletStates.qr))
 @router.callback_query(F.data.isdigit(), StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+    await state.set_state(WalletStates.choose_address)
     address_nmbr = callback.data
     data = await state.get_data()
     if callback.data == 'back':
@@ -112,7 +113,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
     info_text = f'Выбранный адрес: <code>{address.address}</code>\n\n' \
                 f'*Нажмите на адрес, чтобы скопировать.'
     if content.text:
-        content.text = content.text.format(info_text=info_text)
+        content.text = content.text.format(address=address.address)
 
     await state.update_data(chosen_address=address.address)
 
@@ -124,6 +125,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
 @router.callback_query(F.data == 'QRFK', StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    await state.set_state(WalletStates.qr)
     data = await state.get_data()
     address = data.get('chosen_address')
 
@@ -131,5 +133,6 @@ async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
     content: ContentUnit = await ContentUnit(tag="qrcd").get()
     content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".gif")
     content.media_type = 'animation'
+    content.text = content.text.format(address=address)
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text='Ваш QR код для пополнения кошелька', keyboard=back_button())

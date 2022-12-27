@@ -2,6 +2,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class WalletStates(StatesGroup):
+    qr = State()
     transaction_history_send = State()
     transaction_history_start = State()
     send_start = State()

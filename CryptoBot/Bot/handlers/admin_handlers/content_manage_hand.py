@@ -48,7 +48,7 @@ async def content_all_tags(callback: CallbackQuery, state: FSMContext, bot: Bot)
 async def content_tag_selected(message: Message, state: FSMContext, bot: Bot):
     content = await ContentUnit(tag=message.text).get()
     await state.update_data(tag_use=message.text)
-    if content:
+    if content.text or content.media_id:
         garb = await message.answer(f"Ниже приведено сообщение, найденное по тегу {message.text}")
         await MManager.garbage_store(state, garb.message_id)
         await MManager.content_surf(message, state, bot, content, keyboard=content_edit_kb())
