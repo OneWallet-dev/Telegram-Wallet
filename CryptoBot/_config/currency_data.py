@@ -68,6 +68,16 @@ class StaticCurrency:
                     "algorithm": 'ERC-20'
                 },
                 {
+                    'name': "USDT",
+                    'contract_address': "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+                    "network": {
+                        'name': 'polygon-mainnet',
+                        'mainnet': True
+                    },
+                    "display_algorithm": "Polygon",
+                    "algorithm": 'ERC-20'
+                },
+                {
                     'name': "MATIC",
                     'contract_address': None,
                     "network": {
