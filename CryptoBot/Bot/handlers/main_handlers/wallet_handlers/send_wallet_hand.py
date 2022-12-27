@@ -252,7 +252,8 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     await state.set_state(TransactionStates.main)
 
     content: ContentUnit = await ContentUnit(tag="trans_result").get()
-    content.text.format(token=transaction.token.token_name, network=transaction.token.algorithm_name,
+    content.text.format(trans_id=transaction.id,
+                        token=transaction.token.token_name, network=transaction.token.algorithm_name,
                         wallet=transaction.address.address, second_wallet=transaction.foreign_address,
                         amount=transaction.amount, final_sum=transaction.amount)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
