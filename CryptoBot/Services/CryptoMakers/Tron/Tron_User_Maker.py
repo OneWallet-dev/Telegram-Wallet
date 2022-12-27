@@ -13,11 +13,6 @@ class Tron_TRC_Maker(Tron_Maker):
     async def get_balance(self,
                           token: Token,
                           address: Address) -> float:
-        try:    #TODO Вероятное нарушение принципа LSP
-            if await self.is_valid_address(address) is False:
-                return float(0)
-        except:
-            pass
 
         async with self.get_client(token=token) as client:
             contract = token.contract_Id
@@ -42,12 +37,6 @@ class Tron_TRC_Maker(Tron_Maker):
         p_key = PrivateKey(bytes.fromhex(address.private_key))
         contract = transaction.token.contract_Id
         async with self.get_client(token=transaction.token) as client:
-            print(1111111111)
-            print(transaction.token.network.name)
-            print(transaction.token.contract_Id)
-            print(transaction.owner_address)
-            print(transaction.address.address)
-            print(1111111111)
 
             if transaction.token.algorithm_name == "TRC-20" and transaction.token.contract_Id:
                 contract_f = await client.get_contract(contract)
@@ -57,7 +46,7 @@ class Tron_TRC_Maker(Tron_Maker):
                 txb = (
                     client.trx.transfer(address.address, transaction.foreign_address,
                                         int(transaction.amount * 1_000_000))
-                    .with_owner(transaction.owner_address)
+                    .with_owner(address.address)
                     .fee_limit(self._fee_limit)
                 )
             else:
@@ -69,7 +58,7 @@ class Tron_TRC_Maker(Tron_Maker):
                 self.txn_resp["status"] = "SUCCESS"
                 self.txn_resp["message"] = "Transfer success"
                 txn = await txn_ret.wait()
-                self.txn_resp["txn"] = txn.get("id") #TODO CryptoBot/Bot/utilts/FunctionalService.py:45
+                self.txn_resp["txn"] = txn.get("id")
             except ValidationError:
                 self.txn_resp["status"] = "ValidationError"
                 self.txn_resp["message"] = "Account not active"

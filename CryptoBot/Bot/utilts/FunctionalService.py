@@ -17,16 +17,15 @@ async def perform_sending(address: Address,
                           to_address: str,
                           message: Message = None,
                           chait_id: int = None) -> Transaction or str:
-
     await loader(message, chait_id, 1, "Проверяем баланс...")
 
     service_fee = await getFeeStrategy(token)
     my_transaction: Transaction = await TransactionService.create_transaction(token=token,
-                                                           owner_address=address.address,
-                                                           foreign_address=to_address,
-                                                           amount=amount,
-                                                           fee=service_fee,
-                                                           transaction_type='sending')
+                                                                              owner_address=address.address,
+                                                                              foreign_address=to_address,
+                                                                              amount=amount,
+                                                                              fee=service_fee,
+                                                                              transaction_type='sending')
 
     await loader(message, chait_id, 1, "Проверяем нагрузку сети...")
     await loader(message, chait_id, 1, "Вычисляем блоки...")
@@ -42,22 +41,23 @@ async def perform_sending(address: Address,
     transaction_dict = await transaction_maker.transfer(my_transaction)
     transaction_dict = transaction_dict.txn_resp
     try:
-        network_fee = transaction_dict["network_fee"] #TODO Здесь важно получать в словаре network_fee: float  - сумма выплаченого газа в токене адреса
-                                                      #TODO *Макс - я бы рад, но пока у нас нет такой возможности так как инфа о транзе не выдвет результат, я покапаюсь
+        network_fee = transaction_dict[
+            "network_fee"]  # TODO Здесь важно получать в словаре network_fee: float  - сумма выплаченого газа в токене адреса
+                            # TODO *Макс - я бы рад, но пока у нас нет такой возможности так как инфа о транзе не выдвет результат, я покапаюсь
     except:
-        network_fee  = 0
+        network_fee = 0
 
     print("TANSFER", transaction_dict)
     if transaction_dict.get("status") == "SUCCESS":
-        if transaction_dict.get("result") != "FAILED": #TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
-                                                       #TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
+        if transaction_dict.get(
+                "result") != "FAILED":  # TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
+                                        # TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
 
             my_transaction.tnx_id = transaction_dict.get("txn")
             if service_fee < 1:
-                my_transaction.service_fee = network_fee*service_fee
+                my_transaction.service_fee = network_fee * service_fee
             else:
                 my_transaction.service_fee = service_fee
-
 
             my_transaction.status = transaction_dict.get("status")
             await loader(message, chait_id, 5, "Совершаем транзакцию...")
@@ -83,4 +83,3 @@ def debug_filter(token: Token):
         return True
     else:
         return False
-

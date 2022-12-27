@@ -235,12 +235,6 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     to_address = s_data.get("to_address")
     blockchain = s_data.get("blockchain")
     amount = s_data.get("amount")
-    print(token_name)
-    print(contract_Id)
-    print(algorithm_name)
-    print(to_address)
-    print(blockchain)
-    print(amount)
 
     u_id = await DataRedis.find_user(int(callback.from_user.id))
 
