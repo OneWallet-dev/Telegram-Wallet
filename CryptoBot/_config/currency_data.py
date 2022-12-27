@@ -68,7 +68,7 @@ class StaticCurrency:
                     "algorithm": 'ERC-20'
                 },
                 {
-                    'name': "Polygon",
+                    'name': "MATIC",
                     'contract_address': None,
                     "network": {
                         'name': 'polygon-mumbai',
