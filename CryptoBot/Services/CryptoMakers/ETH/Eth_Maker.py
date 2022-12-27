@@ -85,9 +85,9 @@ class ETH_maker(Maker):
 
         gas_price = await self.get_gas_price()
         print("gas price", self.w3.from_wei(gas_price, "ether"))
-        print(transaction.token_contract_id)
 
-        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
+
+        transaction.token.contract_Id = None if transaction.token.contract_Id == 'eth' else transaction.token.contract_Id
         contract = transaction.token.contract_Id
         if contract is None:
             self.txn_resp["status"] = "Bilded"
@@ -95,7 +95,7 @@ class ETH_maker(Maker):
             self.txn_resp["txn"] = None
             txn = {
                 'chainId': await self.w3.eth.chain_id,
-                'from': transaction.owner_address,
+                'from': transaction.address.address,
                 'to': transaction.foreign_address,
                 'value': int(Web3.to_wei(transaction.amount, "ether")),
                 'nonce': nonce,
@@ -109,7 +109,7 @@ class ETH_maker(Maker):
 
             reformat_amount = int(transaction.amount * 10 ** token_decimals)
 
-            nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
+            nonce = await self.w3.eth.get_transaction_count(transaction.address.address, 'pending')
             self.txn_resp["status"] = "Bilded"
             self.txn_resp["message"] = "transaction bilded"
             self.txn_resp["txn"] = None
@@ -128,18 +128,16 @@ class ETH_maker(Maker):
 
         self.__get_w3(transaction.token)  # get base api
 
-        nonce = await self.w3.eth.get_transaction_count(transaction.owner_address, 'pending')
+        nonce = await self.w3.eth.get_transaction_count(transaction.address.address, 'pending')
 
-        transaction.token_contract_id = None if transaction.token_contract_id == 'eth' else transaction.token_contract_id
+        transaction.token.contract_Id = None if transaction.token.contract_Id == 'eth' else transaction.token.contract_Id
 
-        if transaction.token_contract_id is None:
-            trn = await self.build_txn(transaction, nonce)
-
-        else:
-            trn = await self.build_txn(transaction, nonce)
+        trn = await self.build_txn(transaction, nonce)
 
         try:
             address = transaction.address
+            print("PRIVATE", address.private_key)
+            print("ADDRESS", address.address)
             try:
                 signed_txn = self.w3.eth.account.sign_transaction(trn, address.private_key)
                 txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)

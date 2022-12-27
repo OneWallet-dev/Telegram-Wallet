@@ -44,6 +44,15 @@ class StaticCurrency:
                     "algorithm": 'ERC-20'
                 },
                 {
+                    'name': "ETH",
+                    'contract_address': None,
+                    "network": {
+                        'name': 'goerli',
+                        'mainnet': False
+                    },
+                    "algorithm": 'ERC-20'
+                },
+                {
                     'name': "USDT",
                     'contract_address': "0xdAC17F958D2ee523a2206206994597C13D831ec7",
                     "network": {
