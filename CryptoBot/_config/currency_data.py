@@ -128,26 +128,6 @@ class StaticCurrency:
                     "algorithm": 'ERC-20'
                 },
                 {
-                    'name': "NEAR",
-                    'contract_address': None,
-                    "network": {
-                        'name': 'near-mainnet',
-                        'mainnet': True
-                    },
-                    "display_algorithm": "NEAR",
-                    "algorithm": 'ERC-20'
-                },
-                {
-                    'name': "NEAR",
-                    'contract_address': None,
-                    "network": {
-                        'name': 'near-testnet',
-                        'mainnet': False
-                    },
-                    "display_algorithm": "NEAR TESTNET",
-                    "algorithm": 'ERC-20'
-                },
-                {
                     'name': "USDT",
                     'contract_address': "0xdAC17F958D2ee523a2206206994597C13D831ec7",
                     "network": {
