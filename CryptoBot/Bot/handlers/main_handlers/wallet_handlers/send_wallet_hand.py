@@ -150,7 +150,7 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     placeholder_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\n\nБаланс: {balance[token_name]}\n\n" \
                 f"Выберите сумму которую хотите отправить:"
     if content.text:
-        content.text = content.text.format(address=address.address)
+        content.text = content.text.format(address=address.address, token=token.token_name)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
                                 placeholder_text=placeholder_text)
     await state.set_state(Trs_transfer.amount)
