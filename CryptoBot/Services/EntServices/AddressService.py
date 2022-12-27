@@ -51,7 +51,6 @@ class AddressService:
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
                     await b_maker.init_client(address=address_obj, token=token)
-                    print('Contract', token.contract_Id)
                     balance = await b_maker.get_balance()
                     print("BALANCE", balance)
 
