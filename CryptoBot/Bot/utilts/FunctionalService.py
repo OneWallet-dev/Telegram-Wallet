@@ -38,7 +38,10 @@ async def perform_sending(address: Address,
     await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
     await loader(message, chait_id, 4, "Совершаем транзакцию...")
     transaction_maker = Maker_Factory.get_maker(token)
-    transaction_dict = await transaction_maker.transfer(my_transaction)
+
+    await transaction_maker.init_client(transaction=my_transaction)
+
+    transaction_dict = await transaction_maker.transfer()
     transaction_dict = transaction_dict.txn_resp
     try:
         network_fee = transaction_dict[

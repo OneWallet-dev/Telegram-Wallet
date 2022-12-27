@@ -140,7 +140,10 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     main_net = not DEBUG_MODE
     token_obj: Token = await TokenService.get_token(token_name=token_name, token_algorithm=algo, main_net=main_net)
     balance = await AddressService.get_address_balances(address=address.address, specific=[token_obj])
+    print(balance)
     await state.update_data(address=address.address)
+    await state.update_data(balance=balance[token_name])
+
 
     content: ContentUnit = await ContentUnit(tag="trans_choosen_address").get()
     info_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\nБаланс:{balance[token_name]}\n" \

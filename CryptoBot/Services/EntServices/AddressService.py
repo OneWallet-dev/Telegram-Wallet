@@ -12,9 +12,9 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Services.CryptoMakers.ETH.Eth_Maker import ETH_maker
+from Services.CryptoMakers.ETH.eth_maker import EthMaker
 from Services.CryptoMakers.Maker import Maker
-from Services.CryptoMakers.Tron.Tron_User_Maker import Tron_TRC_Maker
+from Services.CryptoMakers.Tron.tron_maker import TronMaker
 
 
 class Maker_Factory:
@@ -24,9 +24,9 @@ class Maker_Factory:
         if token.network.blockchain == token.algorithm.blockchain:
             blockchain = token.network.blockchain
             if blockchain == "tron":
-                maker = Tron_TRC_Maker()
+                maker = TronMaker()
             elif blockchain == "ethereum":
-                maker = ETH_maker()
+                maker = EthMaker()
 
             if maker:
                 return maker
@@ -50,8 +50,10 @@ class AddressService:
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
                     b_maker = Maker_Factory.get_maker(token)
+                    await b_maker.init_client(address=address_obj, token=token)
                     print('Contract', token.contract_Id)
-                    balance = await b_maker.get_balance(token=token, address=address_obj)
+                    balance = await b_maker.get_balance()
+                    print("BALANCE", balance)
 
                     balances.update({token.token_name: balance})
         return balances

@@ -4,13 +4,12 @@ from Dao.models.Transaction import Transaction
 
 
 class Maker:
-    async def transfer(
-            self,
-            transaction: Transaction,
-    ) -> dict or None:
+
+    async def init_client(self, transaction: Transaction = None, token: Token = None, address: Address = None):
         pass
 
-    async def get_balance(self,
-                          token: Token,
-                          address: Address) -> float:
+    async def transfer(self) -> dict or None:
+        pass
+
+    async def get_balance(self) -> float:
         pass
