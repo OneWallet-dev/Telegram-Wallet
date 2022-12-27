@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from Bot.keyboards.main_keys import back_button
 from Bot.keyboards.tran_history_keys import trans_history_kb
 from Bot.keyboards.wallet_keys import trans_history_start
+from Bot.states.trans_states import Trs_transfer
 from Bot.states.wallet_states import WalletStates
 from Bot.utilts.mmanager import MManager
 from Dao.DB_Redis import DataRedis
@@ -16,7 +17,7 @@ router = Router()
 
 
 @router.callback_query(F.data == "back", StateFilter(WalletStates.transaction_history_send))
-@router.callback_query(F.data == "full_history", StateFilter(WalletStates))
+@router.callback_query(F.data == "full_history", StateFilter(WalletStates, Trs_transfer))
 async def tran_history_start(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.transaction_history_start)
     await state.update_data(transaction_page=1)

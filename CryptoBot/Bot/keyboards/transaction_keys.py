@@ -49,3 +49,9 @@ def kb_confirm_transfer():
     mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
+
+def trans_result_keyboard():
+    mark = InlineKeyboardBuilder()
+    mark.row((InlineKeyboardButton(text="<< Назад в меню", callback_data="refresh_wallet")))
+    mark.row((InlineKeyboardButton(text="📆 История транзакций", callback_data="full_history")))
+    return mark.as_markup(resize_keyboard=True)
