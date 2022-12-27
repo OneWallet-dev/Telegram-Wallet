@@ -80,7 +80,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     u_id = await DataRedis.find_user(callback.from_user.id)
     addresses = await OwnerService.get_all_chain_addresses(u_id, chain)
 
-    content: ContentUnit = await ContentUnit(tag="addresses_for_replenish").get()
+    content: ContentUnit = await ContentUnit(tag="replenish_address").get()
     info_text = "Доступные адреса:\n\n"
 
     counter = 1
@@ -108,7 +108,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
         adresses = data.get('adresses')
         address_str = adresses.get(address_nmbr)
     address: Address = await session.get(Address, address_str)
-    content: ContentUnit = await ContentUnit(tag="address_view").get()
+    content: ContentUnit = await ContentUnit(tag="replenish_address_view").get()
     info_text = f'Выбранный адрес: <code>{address.address}</code>\n\n' \
                 f'*Нажмите на адрес, чтобы скопировать.'
     if content.text:

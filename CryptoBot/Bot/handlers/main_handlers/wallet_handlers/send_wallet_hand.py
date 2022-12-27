@@ -165,6 +165,7 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
     balance = s_data.get("balance")
     frozen_fee = s_data.get("frozen_fee")
     fee = s_data.get("fee")
+    algo = s_data.get('algorithm')
 
     if balance - frozen_fee < amount + fee:
         missing = float(amount + fee) - float(balance)
@@ -175,13 +176,14 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
         keyboard = back_button()
     else:
         await state.set_state(Trs_transfer.choose_where)
-        text = f"Введите адрес на который хотите отправить USDT в сети TRC-20 или UID пользователя"
+        text = f"Введите адрес на который хотите отправить {token_name} в сети {algo} или UID пользователя"
         keyboard = None
 
     await state.update_data(amount=amount)
 
     content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
-    content.text.format(info_text=text)
+    content.text.format(token=token_name, network=algo)
+
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=text,
                                 keyboard=keyboard)
 
