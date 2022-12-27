@@ -1,6 +1,8 @@
 from contextlib import suppress
 
 import requests
+from Services.CryptoMakers.ETH.eth_maker import EthMaker
+from Services.CryptoMakers.Tron.tron_maker import TronMaker
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +14,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
-from Services.CryptoMakers.ETH.eth_maker import EthMaker
 from Services.CryptoMakers.Maker import Maker
-from Services.CryptoMakers.Tron.tron_maker import TronMaker
 
 
 class Maker_Factory:

@@ -1,8 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Token import Token
