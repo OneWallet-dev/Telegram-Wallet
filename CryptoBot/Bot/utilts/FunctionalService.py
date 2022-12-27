@@ -50,7 +50,7 @@ async def perform_sending(address: Address,
     print("TANSFER", transaction_dict)
     if transaction_dict.get("status") == "SUCCESS":
         if transaction_dict.get(
-                "result") != "FAILED":  # TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
+                "result") != "FAILED":
                                         # TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
 
             my_transaction.tnx_id = transaction_dict.get("txn")

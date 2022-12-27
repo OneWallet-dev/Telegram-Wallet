@@ -61,7 +61,7 @@ def addresses_kb(counter: int, new_button: bool = True):
         mark.row((InlineKeyboardButton(text=str(i), callback_data=str(i))))
     mark.adjust(2)
     if new_button:
-        mark.row((InlineKeyboardButton(text=f"Создать еще кошелек", callback_data="new_address")))
+        mark.row((InlineKeyboardButton(text=f"➕ Создать еще кошелек", callback_data="new_address")))
     mark.row((InlineKeyboardButton(text=f"Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
