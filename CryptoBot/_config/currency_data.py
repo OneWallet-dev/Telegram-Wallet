@@ -32,6 +32,16 @@ class StaticCurrency:
                     },
                     "display_algorithm": "TRC-20",
                     "algorithm": 'TRC-20'
+                },
+                {
+                    'name': "TRX",
+                    'contract_address': None,
+                    "network": {
+                        'name': 'mainnet',
+                        'mainnet': True
+                    },
+                    "display_algorithm": "TRC-20",
+                    "algorithm": 'TRC-20'
                 }
             ]
         },
