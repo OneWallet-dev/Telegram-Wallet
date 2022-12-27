@@ -98,7 +98,8 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
                        "Минимальная сумма отправки: 3 USDT\n" \
                        f"Комиссия: {fee} USDT"
     content: ContentUnit = await ContentUnit(tag="trans_token_conditions").get()
-    content.text = content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
+    if content.text:
+        content.text = content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
     msg = await ContentService.send(content=content, bot=bot,
                                     chat_id=callback.message.chat.id,
                                     placeholder_text=placeholder_text)
@@ -182,7 +183,8 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
     await state.update_data(amount=amount)
 
     content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
-    content.text.format(token=token_name, network=algo)
+    if content.text:
+        content.text.format(token=token_name, network=algo)
 
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=text,
                                 keyboard=keyboard)
@@ -206,13 +208,15 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
                 f"Сумма к получению: {amount - fee}"
 
     content: ContentUnit = await ContentUnit(tag="trans_final_info").get()
-    content.text.format(token=token_name, network=algorithm_name, wallet=from_address, second_wallet=to_address,
-                        amount=amount, fee=fee, final_sum=amount-fee)
+    if content.text:
+        content.text.format(token=token_name, network=algorithm_name, wallet=from_address, second_wallet=to_address,
+                            amount=amount, fee=fee, final_sum=amount-fee)
 
     await state.update_data(algorithm_name=algorithm_name)
     await state.update_data(to_address=to_address)
     await state.set_state(Trs_transfer.confirm_transfer)
-    content.text.format(info_text=info_text)
+    if content.text:
+        content.text.format(info_text=info_text)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=info_text,
                                 keyboard=kb_confirm_transfer())
 
@@ -254,7 +258,8 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     await state.set_state(TransactionStates.main)
 
     content: ContentUnit = await ContentUnit(tag="trans_result").get()
-    content.text.format(trans_id=transaction.id,
+    if content.text:
+        content.text.format(trans_id=transaction.id,
                         token=transaction.token.token_name, network=transaction.token.algorithm_name,
                         wallet=transaction.address.address, second_wallet=transaction.foreign_address,
                         amount=transaction.amount, final_sum=transaction.amount)
