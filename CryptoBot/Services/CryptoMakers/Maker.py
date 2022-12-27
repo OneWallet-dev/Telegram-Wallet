@@ -13,7 +13,7 @@ class Maker:
         """
         pass
 
-    async def transfer(self) -> dict or None:
+    async def transfer(self, fee_strategy: str = "average") -> dict or None:  # ["slow": 1, "average": 1.5, "fast": 2]
         pass
 
     async def get_balance(self) -> float:

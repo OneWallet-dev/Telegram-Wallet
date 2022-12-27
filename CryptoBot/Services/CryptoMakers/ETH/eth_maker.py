@@ -93,9 +93,9 @@ class EthMaker(Maker):
         com_strategy.comission = int(gas_amount * gas_price_x)  # wei
         return com_strategy
 
-    async def lending(self):
+    async def lending(self, fee_strategy: str):
 
-        comission_strategy = await self.comission_strategy()
+        comission_strategy = await self.comission_strategy(strategy=fee_strategy)
 
         nonce = await self.w3.eth.get_transaction_count(self._main_adds, 'pending')
         value = comission_strategy.comission + 300_000_000  # comission + 0,3 gwei
@@ -143,9 +143,9 @@ class EthMaker(Maker):
         else:
             raise ValueError("Could not find address")
 
-    async def build_txn(self, nonce) -> dict[str, int | str]:
+    async def build_txn(self, nonce, fee_strategy: str) -> dict[str, int | str]:
 
-        comission_strategy = await self.comission_strategy()
+        comission_strategy = await self.comission_strategy(strategy=fee_strategy)
         self.txn_resp["network_fee"] = self.txn_resp.get("network_fee") + \
                                        self.w3.from_wei(comission_strategy.gas_amount, "ether")  # main token
 
@@ -185,13 +185,13 @@ class EthMaker(Maker):
             })
         return txn
 
-    async def transfer(self):
+    async def transfer(self, fee_strategy: str = "average"):
 
-        await self.lending()  # кредитование юзер кошелька
+        await self.lending(fee_strategy)  # кредитование юзер кошелька
 
         nonce = await self.w3.eth.get_transaction_count(self.transaction.address.address, 'pending')
 
-        trn = await self.build_txn(nonce)
+        trn = await self.build_txn(nonce, fee_strategy)
 
         try:
             address = self.transaction.address

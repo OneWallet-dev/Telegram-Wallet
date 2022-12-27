@@ -144,7 +144,8 @@ class TronMaker(Maker):
             except AddressNotFound:
                 return float(0)
 
-    async def transfer(self):
+    async def transfer(self, fee_strategy: str = "average"):
+        f = fee_strategy
         address = self.transaction.address
 
         p_key = PrivateKey(bytes.fromhex(address.private_key))
