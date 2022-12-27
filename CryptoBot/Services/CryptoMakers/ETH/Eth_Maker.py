@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 
@@ -44,9 +45,10 @@ class ETH_maker(Maker):
         )
         return self
 
-    async def get_transaction_status(self, address):
+    async def get_transaction_status(self, trx_bytes):
+        await asyncio.sleep(5)
         try:
-            txn = await self.w3.eth.get_transaction_receipt(address)
+            txn = await self.w3.eth.get_transaction_receipt(trx_bytes)
             if txn.get("status") == 1:
                 return txn
             else:
@@ -136,8 +138,6 @@ class ETH_maker(Maker):
 
         try:
             address = transaction.address
-            print("PRIVATE", address.private_key)
-            print("ADDRESS", address.address)
             try:
                 signed_txn = self.w3.eth.account.sign_transaction(trn, address.private_key)
                 txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
@@ -147,7 +147,12 @@ class ETH_maker(Maker):
                 txn_hash = await self.w3.eth.send_raw_transaction(signed_txn.rawTransaction)
             self.txn_resp["status"] = "SUCCESS"
             self.txn_resp["message"] = "Transfer success"
+
+            trn_info = await self.get_transaction_status(bytes(txn_hash))
+            # INFO AttributeDict({'blockHash': HexBytes('0x25745b444730d5239244778984c4e29ccd90fa0a38016221a5a2a4ecb82a13fc'), 'blockNumber': 8207854, 'contractAddress': None, 'cumulativeGasUsed': 8446737, 'effectiveGasPrice': 243, 'from': '0xf6B2992865a22f9Dc7A0ca78F732A76b223A7818', 'gasUsed': 21000, 'logs': [], 'logsBloom': HexBytes('0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'), 'status': 1, 'to': '0x13Ee36F3E7c28aA165EEAc23fb5a12048e924EBA', 'transactionHash': HexBytes('0xe2732b53e33393657ac65ffcd3b5d36aa074aa98d48260f11e5debe4f09bd338'), 'transactionIndex': 32, 'type': 0})
+
             self.txn_resp["txn"] = txn_hash.hex()
+
             #TODO CryptoBot/Bot/utilts/FunctionalService.py:45
             return self
         except ValueError:
