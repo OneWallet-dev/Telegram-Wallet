@@ -6,6 +6,10 @@ from Dao.models.Transaction import Transaction
 class Maker:
 
     async def init_client(self, transaction: Transaction = None, token: Token = None, address: Address = None):
+        """
+        accepts a transaction for transfers
+        accepts the address and token to receive the balance
+        """
         pass
 
     async def transfer(self) -> dict or None:
