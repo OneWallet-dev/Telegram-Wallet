@@ -7,7 +7,7 @@ from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
-from Services.EntServices.AddressService import Maker_Factory
+from Services.EntServices.AddressService import MakerFactory
 from Services.EntServices.TransactionService import TransactionService
 
 
@@ -37,7 +37,7 @@ async def perform_sending(address: Address,
     await loader(message, chait_id, 3, "Формируем транзакци...")
     await loader(message, chait_id, 3, "Отправляем запрос в блокчейн...")
     await loader(message, chait_id, 4, "Совершаем транзакцию...")
-    transaction_maker = Maker_Factory.get_maker(token)
+    transaction_maker = MakerFactory.get_maker(token)
 
     await transaction_maker.init_client(transaction=my_transaction)
 

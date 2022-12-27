@@ -17,7 +17,7 @@ from Dao.models.Wallet import Wallet
 from Services.CryptoMakers.Maker import Maker
 
 
-class Maker_Factory:
+class MakerFactory:
     @staticmethod
     def get_maker(token: Token) -> Maker:
         maker = None
@@ -49,7 +49,7 @@ class AddressService:
 
             for token in address_obj.tokens:
                 if (specific and token in specific) or not specific:
-                    b_maker = Maker_Factory.get_maker(token)
+                    b_maker = MakerFactory.get_maker(token)
                     await b_maker.init_client(address=address_obj, token=token)
                     balance = await b_maker.get_balance()
                     print("BALANCE", balance)
