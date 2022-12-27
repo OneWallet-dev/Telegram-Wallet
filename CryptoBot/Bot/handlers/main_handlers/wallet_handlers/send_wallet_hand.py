@@ -63,9 +63,12 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     data = await state.get_data()
     if callback.data != "back":
         algo = callback.data.split('_')[-1]
+        print(1, algo)
     else:
         algo = data.get("algorithm")
+        print(2, algo)
     token_name = data.get("token_name")
+    print(token_name)
     text = data.get("text")
 
     main_net = not DEBUG_MODE
@@ -119,7 +122,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
         addresses_text += f"{counter}. <code>{address}</code>\n"
         adresses_dict.update({counter: address})
         counter += 1
-    await state.update_data(adresses=adresses_dict)
+    await state.update_data(from_addresses=adresses_dict)
 
     placeholder_text = "Доступные адреса:\n\n" \
                 f"{addresses_text}\n\n" \
@@ -137,16 +140,16 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
 async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
     address_nmbr = callback.data
     data = await state.get_data()
-    adresses = data.get('adresses')
+    from_addresses = data.get('from_addresses')
     algo = data.get("algorithm")
     token_name = data.get('token_name')
 
-    address: Address = await session.get(Address, adresses.get(address_nmbr))
+    address: Address = await session.get(Address, from_addresses.get(address_nmbr))
 
     main_net = not DEBUG_MODE
     token_obj: Token = await TokenService.get_token(token_name=token_name, token_algorithm=algo, main_net=main_net)
     balance = await AddressService.get_address_balances(address=address.address, specific=[token_obj])
-    await state.update_data(address = address.address)
+    await state.update_data(address=address.address)
 
     content: ContentUnit = await ContentUnit(tag="transfer_choose_address").get()
     info_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\nБаланс:{balance[token_name]}\n" \
@@ -194,39 +197,50 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext, session: 
 
 @router.message(StateFilter(Trs_transfer.choose_where))
 async def transfer_info(message: Message, bot: Bot, state: FSMContext):
-    target_address = message.text
+    to_address = message.text
     s_data = await state.get_data()
     token_name = s_data.get("token_name")
     algorithm_name = s_data.get("algorithm")
     amount = s_data.get("amount")
-    address = s_data.get("address")
+    from_address = s_data.get("address")
     fee = s_data.get("fee")
     info_text = f"Выбранная валюта: {token_name}\n" \
                 f"Выбранная сеть: {algorithm_name}\n" \
-                f"Кошелек отправки: {address}\n" \
-                f"Кошелек получения: {target_address}\n" \
+                f"Кошелек отправки: {from_address}\n" \
+                f"Кошелек получения: {to_address}\n" \
                 f"Сумма перевода: {amount} {token_name}\n" \
                 f"Комиссия: {fee}\n" \
                 f"Сумма к получению: {amount - fee}"
 
     content: ContentUnit = await ContentUnit(tag="send_choose_where").get()
+    print(1)
+    print(1)
+    print(algorithm_name)
+    print(1)
+    await state.update_data(algorithm_name=algorithm_name)
+    await state.update_data(to_address=to_address)
+    await state.set_state(Trs_transfer.confirm_transfer)
     content.text.format(info_text=info_text)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=info_text,
                                 keyboard=kb_confirm_transfer())
-    await state.set_state(Trs_transfer.confirm_transfer)
 
 
-@router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.transfer))
+@router.callback_query(lambda call: "confirm_transfer_token" in call.data, StateFilter(Trs_transfer.confirm_transfer))
 async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session: AsyncSession):
     message = await bot.send_message(chat_id=callback.from_user.id, text="Устанавливается связь с блокчейном...")
-
     s_data = await state.get_data()
     token_name = s_data.get("token_name")
     contract_Id = s_data.get("contract_Id")
-    algotirhm_nm = s_data.get("algotirhm")
+    algorithm_name = s_data.get("algorithm_name")
     to_address = s_data.get("to_address")
     blockchain = s_data.get("blockchain")
     amount = s_data.get("amount")
+    print(token_name)
+    print(contract_Id)
+    print(algorithm_name)
+    print(to_address)
+    print(blockchain)
+    print(amount)
 
     u_id = await DataRedis.find_user(int(callback.from_user.id))
 
@@ -234,9 +248,9 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     address: Address = AddressService.get_address_for_transaction(owner, blockchain, contract_Id)
 
     main_net = not DEBUG_MODE
-    token = await TokenService.get_token(token_name=token_name, token_algorithm=algotirhm_nm, main_net=main_net)
+    token = await TokenService.get_token(token_name=token_name, token_algorithm=algorithm_name, main_net=main_net)
     if not token:
-        raise Exception(f"TOKEN {token_name} {algotirhm_nm} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
+        raise Exception(f"TOKEN {token_name} {algorithm_name} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
 
     transaction: Transaction = await perform_sending(address, amount, token, to_address, message, callback.from_user.id)
 

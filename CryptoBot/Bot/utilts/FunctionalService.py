@@ -52,7 +52,7 @@ async def perform_sending(address: Address,
         if transaction_dict.get("result") != "FAILED": #TODO это я писал? Нахуя это (спросить у Макса, наверняка в жтом есть какойто смысл)
                                                        #TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
 
-            my_transaction.tnx_id = transaction_dict.get("txn").get("id")
+            my_transaction.tnx_id = transaction_dict.get("txn")
             if service_fee < 1:
                 my_transaction.service_fee = network_fee*service_fee
             else:

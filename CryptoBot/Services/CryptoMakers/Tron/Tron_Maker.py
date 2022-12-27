@@ -43,8 +43,8 @@ class Tron_Maker(Maker):
 
     async def account_resource(self, transaction: Transaction):
 
-        async with self.get_client() as client:
-            account_resource = await client.get_account_resource(transaction.owner_address)
+        async with self.get_client(transaction.token) as client:
+            account_resource = await client.get_account_resource(transaction.address.address)
             EnergyUsed = account_resource.get("EnergyUsed", 0)
             EnergyLimit = account_resource.get("EnergyLimit", 0)
             remainde_EnergyUsed = EnergyLimit - EnergyUsed
@@ -83,9 +83,9 @@ class Tron_Maker(Maker):
             except BadAddress:
                 return False
 
-    async def freeze(self, amount: float, receiver: str, resource: str = "ENERGY"):
+    async def freeze(self, token: Token, amount: float, receiver: str, resource: str = "ENERGY"):
         print("Заморозка трх")
-        async with self.get_client() as client:
+        async with self.get_client(token=token) as client:
             txb = client.trx.freeze_balance(
                 owner=self._main_adds,
                 amount=int(amount * 1_000_000),
@@ -103,9 +103,9 @@ class Tron_Maker(Maker):
             self.txn_resp["status"] = "ERROR"
             self.txn_resp["message"] = "Freeze failed"
 
-    async def unfreeze(self, receiver: str, resource: str = "ENERGY"):
+    async def unfreeze(self, token: Token, receiver: str, resource: str = "ENERGY"):
 
-        async with self.get_client() as client:
+        async with self.get_client(token) as client:
             txb = client.trx.unfreeze_balance(
                 owner=self._main_adds,
                 resource=resource,
@@ -122,9 +122,9 @@ class Tron_Maker(Maker):
             self.txn_resp["message"] = "Unfreeze failed"
 
     async def activate_account(self, transaction: Transaction, amount: float = 1):
-        async with self.get_client() as client:
+        async with self.get_client(token=transaction.token) as client:
             txb = (
-                client.trx.transfer(self._main_adds, transaction.owner_address, int(amount * 1_000_000))
+                client.trx.transfer(self._main_adds, transaction.address.address, int(amount * 1_000_000))
                 .with_owner(self._main_adds)
                 .fee_limit(self._fee_limit)
             )

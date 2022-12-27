@@ -42,17 +42,26 @@ class Tron_TRC_Maker(Tron_Maker):
         p_key = PrivateKey(bytes.fromhex(address.private_key))
         contract = transaction.token.contract_Id
         async with self.get_client(token=transaction.token) as client:
-            if transaction.network == "TRC-20" and transaction.token_contract_id:
+            print(1111111111)
+            print(transaction.token.network.name)
+            print(transaction.token.contract_Id)
+            print(transaction.owner_address)
+            print(transaction.address.address)
+            print(1111111111)
+
+            if transaction.token.algorithm_name == "TRC-20" and transaction.token.contract_Id:
                 contract_f = await client.get_contract(contract)
                 txb = await contract_f.functions.transfer(transaction.foreign_address, int(transaction.amount * 1_000_000))
-                txb = txb.with_owner(transaction.owner_address).fee_limit(self._fee_limit)
-            elif transaction.network == "TRC-10":
+                txb = txb.with_owner(address.address).fee_limit(self._fee_limit)
+            elif transaction.token.contract_Id is None:
                 txb = (
-                    client.trx.transfer(transaction.owner_address, transaction.foreign_address,
+                    client.trx.transfer(address.address, transaction.foreign_address,
                                         int(transaction.amount * 1_000_000))
                     .with_owner(transaction.owner_address)
                     .fee_limit(self._fee_limit)
                 )
+            else:
+                raise
 
             try:
                 tx = await txb.build()
@@ -91,19 +100,18 @@ class Tron_TRC_Maker(Tron_Maker):
                 account_resource = await self.account_resource(transaction)
                 ENERGY = account_resource.get("ENERGY")
                 BANDWITCH = account_resource.get("BANDWITCH")
-
+                print('account_resource', account_resource)
                 if ENERGY < self.energy:
                     print("На балансе недостаточно ENERGY, выполняется процесс пополнения ENERGY")
                     self.txn_resp["message"] = "Freezing energy in progress"
                     freeze_energy = self.energy - ENERGY
-                    tn = await self.freeze(amount=50, receiver=transaction.owner_address, resource="ENERGY")
+                    tn = await self.freeze(token=transaction.token, amount=50, receiver=transaction.address.address, resource="ENERGY")
                 if BANDWITCH < self.bandwitch:
                     freeze_bandwitch = self.bandwitch - BANDWITCH
                     self.txn_resp["message"] = "Freezing bandwitch in progress"
                     print("На балансе недостаточно BANDWITCH, выполняется процесс пополнения BANDWITCH")
-                    tn = await self.freeze(amount=50, receiver=transaction.owner_address, resource="BANDWIDTH")
-                else:
-                    pass
+                    tn = await self.freeze(token=transaction.token, amount=50, receiver=transaction.address.address, resource="BANDWIDTH")
+
             else:
                 balance = await self.get_balance(address=transaction.address, token=transaction.token)
                 if balance < float(self.trx_min_balance):
