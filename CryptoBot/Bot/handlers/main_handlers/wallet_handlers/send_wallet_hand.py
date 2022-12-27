@@ -32,7 +32,7 @@ router = Router()
 @router.callback_query(F.data == "send", StateFilter(WalletStates))
 async def start_transfer(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(Trs_transfer.new_transfer)
-    content: ContentUnit = await ContentUnit(tag="repl_choose_currency").get()
+    content: ContentUnit = await ContentUnit(tag="transfer_choose_currency").get()
     all_tokens_list = await TokenService.all_tokens()
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
                                 keyboard=trans_token_kb(all_tokens_list),
@@ -50,7 +50,7 @@ async def choose_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.update_data(token_name=token_name)
     await state.set_state(Trs_transfer.set_network)
     text = "<b>Выберите сеть:</b>"
-    content: ContentUnit = await ContentUnit(tag="repl_choose_network").get()
+    content: ContentUnit = await ContentUnit(tag="transfer_choose_network").get()
     algos = await TokenService.alorithms_for_token_name(token_name=token_name)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
                                 keyboard=trans_network_kb(algos),
