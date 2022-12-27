@@ -143,13 +143,13 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     balance = await AddressService.get_address_balances(address=address.address, specific=[token_obj])
     await state.update_data(address=address.address)
 
-    content: ContentUnit = await ContentUnit(tag="trans_choosen_address").get()
-    info_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\nБаланс:{balance[token_name]}\n" \
+    content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
+    placeholder_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\n\nБаланс: {balance[token_name]}\n\n" \
                 f"Выберите сумму которую хотите отправить:"
     if content.text:
-        content.text = content.text.format(info_text=info_text)
+        content.text = content.text.format(address=address.address)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
-                                placeholder_text=info_text)
+                                placeholder_text=placeholder_text)
     await state.set_state(Trs_transfer.amount)
 
 
@@ -182,7 +182,7 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
 
     await state.update_data(amount=amount)
 
-    content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
+    content: ContentUnit = await ContentUnit(tag="trans_choose_where").get()
     if content.text:
         content.text.format(token=token_name, network=algo)
 
