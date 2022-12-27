@@ -50,7 +50,7 @@ async def choose_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.update_data(token_name=token_name)
     await state.set_state(Trs_transfer.set_network)
     text = "<b>Выберите сеть:</b>"
-    content: ContentUnit = await ContentUnit(tag="transfer_choose_network").get()
+    content: ContentUnit = await ContentUnit(tag="trans_choose_network").get()
     algos = await TokenService.alorithms_for_token_name(token_name=token_name)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
                                 keyboard=trans_network_kb(algos),
@@ -97,8 +97,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
                        f"Выбранная сеть: {token_obj.algorithm.name}\n" \
                        "Минимальная сумма отправки: 3 USDT\n" \
                        f"Комиссия: {fee} USDT"
-
-    content: ContentUnit = await ContentUnit(tag="repl_token_conditions").get()
+    content: ContentUnit = await ContentUnit(tag="trans_token_conditions").get()
     content.text = content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
     msg = await ContentService.send(content=content, bot=bot,
                                     chat_id=callback.message.chat.id,
@@ -106,8 +105,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await MManager.garbage_store(state, msg.message_id)
 
     addresses = await OwnerService.get_all_chain_addresses(u_id=u_id, blockchain=blockchain)
-    content: ContentUnit = await ContentUnit(tag="addresses_for_transfer").get()
-
+    content: ContentUnit = await ContentUnit(tag="trans_addresses_for_trans").get()
     counter = 1
     adresses_dict = dict()
     addresses_text = str()
@@ -144,7 +142,7 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     balance = await AddressService.get_address_balances(address=address.address, specific=[token_obj])
     await state.update_data(address=address.address)
 
-    content: ContentUnit = await ContentUnit(tag="transfer_choose_address").get()
+    content: ContentUnit = await ContentUnit(tag="trans_choosen_address").get()
     info_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\nБаланс:{balance[token_name]}\n" \
                 f"Выберите сумму которую хотите отправить:"
     if content.text:
@@ -182,7 +180,7 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext, session: 
 
     await state.update_data(amount=amount)
 
-    content: ContentUnit = await ContentUnit(tag="send_approve_transfer").get()
+    content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
     content.text.format(info_text=text)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=text,
                                 keyboard=keyboard)
@@ -205,7 +203,7 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
                 f"Комиссия: {fee}\n" \
                 f"Сумма к получению: {amount - fee}"
 
-    content: ContentUnit = await ContentUnit(tag="send_choose_where").get()
+    content: ContentUnit = await ContentUnit(tag="trans_final_info").get()
 
     await state.update_data(algorithm_name=algorithm_name)
     await state.update_data(to_address=to_address)
@@ -251,7 +249,7 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
         text = "ОШИБКА ТРАНЗАКЦИИ"
     await state.set_state(TransactionStates.main)
 
-    content: ContentUnit = await ContentUnit(tag="send_trans_result").get()
+    content: ContentUnit = await ContentUnit(tag="trans_result").get()
     content.text.format(info_text=text)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
                                 keyboard=m_transaction(),

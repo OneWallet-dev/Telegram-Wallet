@@ -48,7 +48,6 @@ class TokenService:
             if result:
                 for raw in list(result):
                     token = raw[0]
-                    print('FUCK', token)
                     if token.network.mainnet == main_net:
                         return token
 
