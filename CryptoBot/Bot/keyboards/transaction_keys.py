@@ -28,7 +28,7 @@ def trans_token_kb(custom_token_list: list[Token]):
 def trans_network_kb(custom_network_list: list[Algorithm] | None = None):
     mark = InlineKeyboardBuilder()
     algo_names = [algo.name for algo in custom_network_list]
-    for algo_name in algo_names:
+    for algo_name in set(algo_names):
         mark.row((InlineKeyboardButton(text=f"{algo_name}", callback_data=f"tAlgos_{algo_name}")))
     mark.adjust(2)
     mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))

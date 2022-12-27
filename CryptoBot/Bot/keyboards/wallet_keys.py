@@ -48,7 +48,7 @@ def inspect_token_kb(token_list: list[Token]):
 def network_kb(custom_network_list: list | None = None):
     mark = InlineKeyboardBuilder()
     algo_names = [algo.name for algo in custom_network_list]
-    for algo_name in algo_names:
+    for algo_name in set(algo_names):
         mark.row((InlineKeyboardButton(text=f"{algo_name}", callback_data=f"new_n_{algo_name}")))
     mark.adjust(2)
     mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
@@ -61,7 +61,7 @@ def addresses_kb(counter: int, new_button: bool = True):
         mark.row((InlineKeyboardButton(text=str(i), callback_data=str(i))))
     mark.adjust(2)
     if new_button:
-        mark.row((InlineKeyboardButton(text=f"Создать еще кошелек", callback_data="new_address")))
+        mark.row((InlineKeyboardButton(text=f"➕ Создать еще кошелек", callback_data="new_address")))
     mark.row((InlineKeyboardButton(text=f"Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
@@ -107,7 +107,7 @@ def AML_menu():
 
 def send_money_kb(token_list: list[str]):
     mark = InlineKeyboardBuilder()
-    for token in token_list:
+    for token in set(token_list):
         mark.row((InlineKeyboardButton(text=f"{token}", callback_data=token)))
     return mark.as_markup(resize_keyboard=True)
 
