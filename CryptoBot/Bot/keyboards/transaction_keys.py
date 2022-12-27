@@ -43,9 +43,9 @@ def change_transfer_token():
 
 def kb_confirm_transfer():
     mark = InlineKeyboardBuilder()
-    mark.row((InlineKeyboardButton(text="Подтвердить и отправить", callback_data="confirm_transfer_token")))
-    mark.row((InlineKeyboardButton(text="Изменить сумму", callback_data="change_amount")))
-    mark.row((InlineKeyboardButton(text="Изменить получателя", callback_data="change_target")))
+    mark.row((InlineKeyboardButton(text="✅ Подтвердить и отправить", callback_data="confirm_transfer_token")))
+    mark.row((InlineKeyboardButton(text="🔄 Изменить сумму", callback_data="change_amount")))
+    mark.row((InlineKeyboardButton(text="👨‍💼 Изменить получателя", callback_data="change_target")))
     mark.row((InlineKeyboardButton(text="<< Назад", callback_data="back")))
     return mark.as_markup(resize_keyboard=True)
 
