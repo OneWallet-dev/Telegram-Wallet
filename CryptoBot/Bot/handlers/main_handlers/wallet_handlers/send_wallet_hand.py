@@ -99,7 +99,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
                        f"Комиссия: {fee} USDT"
 
     content: ContentUnit = await ContentUnit(tag="repl_token_conditions").get()
-    content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
+    content.text = content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
     msg = await ContentService.send(content=content, bot=bot,
                                     chat_id=callback.message.chat.id,
                                     placeholder_text=placeholder_text)
