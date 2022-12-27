@@ -1,6 +1,7 @@
 from Dao.models.Address import Address
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
+from Services.CryptoMakers.schemas import ComissionStrategy
 
 
 class Maker:
@@ -16,4 +17,7 @@ class Maker:
         pass
 
     async def get_balance(self) -> float:
+        pass
+
+    async def comission_strategy(self) -> ComissionStrategy:
         pass

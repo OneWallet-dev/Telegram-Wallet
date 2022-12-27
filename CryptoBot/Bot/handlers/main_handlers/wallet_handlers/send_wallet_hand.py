@@ -145,10 +145,9 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     await state.update_data(address=address.address)
     await state.update_data(balance=balance[token_name])
 
-
     content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
     placeholder_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\n\nБаланс: {balance[token_name]}\n\n" \
-                f"Выберите сумму которую хотите отправить:"
+                       f"Выберите сумму которую хотите отправить:"
     if content.text:
         content.text = content.text.format(address=address.address)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
@@ -213,7 +212,7 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
     content: ContentUnit = await ContentUnit(tag="trans_final_info").get()
     if content.text:
         content.text.format(token=token_name, network=algorithm_name, wallet=from_address, second_wallet=to_address,
-                            amount=amount, fee=fee, final_sum=amount-fee)
+                            amount=amount, fee=fee, final_sum=amount - fee)
 
     await state.update_data(algorithm_name=algorithm_name)
     await state.update_data(to_address=to_address)
@@ -248,24 +247,16 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
 
     transaction: Transaction = await perform_sending(address, amount, token, to_address, message, callback.from_user.id)
 
-    if transaction.status == "SUCCESS":
-        if DEBUG_MODE:
-            link = "https://nile.tronscan.org/#/transaction/"
-        else:
-            link = "https://tronscan.org/#/transaction/"
-        link = hlink('ссылке', link + transaction.tnx_id)
-        text = f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по {link}"
-    else:
-        print(transaction.status)
-        text = "ОШИБКА ТРАНЗАКЦИИ"
+    text = f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по txn_ID:\n\n {transaction.tnx_id}"
+
     await state.set_state(TransactionStates.main)
 
     content: ContentUnit = await ContentUnit(tag="trans_result").get()
     if content.text:
         content.text.format(trans_id=transaction.id,
-                        token=transaction.token.token_name, network=transaction.token.algorithm_name,
-                        wallet=transaction.address.address, second_wallet=transaction.foreign_address,
-                        amount=transaction.amount, final_sum=transaction.amount)
+                            token=transaction.token.token_name, network=transaction.token.algorithm_name,
+                            wallet=transaction.address.address, second_wallet=transaction.foreign_address,
+                            amount=transaction.amount, final_sum=transaction.amount)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
                                 keyboard=m_transaction(),
                                 placeholder_text=text)

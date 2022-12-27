@@ -43,40 +43,29 @@ async def perform_sending(address: Address,
 
     transaction_dict = await transaction_maker.transfer()
     transaction_dict = transaction_dict.txn_resp
-    try:
-        network_fee = transaction_dict[
-            "network_fee"]  # TODO Здесь важно получать в словаре network_fee: float  - сумма выплаченого газа в токене адреса
-                            # TODO *Макс - я бы рад, но пока у нас нет такой возможности так как инфа о транзе не выдвет результат, я покапаюсь
-    except:
-        network_fee = 0
+
+    network_fee = transaction_dict.get("network_fee", 0)
 
     print("TANSFER", transaction_dict)
     if transaction_dict.get("status") == "SUCCESS":
-        if transaction_dict.get(
-                "result") != "FAILED":
-                                        # TODO *Макс - транзы не считаются завершенными пока блокчейн не скажет гуд, SUCCESS - успешнае оформление транзы и отправка в блокчейн
-
-            my_transaction.tnx_id = transaction_dict.get("txn")
-            if service_fee < 1:
-                my_transaction.service_fee = network_fee * service_fee
-            else:
-                my_transaction.service_fee = service_fee
-
-            my_transaction.status = transaction_dict.get("status")
-            await loader(message, chait_id, 5, "Совершаем транзакцию...")
-            session = await AlchemyMaster.create_session()
-            await loader(message, chait_id, 5, "Завершаем транзакцию...")
-            async with session() as session:
-                local_object = await session.merge(my_transaction)
-                session.add(local_object)
-                await session.commit()
-                await session.close()
-                await loader(message, chait_id, 6, "Записываем данные в базу...")
-                await loader(message, chait_id, 7, "Записываем данные в базу...")
-                return my_transaction
+        my_transaction.tnx_id = transaction_dict.get("txn")
+        if service_fee < 1:
+            my_transaction.service_fee = network_fee * service_fee
         else:
-            await message.answer("Ошибка транзакции")
+            my_transaction.service_fee = service_fee
 
+        my_transaction.status = transaction_dict.get("status")
+        await loader(message, chait_id, 5, "Совершаем транзакцию...")
+        session = await AlchemyMaster.create_session()
+        await loader(message, chait_id, 5, "Завершаем транзакцию...")
+        async with session() as session:
+            local_object = await session.merge(my_transaction)
+            session.add(local_object)
+            await session.commit()
+            await session.close()
+            await loader(message, chait_id, 6, "Записываем данные в базу...")
+            await loader(message, chait_id, 7, "Записываем данные в базу...")
+            return my_transaction
     else:
         return "Недостаточно средств"
 
