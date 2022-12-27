@@ -19,5 +19,5 @@ class Maker:
     async def get_balance(self) -> float:
         pass
 
-    async def comission_strategy(self) -> ComissionStrategy:
+    async def comission_strategy(self, fee_strategy: str = "average") -> ComissionStrategy:
         pass

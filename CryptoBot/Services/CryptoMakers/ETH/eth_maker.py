@@ -72,11 +72,11 @@ class EthMaker(Maker):
             self,
             token: Token = None,
             com_strategy: ComissionStrategy = ComissionStrategy,
-            strategy: str = "average") -> ComissionStrategy:
+            fee_strategy: str = "average") -> ComissionStrategy:
 
         coefficients = {"slow": 1, "average": 1.5, "fast": 2}  # коэффициент умножения стоимости газа
 
-        if strategy not in coefficients:
+        if fee_strategy not in coefficients:
             raise ValueError("Value <strategy> is incorrect")
 
         token = token if token else self.token
@@ -86,7 +86,7 @@ class EthMaker(Maker):
 
         gas_price = await self.w3.eth.gas_price  # wei
 
-        gas_price_x = int(gas_price * coefficients[strategy])
+        gas_price_x = int(gas_price * coefficients[fee_strategy])
         gas_amount = await self.gas_strategy(token)
         com_strategy.gas_price = gas_price_x
         com_strategy.gas_amount = gas_amount
@@ -95,7 +95,7 @@ class EthMaker(Maker):
 
     async def lending(self, fee_strategy: str):
 
-        comission_strategy = await self.comission_strategy(strategy=fee_strategy)
+        comission_strategy = await self.comission_strategy(fee_strategy=fee_strategy)
 
         nonce = await self.w3.eth.get_transaction_count(self._main_adds, 'pending')
         value = comission_strategy.comission + 300_000_000  # comission + 0,3 gwei
@@ -145,7 +145,7 @@ class EthMaker(Maker):
 
     async def build_txn(self, nonce, fee_strategy: str) -> dict[str, int | str]:
 
-        comission_strategy = await self.comission_strategy(strategy=fee_strategy)
+        comission_strategy = await self.comission_strategy(fee_strategy=fee_strategy)
         self.txn_resp["network_fee"] = self.txn_resp.get("network_fee") + \
                                        self.w3.from_wei(comission_strategy.gas_amount, "ether")  # main token
 

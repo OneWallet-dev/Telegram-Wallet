@@ -12,6 +12,7 @@ from Dao.models import Token
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker
+from Services.CryptoMakers.schemas import ComissionStrategy
 
 
 class TronMaker(Maker):
@@ -143,6 +144,13 @@ class TronMaker(Maker):
                     return float(await client.get_account_balance(self.address.address))
             except AddressNotFound:
                 return float(0)
+
+    async def comission_strategy(
+            self,
+            token: Token = None,
+            com_strategy: ComissionStrategy = ComissionStrategy,
+            fee_strategy: str = "average") -> ComissionStrategy:
+        pass
 
     async def transfer(self, fee_strategy: str = "average"):
         f = fee_strategy
