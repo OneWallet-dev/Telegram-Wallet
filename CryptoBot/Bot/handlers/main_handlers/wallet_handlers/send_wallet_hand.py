@@ -153,7 +153,7 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
 
 
 @router.message(StateFilter(Trs_transfer.amount))
-async def choose_amount(message: Message, bot: Bot, state: FSMContext, session: AsyncSession):
+async def choose_amount(message: Message, bot: Bot, state: FSMContext):
     if not message.text.replace(".", "", 1).isdigit():
         await message.answer("Вы указали неверное значение, пожалуйста укажите сумму для перевода в виде числа")
         return
