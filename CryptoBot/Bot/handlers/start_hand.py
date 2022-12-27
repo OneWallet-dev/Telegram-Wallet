@@ -17,6 +17,7 @@ from Dao.models.Owner import Owner
 from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
+from Dao.models.bot_models import ContentUnit
 from Services.EntServices.TransactionService import TransactionService
 
 router = Router()
@@ -33,6 +34,17 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
         await you_need_tb_authenticated(message, state, bot)
     else:
         await title_entry_point(message, state, bot)
+
+
+@router.message(Command("exit"))
+@MManager.garbage_manage()
+async def commands_exit(message: Message, state: FSMContext, bot: Bot):
+    await DataRedis.log_off(message.from_user.id)
+    await MManager.clean(state, bot, message.chat.id, deep=True)
+    await state.clear()
+    content: ContentUnit = await ContentUnit(tag="bye_bye").get()
+    await MManager.content_surf(message, state, bot, content,
+                                placeholder_text='Вы были разлогинены\n\nЖдем вас снова!')
 
 
 @router.message(Command("generate"))

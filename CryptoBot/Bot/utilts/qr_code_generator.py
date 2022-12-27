@@ -1,6 +1,7 @@
 import io
-import segno
+
 import qrcode
+import segno
 
 
 async def qr_code(wallet):
