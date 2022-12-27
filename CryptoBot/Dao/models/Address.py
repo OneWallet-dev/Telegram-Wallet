@@ -33,7 +33,6 @@ class Address(Base):
 
     token_list = association_proxy("tokens", "contract_Id", creator=lambda tokens: Token(contract_Id=tokens))
 
-
     def get_address_freezed_fee(self,
                                 token_name: str) -> float:
         freezed_fee: float = 0
@@ -45,12 +44,9 @@ class Address(Base):
                     break
         return freezed_fee
 
-
     def __eq__(self, other):
         other: Address
         return self.address == other.address, self.private_key == other.private_key, self.path_index == other.path_index
-
-
 
     # Что это?
     def __count_transactions_in_db(self):

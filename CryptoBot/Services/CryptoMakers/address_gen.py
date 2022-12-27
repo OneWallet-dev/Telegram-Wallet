@@ -1,4 +1,3 @@
-from hdwallet import BIP44HDWallet
 from typing import Union
 
 from hdwallet import BIP44HDWallet
@@ -89,12 +88,12 @@ class Wallet_web3:
         wallet = dict()
         wallet["mnemonic"] = mnemonic
         for address_index in range(number_of_addresses):
-
             bip44_derivation: BIP44Derivation = BIP44Derivation(
                 cryptocurrency=cryptocurrency, account=0, change=False, address=address_index
             )
             bip44_hdwallet.from_path(path=bip44_derivation)
-            wallet[f"address_{address_index}"] = {"address": bip44_hdwallet.address(), "private_key": bip44_hdwallet.private_key()}
+            wallet[f"address_{address_index}"] = {"address": bip44_hdwallet.address(),
+                                                  "private_key": bip44_hdwallet.private_key()}
 
             bip44_hdwallet.clean_derivation()
         return wallet

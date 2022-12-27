@@ -20,9 +20,6 @@ class Token(Base):
     algorithm = relationship('Algorithm', lazy="joined", back_populates="tokens")
     network = relationship('Network', lazy="joined", back_populates="tokens")
 
-
-
-
     def __str__(self):
         return f"{self.token_name} [{self.network}]"
 

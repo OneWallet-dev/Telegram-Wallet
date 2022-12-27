@@ -8,8 +8,6 @@ from web3.eth import AsyncEth
 from web3.exceptions import *
 from web3.geth import Geth, AsyncGethTxPool, AsyncGethPersonal, AsyncGethAdmin
 from web3.net import AsyncNet
-
-from Bot.utilts.settings import DEBUG_MODE
 from Dao.models import Token, Address
 from Dao.models.Transaction import Transaction
 from Services.CryptoMakers.Maker import Maker

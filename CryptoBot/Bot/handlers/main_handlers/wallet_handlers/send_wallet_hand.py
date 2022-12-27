@@ -63,13 +63,9 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     data = await state.get_data()
     if callback.data != "back":
         algo = callback.data.split('_')[-1]
-        print(1, algo)
     else:
         algo = data.get("algorithm")
-        print(2, algo)
     token_name = data.get("token_name")
-    print(token_name)
-    text = data.get("text")
 
     main_net = not DEBUG_MODE
     token_obj: Token = await TokenService.get_token(token_name=token_name, token_algorithm=algo, main_net=main_net)
@@ -85,7 +81,6 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     chain_address = await OwnerService().get_chain_address(u_id, blockchain)
 
     fee = await getFeeStrategy(token_obj)
-    print(fee)
     frozen_fee = chain_address.get_address_freezed_fee(token_name)
     balance_info = await AddressService().get_address_balances(chain_address.address, [token_obj])
     token_balance = balance_info.get(token_name, 0.0)
@@ -98,18 +93,16 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(fee=fee)
     await state.update_data(blockchain=blockchain)
 
-
     placeholder_text = f"Выбранная валюта: {token_obj.token_name}\n" \
-           f"Выбранная сеть: {token_obj.algorithm.name}\n" \
-           "Минимальная сумма отправки: 3 USDT\n" \
-           f"Комиссия: {fee} USDT"
-
+                       f"Выбранная сеть: {token_obj.algorithm.name}\n" \
+                       "Минимальная сумма отправки: 3 USDT\n" \
+                       f"Комиссия: {fee} USDT"
 
     content: ContentUnit = await ContentUnit(tag="repl_token_conditions").get()
     content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
     msg = await ContentService.send(content=content, bot=bot,
-                              chat_id=callback.message.chat.id,
-                              placeholder_text=placeholder_text)
+                                    chat_id=callback.message.chat.id,
+                                    placeholder_text=placeholder_text)
     await MManager.garbage_store(state, msg.message_id)
 
     addresses = await OwnerService.get_all_chain_addresses(u_id=u_id, blockchain=blockchain)
@@ -125,8 +118,8 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(from_addresses=adresses_dict)
 
     placeholder_text = "Доступные адреса:\n\n" \
-                f"{addresses_text}\n\n" \
-                "Выберите адрес c которого хотите отправить"
+                       f"{addresses_text}\n\n" \
+                       "Выберите адрес c которого хотите отправить"
 
     if content.text:
         content.text = content.text.format(addresses_text=addresses_text)
@@ -213,10 +206,7 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
                 f"Сумма к получению: {amount - fee}"
 
     content: ContentUnit = await ContentUnit(tag="send_choose_where").get()
-    print(1)
-    print(1)
-    print(algorithm_name)
-    print(1)
+
     await state.update_data(algorithm_name=algorithm_name)
     await state.update_data(to_address=to_address)
     await state.set_state(Trs_transfer.confirm_transfer)
@@ -244,7 +234,8 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     main_net = not DEBUG_MODE
     token = await TokenService.get_token(token_name=token_name, token_algorithm=algorithm_name, main_net=main_net)
     if not token:
-        raise Exception(f"TOKEN {token_name} {algorithm_name} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
+        raise Exception(
+            f"TOKEN {token_name} {algorithm_name} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
 
     transaction: Transaction = await perform_sending(address, amount, token, to_address, message, callback.from_user.id)
 

@@ -16,6 +16,7 @@ def main_wallet_keys():
     mark.adjust(2, 1, 1)
     return mark.as_markup(resize_keyboard=True)
 
+
 def add_token_kb(custom_token_list: list | None = None):
     mark = InlineKeyboardBuilder()
     token_names = [token.token_name for token in custom_token_list]
@@ -112,11 +113,9 @@ def send_money_kb(token_list: list[str]):
 
 
 def trans_history_start():
-
     mark = InlineKeyboardBuilder()
     mark.row((InlineKeyboardButton(text=f"История пополнений", callback_data="receiving_history")))
     mark.row((InlineKeyboardButton(text=f"История отправок", callback_data="sending_history")))
     mark.row((InlineKeyboardButton(text=f"История переводов по UID", callback_data="uid_history")))
     mark.row((InlineKeyboardButton(text=f"Назад", callback_data="refresh_wallet")))
     return mark.as_markup(resize_keyboard=True)
-

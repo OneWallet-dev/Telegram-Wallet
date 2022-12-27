@@ -20,8 +20,6 @@ storage = RedisStorage.from_url(RedRedis.states_base_url())
 dp = Dispatcher(storage=storage)
 
 
-
-
 async def bot_start():
     main_logger.infolog.info('Logger is ready!')
 

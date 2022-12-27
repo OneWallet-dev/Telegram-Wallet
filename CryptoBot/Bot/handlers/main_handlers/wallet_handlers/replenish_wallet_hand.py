@@ -95,6 +95,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 keyboard=addresses_kb(counter), placeholder_text=info_text)
 
+
 @router.callback_query(F.data == 'back', StateFilter(WalletStates.choose_address))
 @router.callback_query(F.data.isdigit(), StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
@@ -113,7 +114,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
     if content.text:
         content.text = content.text.format(info_text=info_text)
 
-    await state.update_data(chosen_address = address.address)
+    await state.update_data(chosen_address=address.address)
 
     content.media_type = 'photo'
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
@@ -122,7 +123,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
 
 @router.callback_query(F.data == 'QRFK', StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
-async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
     data = await state.get_data()
     address = data.get('chosen_address')
 
