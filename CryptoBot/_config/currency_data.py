@@ -10,6 +10,7 @@ class StaticCurrency:
                         'name': 'mainnet',
                         'mainnet': True
                     },
+                    "display_algorithm": "TRC-20",
                     "algorithm": 'TRC-20'
                 },
                 {
@@ -19,6 +20,7 @@ class StaticCurrency:
                         'name': 'nile',
                         'mainnet': False
                     },
+                    "display_algorithm": "TRC-20",
                     "algorithm": 'TRC-20'
                 },
                 {
@@ -28,6 +30,7 @@ class StaticCurrency:
                         'name': 'nile',
                         'mainnet': False
                     },
+                    "display_algorithm": "TRC-20",
                     "algorithm": 'TRC-20'
                 }
             ]
@@ -41,6 +44,7 @@ class StaticCurrency:
                         'name': 'mainnet',
                         'mainnet': True
                     },
+                    "display_algorithm": "ERC-20",
                     "algorithm": 'ERC-20'
                 },
                 {
@@ -50,6 +54,27 @@ class StaticCurrency:
                         'name': 'goerli',
                         'mainnet': False
                     },
+                    "display_algorithm": "ERC-20",
+                    "algorithm": 'ERC-20'
+                },
+                {
+                    'name': "Polygon",
+                    'contract_address': None,
+                    "network": {
+                        'name': 'polygon-mainnet',
+                        'mainnet': True
+                    },
+                    "display_algorithm": "Polygon",
+                    "algorithm": 'ERC-20'
+                },
+                {
+                    'name': "Polygon",
+                    'contract_address': None,
+                    "network": {
+                        'name': 'polygon-mumbai',
+                        'mainnet': False
+                    },
+                    "display_algorithm": "Polygon",
                     "algorithm": 'ERC-20'
                 },
                 {
@@ -59,6 +84,17 @@ class StaticCurrency:
                         'name': 'mainnet',
                         'mainnet': True
                     },
+                    "display_algorithm": "ERC-20",
+                    "algorithm": 'ERC-20'
+                },
+                {
+                    'name': "USD",
+                    'contract_address': "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                    "network": {
+                        'name': 'mainnet',
+                        'mainnet': True
+                    },
+                    "display_algorithm": "ERC-20",
                     "algorithm": 'ERC-20'
                 }
             ]
