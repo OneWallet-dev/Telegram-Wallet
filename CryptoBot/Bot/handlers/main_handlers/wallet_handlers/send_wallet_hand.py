@@ -218,8 +218,6 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
     await state.update_data(algorithm_name=algorithm_name)
     await state.update_data(to_address=to_address)
     await state.set_state(Trs_transfer.confirm_transfer)
-    if content.text:
-        content.text.format(info_text=info_text)
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=info_text,
                                 keyboard=kb_confirm_transfer())
 
