@@ -2,7 +2,7 @@ from aiogram.types import Message
 
 from Bot.handlers.service_handlers.loader_hand import loader
 from Bot.utilts.fee_strategy import getFeeStrategy
-from Bot.utilts.settings import DEBUG_MODE
+from _config.settings import DEBUG_MODE
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Address import Address
 from Dao.models.Token import Token

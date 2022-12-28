@@ -7,7 +7,7 @@ from tronpy.exceptions import BadAddress, AddressNotFound, ValidationError, Unkn
 from tronpy.keys import PrivateKey
 from tronpy.providers import AsyncHTTPProvider
 
-from Bot.utilts.settings import STAKE_MODE
+from _config.settings import STAKE_MODE
 from Dao.models import Token
 from Dao.models.Address import Address
 from Dao.models.Transaction import Transaction

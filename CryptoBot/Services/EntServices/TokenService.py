@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.utilts.currency_helper import base_tokens
-from Bot.utilts.settings import DEBUG_MODE
+from _config.settings import DEBUG_MODE
 from Dao.DB_Postgres.session import AlchemyMaster
 from Dao.models.Network import Network
 from Dao.models.Owner import Owner

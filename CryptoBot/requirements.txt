@@ -17,3 +17,4 @@ uvicorn==0.20.0
 python-multipart==0.0.5
 segno
 qrcode-artistic
+colorama

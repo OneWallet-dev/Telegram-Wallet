@@ -2,7 +2,6 @@ from aiogram import F, Bot, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.keyboards.main_keys import back_button
@@ -14,7 +13,7 @@ from Bot.utilts.ContentService import ContentService
 from Bot.utilts.FunctionalService import perform_sending
 from Bot.utilts.fee_strategy import getFeeStrategy
 from Bot.utilts.mmanager import MManager
-from Bot.utilts.settings import DEBUG_MODE
+from _config.settings import DEBUG_MODE
 from Dao.DB_Redis import DataRedis
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
