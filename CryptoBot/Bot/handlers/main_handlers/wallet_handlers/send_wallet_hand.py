@@ -170,7 +170,7 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
                "Пожалуйста укажите другую сумму или пополните баланс\n\n" \
                "Ваш баланс: {balance} {token_name}\n" \
                "Комиссия: {fee} {token}"
-        content.add_formatting_vars(missing=missing, token_name=token_name, balance=balance - frozen_fee, fee=fee)
+        content.add_formatting_vars(missing=missing, token=token_name, balance=balance - frozen_fee, fee=fee)
         keyboard = back_button()
     else:
         await state.set_state(Trs_transfer.choose_where)
