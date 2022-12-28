@@ -63,16 +63,13 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
         await state.update_data(network=network_name)
 
     content: ContentUnit = await ContentUnit(tag="replenish_info").get()
+    content.add_formatting_vars(token_name=token_name, network=network_name,
+                                 repl_min=2, comission=0, approvals=20)
     placeholder_text = "Выбранная валюта: <code>{token_name}</code>\n" \
                 "Выбранная сеть: <code>{network}</code>\n" \
                 "Минимальная сумма пополнения: {repl_min}\n" \
                 "Комиссия: {comission}\n" \
                 "Необходимое количество подтверждений: {approvals}"
-    placeholder_text = placeholder_text.format(token_name=token_name, network=network_name,
-                                 repl_min=2, comission=0, approvals=20)
-    if content.text:
-        content.text = content.text.format(token_name=token_name, network=network_name,
-                                 repl_min=2, comission=0, approvals=20)
     msg = await ContentService.send(content, bot, chat_id=callback.message.chat.id, placeholder_text=placeholder_text)
     await MManager.garbage_store(state, msg.message_id)
 
@@ -110,8 +107,8 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
         address_str = adresses.get(address_nmbr)
     address: Address = await session.get(Address, address_str)
     content: ContentUnit = await ContentUnit(tag="replenish_address_view").get()
-    info_text = f'Выбранный адрес: <code>{address.address}</code>\n\n' \
-                f'*Нажмите на адрес, чтобы скопировать.'
+    info_text = 'Выбранный адрес: <code>{address}</code>\n\n*Нажмите на адрес, чтобы скопировать.'
+    content.add_formatting_vars(address=address.address)
     if content.text:
         content.text = content.text.format(address=address.address)
 
@@ -133,6 +130,6 @@ async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
     content: ContentUnit = await ContentUnit(tag="qrcd").get()
     content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".gif")
     content.media_type = 'animation'
-    content.text = content.text.format(address=address)
+    content.add_formatting_vars(address=address)
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text='Ваш QR код для пополнения кошелька', keyboard=back_button())

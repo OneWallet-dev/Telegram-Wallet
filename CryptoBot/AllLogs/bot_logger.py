@@ -13,7 +13,7 @@ class ColorFormatter(logging.Formatter):
         "ERROR": Fore.RED + Back.WHITE,
         "DEBUG": Fore.BLUE,
         "INFO": Fore.GREEN,
-        "CRITICAL": Fore.RED + Back.WHITE
+        "CRITICAL": Fore.RED + Back.BLACK
     }
 
     def format(self, record):

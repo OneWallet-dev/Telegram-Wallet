@@ -92,13 +92,12 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(fee=fee)
     await state.update_data(blockchain=blockchain)
 
-    placeholder_text = f"Выбранная валюта: {token_obj.token_name}\n" \
-                       f"Выбранная сеть: {token_obj.algorithm.name}\n" \
+    placeholder_text = "Выбранная валюта: {token_name}\n" \
+                       "Выбранная сеть: {network}\n" \
                        "Минимальная сумма отправки: 3 USDT\n" \
-                       f"Комиссия: {fee} USDT"
+                       "Комиссия: {fee} USDT"
     content: ContentUnit = await ContentUnit(tag="trans_token_conditions").get()
-    if content.text:
-        content.text = content.text.format(token=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
+    content.add_formatting_vars(token_name=token_obj.token_name, network=token_obj.algorithm.name, fee=fee)
     msg = await ContentService.send(content=content, bot=bot,
                                     chat_id=callback.message.chat.id,
                                     placeholder_text=placeholder_text)
@@ -116,11 +115,9 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await state.update_data(from_addresses=adresses_dict)
 
     placeholder_text = "Доступные адреса:\n\n" \
-                       f"{addresses_text}\n\n" \
+                       "{addresses_list}\n\n" \
                        "Выберите адрес c которого хотите отправить"
-
-    if content.text:
-        content.text = content.text.format(addresses_text=addresses_text)
+    content.add_formatting_vars(addresses_list=addresses_text)
 
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text=placeholder_text, keyboard=addresses_kb(counter, new_button=False))
@@ -140,15 +137,12 @@ async def choosen_address(callback: CallbackQuery, bot: Bot, state: FSMContext, 
     main_net = not DEBUG_MODE
     token_obj: Token = await TokenService.get_token(token_name=token_name, token_algorithm=algo, main_net=main_net)
     balance = await AddressService.get_address_balances(address=address.address, specific=[token_obj])
-    print(balance)
     await state.update_data(address=address.address)
     await state.update_data(balance=balance[token_name])
 
     content: ContentUnit = await ContentUnit(tag="trans_choose_amount").get()
-    placeholder_text = f"Выбранный адрес:\n\n<code>{address.address}</code>\n\nБаланс: {balance[token_name]}\n\n" \
-                       f"Выберите сумму которую хотите отправить:"
-    if content.text:
-        content.text = content.text.format(address=address.address)
+    placeholder_text = "Выбранный адрес:\n\n<code>{address}</code>\n\nВыберите сумму которую хотите отправить:"
+    content.add_formatting_vars(address=address.address)
     await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
                                 placeholder_text=placeholder_text)
     await state.set_state(Trs_transfer.amount)
@@ -172,21 +166,19 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
     if balance - frozen_fee < amount + fee:
         missing = float(amount + fee) - float(balance)
         content: ContentUnit = await ContentUnit(tag="trans_not_enough").get()
-        text = f"Для перевода вам не хватает: {missing} {token_name}\n\n" \
-               f"Пожалуйста укажите другую сумму или пополните баланс\n\n" \
-               f"Ваш баланс: {balance - frozen_fee} {token_name}\n" \
-               f"Комиссия: {fee} {token_name}"
+        text = "Для перевода вам не хватает: {missing} {token}\n\n" \
+               "Пожалуйста укажите другую сумму или пополните баланс\n\n" \
+               "Ваш баланс: {balance} {token_name}\n" \
+               "Комиссия: {fee} {token}"
+        content.add_formatting_vars(missing=missing, token_name=token_name, balance=balance - frozen_fee, fee=fee)
         keyboard = back_button()
     else:
         await state.set_state(Trs_transfer.choose_where)
-        text = f"Введите адрес на который хотите отправить {token_name} в сети {algo} или UID пользователя"
-        keyboard = None
-
+        text = "Введите адрес на который хотите отправить {token} в сети {network} или UID пользователя"
         await state.update_data(amount=amount)
-
         content: ContentUnit = await ContentUnit(tag="trans_choose_where").get()
-        if content.text:
-            content.text.format(token=token_name, network=algo)
+        content.add_formatting_vars(token=token_name, network=algo)
+        keyboard = None
 
     await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content, placeholder_text=text,
                                 keyboard=keyboard)
@@ -201,17 +193,15 @@ async def transfer_info(message: Message, bot: Bot, state: FSMContext):
     amount = s_data.get("amount")
     from_address = s_data.get("address")
     fee = s_data.get("fee")
-    info_text = f"Выбранная валюта: {token_name}\n" \
-                f"Выбранная сеть: {algorithm_name}\n" \
-                f"Кошелек отправки: {from_address}\n" \
-                f"Кошелек получения: {to_address}\n" \
-                f"Сумма перевода: {amount} {token_name}\n" \
-                f"Комиссия: {fee}\n" \
-                f"Сумма к получению: {amount - fee}"
-
+    info_text = "Выбранная валюта: {token}\n" \
+                "Выбранная сеть: {network}\n" \
+                "Кошелек отправки: {wallet}\n" \
+                "Кошелек получения: {second_wallet}\n" \
+                "Сумма перевода: {amount} {token}\n" \
+                "Комиссия: {fee}\n" \
+                "Сумма к получению: {final_sum}\n"
     content: ContentUnit = await ContentUnit(tag="trans_final_info").get()
-    if content.text:
-        content.text.format(token=token_name, network=algorithm_name, wallet=from_address, second_wallet=to_address,
+    content.add_formatting_vars(token=token_name, network=algorithm_name, wallet=from_address, second_wallet=to_address,
                             amount=amount, fee=fee, final_sum=amount - fee)
 
     await state.update_data(algorithm_name=algorithm_name)
@@ -242,16 +232,22 @@ async def confirm(callback: CallbackQuery, bot: Bot, state: FSMContext, session:
     if not token:
         raise Exception(
             f"TOKEN {token_name} {algorithm_name} {'MAINNET' if main_net else 'TESTNET'} NOT FOUND IN GIVEN ")
-
     transaction: Transaction = await perform_sending(address, amount, token, to_address, message, callback.from_user.id)
-
-    text = f"Транзакция завершена!\n\nПроверить статус транзакции вы можете по txn_ID:\n\n {transaction.tnx_id}"
-
+    text = ("ID транзакции: {trans_id}\n"
+            "Выбранная валюта: {token}\n"
+            "Выбранная сеть: {network}\n"
+            "Кошелек отправки: {wallet}\n"
+            "Кошелек получения: {second_wallet}\n"
+            "\n"
+            "Сумма перевода: {amount} {token}\n"
+            "Комиссия: {fee}\n"
+            "Сумма к получению: {final_sum}\n"
+            "\n"
+            "Исполнена!")
     await state.set_state(TransactionStates.main)
 
     content: ContentUnit = await ContentUnit(tag="trans_result").get()
-    if content.text:
-        content.text.format(trans_id=transaction.id,
+    content.add_formatting_vars(trans_id=transaction.id,
                             token=transaction.token.token_name, network=transaction.token.algorithm_name,
                             wallet=transaction.address.address, second_wallet=transaction.foreign_address,
                             amount=transaction.amount, final_sum=transaction.amount)
