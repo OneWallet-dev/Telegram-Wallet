@@ -168,7 +168,7 @@ async def choose_amount(message: Message, bot: Bot, state: FSMContext):
         content: ContentUnit = await ContentUnit(tag="trans_not_enough").get()
         text = "Для перевода вам не хватает: {missing} {token}\n\n" \
                "Пожалуйста укажите другую сумму или пополните баланс\n\n" \
-               "Ваш баланс: {balance} {token_name}\n" \
+               "Ваш баланс: {balance} {token}\n" \
                "Комиссия: {fee} {token}"
         content.add_formatting_vars(missing=missing, token=token_name, balance=balance - frozen_fee, fee=fee)
         keyboard = back_button()
