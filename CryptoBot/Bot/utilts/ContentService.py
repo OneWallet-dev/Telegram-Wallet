@@ -74,12 +74,12 @@ class ContentService:
                 n_msg = await ContentService.send(content, bot, chat_id, keyboard, placeholder_text)
                 await bot.delete_message(chat_id, target_msg_id)
         else:
-            if content.text:
-                text = f"<i>Bad media:</i>\n<code>{content.tag}</code>\n\n" + content.text
-            else:
+            if not content.text:
                 text = placeholder_text if placeholder_text else str()
-                if not text and content_warn:
+                if content_warn:
                     text = f"<i>Bad content:</i>\n<code>{content.tag}</code>\n\n" + text
+            else:
+                text = content.text
             with suppress(TelegramBadRequest):
                 n_msg = await bot.edit_message_text(text=text,
                                                     chat_id=chat_id,
