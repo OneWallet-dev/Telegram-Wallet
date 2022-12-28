@@ -10,7 +10,7 @@ from _config.settings import LOG_LEVEL
 class ColorFormatter(logging.Formatter):
     COLORS = {
         "WARNING": Fore.RED,
-        "ERROR": Fore.RED + Back.WHITE,
+        "ERROR": Fore.RED + Back.BLACK,
         "DEBUG": Fore.BLUE,
         "INFO": Fore.GREEN,
         "CRITICAL": Fore.RED + Back.BLACK
