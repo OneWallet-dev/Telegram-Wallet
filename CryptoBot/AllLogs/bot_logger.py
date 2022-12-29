@@ -7,7 +7,9 @@ from aiogram import loggers
 from _config.settings import LOG_LEVEL
 
 
+
 class ColorFormatter(logging.Formatter):
+    init(autoreset=True)
     COLORS = {
         "WARNING": Fore.RED,
         "ERROR": Fore.RED + Back.BLACK,
@@ -19,9 +21,9 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         color = self.COLORS.get(record.levelname, "")
         if color:
-            record.name = Fore.RESET + color + record.name
-            record.levelname = Fore.RESET + color + record.levelname
-            record.msg = Fore.RESET+ color + record.msg
+            record.name = color + record.name + Fore.RESET
+            record.levelname = color + record.levelname + Fore.RESET
+            record.msg = color + record.msg + Fore.RESET
         return logging.Formatter.format(self, record)
 
 
