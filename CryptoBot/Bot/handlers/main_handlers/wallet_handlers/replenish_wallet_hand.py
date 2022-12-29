@@ -128,8 +128,8 @@ async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     qr = await pretty_qr_code(address)
     content: ContentUnit = await ContentUnit(tag="qrcd").get()
-    content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".gif")
-    content.media_type = 'animation'
+    content.media_id = BufferedInputFile(file=qr, filename=str(address) + ".png")
+    content.media_type = 'photo'
     content.add_formatting_vars(address=address)
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text='Ваш QR код для пополнения кошелька', keyboard=back_button())

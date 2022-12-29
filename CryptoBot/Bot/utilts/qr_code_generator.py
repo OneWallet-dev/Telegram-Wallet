@@ -15,6 +15,6 @@ async def qr_code(wallet):
 async def pretty_qr_code(address_str: str):
     qrcod = segno.make(address_str, error='h')
     bio = io.BytesIO()
-    qrcod.to_artistic(background='Bot/assets/btc.gif', target=bio, scale=6, kind='gif')
+    qrcod.to_artistic(background='Bot/assets/crypt.png', target=bio, scale=6, kind='png')
     bio.seek(0)
     return bio.read()

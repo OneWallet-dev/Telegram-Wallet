@@ -19,9 +19,9 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         color = self.COLORS.get(record.levelname, "")
         if color:
-            record.name = color + record.name
-            record.levelname = color + record.levelname
-            record.msg = color + record.msg
+            record.name = Fore.RESET + color + record.name
+            record.levelname = Fore.RESET + color + record.levelname
+            record.msg = Fore.RESET+ color + record.msg
         return logging.Formatter.format(self, record)
 
 
