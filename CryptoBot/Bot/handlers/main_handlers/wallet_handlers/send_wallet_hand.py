@@ -110,8 +110,11 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     addresses_text = str()
     for address in addresses:
         address_name = address.name if address.name else ""
-        addresses_text += f"{counter}. " + address_name + f"<code>{address.address}</code>\n"
-        adresses_dict.update({counter: address.address})
+        addresses_text += f"{counter}. " + address_name + f" <code>{address.address}</code>\n"
+        if address.name:
+            adresses_dict.update({address.name: address.address})
+        else:
+            adresses_dict.update({counter: address.address})
         counter += 1
     await state.update_data(from_addresses=adresses_dict)
 
