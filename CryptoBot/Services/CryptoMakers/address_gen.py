@@ -4,8 +4,10 @@ from hdwallet import BIP44HDWallet
 from hdwallet.cryptocurrencies import EthereumMainnet, TronMainnet, BitcoinMainnet
 from hdwallet.derivations import BIP44Derivation
 from hdwallet.utils import generate_mnemonic
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Dao.DB_Postgres.session import AlchemyMaster
+from Dao.models import Blockchain
 from Dao.models.Address import Address
 from Dao.models.Owner import Owner
 from Dao.models.Wallet import Wallet
@@ -71,6 +73,50 @@ class Wallet_web3:
                 print("Кошельки не создались", e)
             return new_wallets
 
+    @AlchemyMaster.alchemy_session
+    async def create_wallet(self, blockchain: str, u_id: str, wallet_name: str | None,
+                            passphrase: str | None = None, mnemonic: str | None = None, path_index: int = 0,
+                            *,
+                            alchemy_session: AsyncSession):
+
+        owner: Owner = await alchemy_session.get(Owner, u_id)
+
+        if owner.wallets.get(blockchain):
+            wallet = owner.wallets.get(blockchain)
+            if not mnemonic:
+                mnemonic = wallet.mnemonic
+        else:
+            wallet = Wallet(blockchain=blockchain, mnemonic=mnemonic)
+
+        usage_dict = {
+            'ethereum': EthereumMainnet,
+            'tron': TronMainnet,
+            'bitcoin': BitcoinMainnet
+        }
+        generated_wallets = (await self._generate_address(cryptocurrency=usage_dict[blockchain],
+                                            number_of_addresses=path_index+1,
+                                            passphrase=passphrase,
+                                            mnemonic=mnemonic
+                                            )
+                      )
+        raw_wallet = generated_wallets.get(f"address_{path_index}")
+        address: Address = Address(address=raw_wallet.get("address"),
+                                   private_key=raw_wallet.get("private_key"),
+                                   path_index=path_index,
+                                   name=wallet_name)
+        tokens = await TokenService.tokens_for_blockchain(blockchain)
+        address.tokens.extend(tokens)
+
+        address = await alchemy_session.merge(address)
+
+        wallet.addresses.update({raw_wallet.get("address"): address})
+        owner.wallets.update({blockchain: wallet})
+        try:
+            alchemy_session.add(owner)
+            await alchemy_session.commit()
+        except Exception as ex:
+            print(ex)
+
     async def _generate_address(
             self,
             cryptocurrency=Union[EthereumMainnet, TronMainnet, BitcoinMainnet],
@@ -87,6 +133,7 @@ class Wallet_web3:
 
         wallet = dict()
         wallet["mnemonic"] = mnemonic
+
         for address_index in range(number_of_addresses):
             bip44_derivation: BIP44Derivation = BIP44Derivation(
                 cryptocurrency=cryptocurrency, account=0, change=False, address=address_index

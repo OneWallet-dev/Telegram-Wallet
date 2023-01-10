@@ -16,8 +16,8 @@ class Address(Base):
     __tablename__ = "addresses"
 
     address = Column(String, primary_key=True)
-
-    private_key = Column(StringEncryptedType(String, Data.secret_key, AesEngine))  # TODO вот здесь заруба...
+    name = Column(StringEncryptedType(String, Data.secret_key, AesEngine), nullable=True)
+    private_key = Column(StringEncryptedType(String, Data.secret_key, AesEngine))
     path_index = Column(Integer, default=0)
 
     wallet_id = Column(BigInteger, ForeignKey('wallets.id', onupdate="CASCADE", ondelete="CASCADE"))

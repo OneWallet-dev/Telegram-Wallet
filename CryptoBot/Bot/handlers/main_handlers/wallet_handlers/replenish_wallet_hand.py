@@ -1,7 +1,7 @@
 from aiogram import Router, Bot, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, BufferedInputFile
+from aiogram.types import CallbackQuery, BufferedInputFile, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from Bot.keyboards.main_keys import back_button
@@ -83,8 +83,9 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     counter = 1
     adresses_dict = dict()
     for address in addresses:
-        info_text += f"{counter}. <code>{address}</code>\n"
-        adresses_dict.update({counter: address})
+        name = "" if not address.name else f"{address.name} || "
+        info_text += f"{counter}. " + name + f"<code>{address.address}</code>\n"
+        adresses_dict.update({counter: address.address})
         counter += 1
     await state.update_data(adresses=adresses_dict)
     if content.text:
@@ -93,7 +94,7 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                 keyboard=addresses_kb(counter), placeholder_text=info_text)
 
 
-@router.callback_query(F.data == 'back', StateFilter(WalletStates.qr))
+@router.callback_query(F.data == 'back', StateFilter(WalletStates.qr, WalletStates.rename_wallet))
 @router.callback_query(F.data.isdigit(), StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
@@ -107,10 +108,8 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
         address_str = adresses.get(address_nmbr)
     address: Address = await session.get(Address, address_str)
     content: ContentUnit = await ContentUnit(tag="replenish_address_view").get()
-    info_text = 'Выбранный адрес: <code>{address}</code>\n\n*Нажмите на адрес, чтобы скопировать.'
-    content.add_formatting_vars(address=address.address)
-    if content.text:
-        content.text = content.text.format(address=address.address)
+    info_text = '<b>Кошелек {name}</b>\nАдрес: <code>{address}</code>\n\n*Нажмите на адрес, чтобы скопировать.'
+    content.add_formatting_vars(address=address.address, name=address.name if address.name else address_nmbr)
 
     await state.update_data(chosen_address=address.address)
 
@@ -133,3 +132,34 @@ async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
     content.add_formatting_vars(address=address)
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
                                 placeholder_text='Ваш QR код для пополнения кошелька', keyboard=back_button())
+
+
+@router.callback_query(F.data == 'rename_wallet', StateFilter(WalletStates.choose_address))
+async def rename_wallet_strt(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
+    await state.set_state(WalletStates.rename_wallet)
+    data = await state.get_data()
+    address_str = data.get('chosen_address')
+    address: Address = await session.get(Address, address_str)
+
+    placeholder_text = 'У данного кошелька нет названия' if not address.name else 'Текущее название кошелька:\n{name}'
+    placeholder_text += '\nВы можете отправить мне новое название. Ограничение 15 символов.'
+    content: ContentUnit = await ContentUnit(tag="rename_wallet").get()
+    content.add_formatting_vars(name=address.name)
+
+    await MManager.content_surf(event=callback, state=state, bot=bot, content_unit=content,
+                                placeholder_text=placeholder_text, keyboard=back_button())
+
+
+@router.message(StateFilter(WalletStates.rename_wallet))
+async def rename_wallet_done(message: Message, state: FSMContext, bot: Bot, session: AsyncSession):
+    data = await state.get_data()
+    address_str = data.get('chosen_address')
+    address: Address = await session.get(Address, address_str)
+    address.name = message.text[:15]
+    session.add(address)
+    await session.commit()
+    placeholder_text = 'Готово! Кошелек \n<code>{wallet}</code>\nназван \n{new_name}'
+    content: ContentUnit = await ContentUnit(tag="rename_wallet_done").get()
+    content.add_formatting_vars(wallet=address.address, new_name=address.name)
+    await MManager.content_surf(event=message, state=state, bot=bot, content_unit=content,
+                                placeholder_text=placeholder_text, keyboard=back_button())

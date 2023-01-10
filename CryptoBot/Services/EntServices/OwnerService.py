@@ -98,5 +98,5 @@ class OwnerService:
                     Wallet.owner_id == u_id, Wallet.blockchain == blockchain).scalar_subquery()))
                        ).unique()
             for address in addresses:
-                addresses_list.append(address[0].address)
+                addresses_list.append(address[0])
             return addresses_list

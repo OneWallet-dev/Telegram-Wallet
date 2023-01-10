@@ -18,6 +18,7 @@ from Dao.models.Token import Token
 from Dao.models.Transaction import Transaction
 from Dao.models.Wallet import Wallet
 from Dao.models.bot_models import ContentUnit
+from Services.CryptoMakers.address_gen import Wallet_web3
 from Services.EntServices.TransactionService import TransactionService
 
 router = Router()
@@ -109,6 +110,11 @@ async def commands_start(message: Message, state: FSMContext, session: AsyncSess
 async def ttt(message: Message, session: AsyncSession):
     user_id = message.from_user.id
     u_id = await DataRedis.find_user(user_id)
+    owner: Owner = await session.get(Owner, u_id)
+    wallet = [owner.wallets[wallet] for wallet in owner.wallets if owner.wallets[wallet].blockchain == 'tron'][0]
+    mnemonic = wallet.mnemonic
+    await Wallet_web3().create_wallet(blockchain=wallet.blockchain, u_id=u_id, wallet_name='asd', mnemonic=mnemonic,
+                                    path_index=3)
     trans_list = await TransactionService.get_user_transactions(u_id, transaction_type='sending')
     print(trans_list)
 
