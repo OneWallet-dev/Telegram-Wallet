@@ -32,7 +32,7 @@ async def replenish_choose_currency(callback: CallbackQuery, state: FSMContext, 
                                 placeholder_text=f"Выберите валюту:")
 
 
-@router.callback_query(F.data == 'back', StateFilter(WalletStates.choose_address))
+@router.callback_query(F.data == 'back', StateFilter(WalletStates.inspect_address))
 @router.callback_query(F.data.startswith("new_t"), StateFilter(WalletStates.replenish_token))
 @MManager.garbage_manage(store=False, clean=True)
 async def add_network(callback: CallbackQuery, state: FSMContext, bot: Bot):
@@ -85,31 +85,34 @@ async def complete_token(callback: CallbackQuery, state: FSMContext, bot: Bot):
     for address in addresses:
         name = "" if not address.name else f"{address.name} || "
         info_text += f"{counter}. " + name + f"<code>{address.address}</code>\n"
-        adresses_dict.update({counter: address.address})
+        if not address.name:
+            adresses_dict.update({counter: address.address})
+        else:
+            adresses_dict.update({address.name: address.address})
         counter += 1
     await state.update_data(adresses=adresses_dict)
     if content.text:
         content.text = content.text.format(info_text=info_text)
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
-                                keyboard=addresses_kb(counter), placeholder_text=info_text)
+                                keyboard=addresses_kb(adresses_dict), placeholder_text=info_text)
 
 
 @router.callback_query(F.data == 'back', StateFilter(WalletStates.qr, WalletStates.rename_wallet))
-@router.callback_query(F.data.isdigit(), StateFilter(WalletStates.choose_address))
+@router.callback_query(StateFilter(WalletStates.choose_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
-    await state.set_state(WalletStates.choose_address)
-    address_nmbr = callback.data
+    await state.set_state(WalletStates.inspect_address)
     data = await state.get_data()
     if callback.data == 'back':
         address_str = data.get('chosen_address')
     else:
         adresses = data.get('adresses')
-        address_str = adresses.get(address_nmbr)
+        address_str = adresses.get(callback.data)
     address: Address = await session.get(Address, address_str)
     content: ContentUnit = await ContentUnit(tag="replenish_address_view").get()
     info_text = '<b>Кошелек {name}</b>\nАдрес: <code>{address}</code>\n\n*Нажмите на адрес, чтобы скопировать.'
-    content.add_formatting_vars(address=address.address, name=address.name if address.name else address_nmbr)
+    print(address.address)
+    content.add_formatting_vars(address=address.address, name=address.name if address.name else callback.data)
 
     await state.update_data(chosen_address=address.address)
 
@@ -118,7 +121,7 @@ async def address_inspect(callback: CallbackQuery, state: FSMContext, bot: Bot, 
                                 placeholder_text=info_text, keyboard=wallet_view_kb())
 
 
-@router.callback_query(F.data == 'QRFK', StateFilter(WalletStates.choose_address))
+@router.callback_query(F.data == 'QRFK', StateFilter(WalletStates.inspect_address))
 @MManager.garbage_manage(store=False, clean=True)
 async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await state.set_state(WalletStates.qr)
@@ -134,7 +137,7 @@ async def qr_ghan(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                 placeholder_text='Ваш QR код для пополнения кошелька', keyboard=back_button())
 
 
-@router.callback_query(F.data == 'rename_wallet', StateFilter(WalletStates.choose_address))
+@router.callback_query(F.data == 'rename_wallet', StateFilter(WalletStates.inspect_address))
 async def rename_wallet_strt(callback: CallbackQuery, state: FSMContext, bot: Bot, session: AsyncSession):
     await state.set_state(WalletStates.rename_wallet)
     data = await state.get_data()

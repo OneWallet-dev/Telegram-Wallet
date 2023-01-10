@@ -55,9 +55,9 @@ def network_kb(custom_network_list: list | None = None):
     return mark.as_markup(resize_keyboard=True)
 
 
-def addresses_kb(counter: int, new_button: bool = True):
+def addresses_kb(addresses_dict: dict, new_button: bool = True):
     mark = InlineKeyboardBuilder()
-    for i in range(1, counter):
+    for i in addresses_dict:
         mark.row((InlineKeyboardButton(text=str(i), callback_data=str(i))))
     mark.adjust(2)
     if new_button:
