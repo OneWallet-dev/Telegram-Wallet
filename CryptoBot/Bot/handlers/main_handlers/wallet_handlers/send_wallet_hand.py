@@ -109,8 +109,9 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     adresses_dict = dict()
     addresses_text = str()
     for address in addresses:
-        addresses_text += f"{counter}. <code>{address}</code>\n"
-        adresses_dict.update({counter: address})
+        address_name = address.name if address.name else ""
+        addresses_text += f"{counter}. " + address_name + f"<code>{address.address}</code>\n"
+        adresses_dict.update({counter: address.address})
         counter += 1
     await state.update_data(from_addresses=adresses_dict)
 
@@ -120,7 +121,7 @@ async def algorithm_use(callback: CallbackQuery, bot: Bot, state: FSMContext):
     content.add_formatting_vars(addresses_list=addresses_text)
 
     await MManager.content_surf(event=callback.message, state=state, bot=bot, content_unit=content,
-                                placeholder_text=placeholder_text, keyboard=addresses_kb(counter, new_button=False))
+                                placeholder_text=placeholder_text, keyboard=addresses_kb(adresses_dict, new_button=False))
     await state.set_state(Trs_transfer.address)
 
 
