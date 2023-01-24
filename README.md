@@ -26,14 +26,13 @@ git clone https://github.com/OneWallet-dev/Telegram-Wallet.git
 ```sh
 docker-compose up -d --build
 ```
-<hr/>
+
 
 ## Дополнительные команды
 
 1. Создание файла миграций:
 ```sh
 docker-compose exec backend alembic revision --autogenerate -m "revision_name"
-```
 
 2. Обновление базы данных:
 ```sh
