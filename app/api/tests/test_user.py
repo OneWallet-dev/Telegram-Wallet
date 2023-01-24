@@ -14,7 +14,6 @@ def engine():
     yield engine
 
 
-
 @pytest_asyncio.fixture
 async def session(engine):
     async with AsyncSession(engine) as session:
