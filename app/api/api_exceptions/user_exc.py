@@ -1,0 +1,2 @@
+class CreateUserError(Exception):
+    pass

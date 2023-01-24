@@ -1,10 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Table
 
-from Dao.DB_Postgres.session import Base
-
-# Base_api = 'https://rest.cryptoapis.io'
-# API_version = "/v2"
-# Base_api = Base_api + API_version
+from api.database.postgres import Base
 
 address_tokens = Table(
     "address_tokens",
