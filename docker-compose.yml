@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    image: postgres:15.1
+    container_name: CryptoPostgres
+    env_file: app/.env
+    ports:
+      - "5454:5432"
+    volumes:
+      - ./Data/Postgres/:/var/lib/postgresql/data
+    networks:
+      - name_net
+
+  redis:
+    image: redis:7.0.4
+    container_name: CryptoRedis
+    env_file: app/.env
+    ports:
+      - "2279:6379"
+
+    volumes:
+      - ./Data/Redis/data:/data
+    networks:
+      - name_net
+
+  bot:
+    build: app
+    command: bash -c 'python main.py'
+    env_file: app/.env
+    container_name: TelegramWallet
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./app:/TelegramWallet
+    networks:
+      - name_net
+
+
+networks:
+  name_net:
+    driver: bridge

@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED=1
 LABEL version = '0.6'
 LABEL master = 'BotShackTeam'
 
-RUN mkdir /CryptoBot
-WORKDIR /CryptoBot
+RUN mkdir /TelegramWallet
+WORKDIR /TelegramWallet
 
 COPY ./requirements.txt /tmp/
 
@@ -19,4 +19,4 @@ RUN pip3 install -e /tron/.
 
 RUN pip3 install -r /tmp/requirements.txt
 
-COPY . /CryptoBot/
+COPY . .
