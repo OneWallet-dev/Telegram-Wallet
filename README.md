@@ -6,6 +6,7 @@
 ```
 docker compose -f Deploy/bot_rise.yml build
 ```
+
 ```
 docker compose -f Deploy/bot_rise.yml up -d
 ```
