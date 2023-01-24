@@ -31,10 +31,13 @@ docker-compose up -d --build
 ## Дополнительные команды
 
 1. Создание файла миграций:
+
 ```sh
 docker-compose exec backend alembic revision --autogenerate -m "revision_name"
+```
 
 2. Обновление базы данных:
+
 ```sh
 docker-compose exec app alembic upgrade head
 ```
