@@ -26,8 +26,8 @@ class UserCrud:
             await self._db_session.rollback()
             raise CreateUserError
 
-    async def get_user(self, user_id: str) -> CurrentUser:
+    async def get_user(self, user_id: str) -> Owner:
         owner: Owner = await self._db_session.get(Owner, user_id)
-        return CurrentUser(user=UserOut(**owner.__dict__))
+        return owner
 
 

@@ -10,7 +10,7 @@ class Wallet(Base):
     __tablename__ = "wallets"
 
     id = Column(BigInteger, primary_key=True, unique=True, autoincrement=True)
-    blockchain = Column(String, unique=True)
+    blockchain = Column(String, ForeignKey('blockchains.name', onupdate="CASCADE", ondelete="CASCADE"))
     owner_id = Column(String, ForeignKey("owners.id"))
     mnemonic = Column(String)
 

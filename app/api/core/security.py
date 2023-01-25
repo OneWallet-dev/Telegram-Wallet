@@ -5,7 +5,9 @@ from passlib.context import CryptContext
 from hdwallet.utils import generate_mnemonic
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-#(publicKey, privateKey) = rsa.newkeys(1024)
+
+
+# (publicKey, privateKey) = rsa.newkeys(1024)
 
 
 class Security:
@@ -28,35 +30,34 @@ class Security:
 
     @classmethod
     def __generateKeys(cls):
-        (publicKey, privateKey) = rsa.newkeys(1024)
-        if not os.path.exists('publcKey.pem'):
-
-            with open('publcKey.pem', 'wb') as p:
+        (publicKey, privateKey) = rsa.newkeys(2048)
+        if not os.path.exists('./publcKey.pem'):
+            with open('./publcKey.pem', 'wb') as p:
                 p.write(publicKey.save_pkcs1('PEM'))
-            with open('privateKey.pem', 'wb') as p:
+            with open('./privateKey.pem', 'wb') as p:
                 p.write(privateKey.save_pkcs1('PEM'))
 
     @classmethod
     def __loadKeys(cls):
-        if not os.path.exists('publcKey.pem'):
+        if not os.path.exists('./publcKey.pem'):
             cls.__generateKeys()
 
-        with open('publicKey.pem', 'rb') as p:
+        with open('./publcKey.pem', 'rb') as p:
             public_Key = rsa.PublicKey.load_pkcs1(p.read())
-        with open('privateKey.pem', 'rb') as p:
+        with open('./privateKey.pem', 'rb') as p:
             private_Key = rsa.PrivateKey.load_pkcs1(p.read())
-        return private_Key, public_Key
+        return {"private_key": private_Key, "public_key": public_Key}
 
     @classmethod
     def encrypt(cls, key: str):
-        (private_Key, public_Key) = cls.__loadKeys
-        return rsa.encrypt(key.encode('ascii'), public_Key)
+        public_key = cls.__loadKeys().get("public_key")
+        return rsa.encrypt(key.encode('ascii'), public_key).hex()
 
     @classmethod
-    def decrypt(cls, encode_key: bytes):
-        (private_Key, public_Key) = cls.__loadKeys
+    def decrypt(cls, encode_key: str):
+        private_key = cls.__loadKeys().get("private_key")
         try:
-            return rsa.decrypt(encode_key, private_Key).decode('ascii')
+            return rsa.decrypt(bytearray(encode_key), private_key).decode('ascii')
         except:
             return False
 

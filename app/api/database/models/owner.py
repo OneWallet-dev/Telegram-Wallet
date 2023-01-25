@@ -18,6 +18,6 @@ class Owner(Base):
 
     wallets: dict[str, Wallet] = relationship(
         "Wallet",
-        collection_class=attribute_mapped_collection("blockchain"),
+        collection_class=attribute_mapped_collection("id"),
         cascade="all, delete-orphan", lazy="joined"
     )
