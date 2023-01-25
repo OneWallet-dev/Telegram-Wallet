@@ -21,7 +21,4 @@ class Transaction(Base):
 
     created_at = Column(DateTime, default=datetime.datetime.now())
 
-    from_user_id: str = Column(String, ForeignKey('owners.id', onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
-    token_id = Column(Integer, ForeignKey('tokens.id', onupdate="CASCADE", ondelete="CASCADE"))
 
-    address = relationship("Address", lazy="joined", back_populates="transactions")

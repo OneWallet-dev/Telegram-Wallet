@@ -9,7 +9,7 @@ class Postgres:
 
     @classmethod
     async def connect_to_storage(cls):
-        engine_pg = create_async_engine(config.POSTGRES_URL, echo=False)
+        engine_pg = create_async_engine(config.POSTGRES_URL, echo=True)
 
         cls.async_session = sessionmaker(engine_pg, class_=AsyncSession, expire_on_commit=False)
 

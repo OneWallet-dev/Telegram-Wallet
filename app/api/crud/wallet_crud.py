@@ -1,8 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import exc
 
+from api.api_exceptions.addess_exc import AddressExist
 from api.api_exceptions.user_exc import CreateUserError
-from api.api_exceptions.wallet_exc import WalletExist
+from api.api_exceptions.wallet_exc import WalletExist, CreateWalletError
 from api.core.security import Security
 from api.crud.user_crud import UserCrud
 from api.database.models.blockchain import Blockchain
@@ -32,8 +33,10 @@ class WalletCrud:
             return CurrentWallet(wallet=WalletOut(**wallet.__dict__))
         except exc.IntegrityError:
             await self._db_session.rollback()
-            raise CreateUserError
+            raise AddressExist
+        except exc:
+            raise CreateWalletError
 
-    async def get_wallet(self, wallet_id: str) -> CurrentWallet:
+    async def get_wallet(self, wallet_id: int) -> Wallet:
         wallet: Wallet = await self._db_session.get(Owner, wallet_id)
-        return CurrentWallet(user=WalletOut(**wallet.__dict__))
+        return wallet

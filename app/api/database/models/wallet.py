@@ -14,6 +14,7 @@ class Wallet(Base):
     owner_id = Column(String, ForeignKey("owners.id"))
     mnemonic = Column(String)
 
+    addresses: list = relationship("Address", lazy="joined", backref="wallets")
     owner: list = relationship("Owner", lazy="joined", back_populates="wallets")
 
 

@@ -1,0 +1,3 @@
+
+class MnemonicNotFound(Exception):
+    pass

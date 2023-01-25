@@ -8,4 +8,3 @@ class Algorithm(Base):
     __tablename__ = "algorithms"
 
     name = Column(String, primary_key=True)
-    tokens = relationship('Token', lazy="joined", back_populates="algorithm")

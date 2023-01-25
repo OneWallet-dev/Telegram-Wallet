@@ -4,7 +4,7 @@ from datetime import datetime
 
 class CreateAddress(BaseModel):
     address: str
-    wallet_id: str
+    wallet_id: int
 
     custom_name: str
     private_key: str

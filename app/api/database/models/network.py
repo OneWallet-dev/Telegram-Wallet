@@ -11,4 +11,3 @@ class Network(Base):  # Arbitrum/Polygon
     name = Column(String)
     base_token = Column(String)
     mainnet = Column(Boolean)
-    tokens = relationship('Token', lazy="joined", back_populates="network")
