@@ -26,8 +26,8 @@ class AddressCrud:
         except exc:
             raise AddressCreateError
 
-    async def get_address(self, address: str) -> CurrentUser:
+    async def get_address(self, address: str) -> Address:
         address: Address = await self._db_session.get(Address, address)
-        return CurrentUser(user=UserOut(**address.__dict__))
+        return address
 
 
